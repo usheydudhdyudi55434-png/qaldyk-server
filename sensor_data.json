@@ -1,0 +1,1839 @@
+[
+{
+  "model": "sensor.container",
+  "pk": 1,
+  "fields": {
+    "name": "Container #1",
+    "location": "Almaty",
+    "latitude": 43.2389,
+    "longitude": 76.8897,
+    "created_at": "2026-09-23T15:33:08.651Z"
+  }
+},
+{
+  "model": "sensor.container",
+  "pk": 2,
+  "fields": {
+    "name": "Container #2",
+    "location": "Almaty",
+    "latitude": 43.2405,
+    "longitude": 76.893,
+    "created_at": "2026-09-23T15:43:29.015Z"
+  }
+},
+{
+  "model": "sensor.container",
+  "pk": 3,
+  "fields": {
+    "name": "Container #3",
+    "location": "Almaty",
+    "latitude": 43.2365,
+    "longitude": 76.886,
+    "created_at": "2026-09-23T15:43:29.899Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 1,
+  "fields": {
+    "container": 1,
+    "distance": 20.0,
+    "fill_level": 80.0,
+    "status": "FULL",
+    "created_at": "2026-09-23T14:46:23.983Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 2,
+  "fields": {
+    "container": 1,
+    "distance": 69.53,
+    "fill_level": 30.47,
+    "status": "NORMAL",
+    "created_at": "2026-09-23T14:56:59.098Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 3,
+  "fields": {
+    "container": 1,
+    "distance": 69.51,
+    "fill_level": 30.49,
+    "status": "NORMAL",
+    "created_at": "2026-09-23T14:57:11.296Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 4,
+  "fields": {
+    "container": 1,
+    "distance": 69.51,
+    "fill_level": 30.49,
+    "status": "NORMAL",
+    "created_at": "2026-09-23T14:57:29.973Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 5,
+  "fields": {
+    "container": 1,
+    "distance": 69.51,
+    "fill_level": 30.49,
+    "status": "NORMAL",
+    "created_at": "2026-09-23T14:57:45.404Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 6,
+  "fields": {
+    "container": 1,
+    "distance": 69.51,
+    "fill_level": 30.49,
+    "status": "NORMAL",
+    "created_at": "2026-09-23T14:58:03.767Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 7,
+  "fields": {
+    "container": 1,
+    "distance": 69.51,
+    "fill_level": 30.49,
+    "status": "NORMAL",
+    "created_at": "2026-09-23T14:58:23.607Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 8,
+  "fields": {
+    "container": 1,
+    "distance": 69.51,
+    "fill_level": 30.49,
+    "status": "NORMAL",
+    "created_at": "2026-09-23T14:58:36.420Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 9,
+  "fields": {
+    "container": 1,
+    "distance": 69.51,
+    "fill_level": 30.49,
+    "status": "NORMAL",
+    "created_at": "2026-09-23T14:58:49.879Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 10,
+  "fields": {
+    "container": 1,
+    "distance": 69.51,
+    "fill_level": 30.49,
+    "status": "NORMAL",
+    "created_at": "2026-09-23T14:59:06.182Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 11,
+  "fields": {
+    "container": 1,
+    "distance": 69.51,
+    "fill_level": 30.49,
+    "status": "NORMAL",
+    "created_at": "2026-09-23T14:59:20.088Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 12,
+  "fields": {
+    "container": 1,
+    "distance": 197.71,
+    "fill_level": 0.0,
+    "status": "NORMAL",
+    "created_at": "2026-09-23T15:08:57.947Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 13,
+  "fields": {
+    "container": 1,
+    "distance": 197.71,
+    "fill_level": 0.0,
+    "status": "NORMAL",
+    "created_at": "2026-09-23T15:09:13.535Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 14,
+  "fields": {
+    "container": 1,
+    "distance": 197.71,
+    "fill_level": 0.0,
+    "status": "NORMAL",
+    "created_at": "2026-09-23T15:09:25.832Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 15,
+  "fields": {
+    "container": 1,
+    "distance": 269.36,
+    "fill_level": 0.0,
+    "status": "NORMAL",
+    "created_at": "2026-09-23T15:09:37.820Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 16,
+  "fields": {
+    "container": 1,
+    "distance": 269.36,
+    "fill_level": 0.0,
+    "status": "NORMAL",
+    "created_at": "2026-09-23T15:09:51.226Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 17,
+  "fields": {
+    "container": 1,
+    "distance": 27.17,
+    "fill_level": 72.83,
+    "status": "HALF FULL",
+    "created_at": "2026-09-23T15:10:07.410Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 18,
+  "fields": {
+    "container": 1,
+    "distance": 27.17,
+    "fill_level": 72.83,
+    "status": "HALF FULL",
+    "created_at": "2026-09-23T15:10:23.794Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 19,
+  "fields": {
+    "container": 1,
+    "distance": 61.47,
+    "fill_level": 38.53,
+    "status": "NORMAL",
+    "created_at": "2026-09-23T15:10:35.871Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 20,
+  "fields": {
+    "container": 1,
+    "distance": 61.47,
+    "fill_level": 38.53,
+    "status": "NORMAL",
+    "created_at": "2026-09-23T15:10:48.057Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 21,
+  "fields": {
+    "container": 1,
+    "distance": 61.47,
+    "fill_level": 38.53,
+    "status": "NORMAL",
+    "created_at": "2026-09-23T15:11:01.674Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 22,
+  "fields": {
+    "container": 1,
+    "distance": 1.99,
+    "fill_level": 98.01,
+    "status": "FULL",
+    "created_at": "2026-09-23T15:11:17.662Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 23,
+  "fields": {
+    "container": 1,
+    "distance": 1.99,
+    "fill_level": 98.01,
+    "status": "FULL",
+    "created_at": "2026-09-23T15:11:31.688Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 24,
+  "fields": {
+    "container": 1,
+    "distance": 75.65,
+    "fill_level": 24.35,
+    "status": "NORMAL",
+    "created_at": "2026-09-23T15:11:47.242Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 25,
+  "fields": {
+    "container": 1,
+    "distance": 75.65,
+    "fill_level": 24.35,
+    "status": "NORMAL",
+    "created_at": "2026-09-23T15:12:00.275Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 26,
+  "fields": {
+    "container": 1,
+    "distance": 75.65,
+    "fill_level": 24.35,
+    "status": "NORMAL",
+    "created_at": "2026-09-23T15:12:16.939Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 27,
+  "fields": {
+    "container": 1,
+    "distance": 75.65,
+    "fill_level": 24.35,
+    "status": "NORMAL",
+    "created_at": "2026-09-23T15:12:34.237Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 28,
+  "fields": {
+    "container": 1,
+    "distance": 75.65,
+    "fill_level": 24.35,
+    "status": "NORMAL",
+    "created_at": "2026-09-23T15:12:51.037Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 29,
+  "fields": {
+    "container": 1,
+    "distance": 75.65,
+    "fill_level": 24.35,
+    "status": "NORMAL",
+    "created_at": "2026-09-23T15:13:03.037Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 30,
+  "fields": {
+    "container": 1,
+    "distance": 75.65,
+    "fill_level": 24.35,
+    "status": "NORMAL",
+    "created_at": "2026-09-23T15:13:17.668Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 31,
+  "fields": {
+    "container": 1,
+    "distance": 75.65,
+    "fill_level": 24.35,
+    "status": "NORMAL",
+    "created_at": "2026-09-23T15:13:31.596Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 32,
+  "fields": {
+    "container": 1,
+    "distance": 175.48,
+    "fill_level": 0.0,
+    "status": "NORMAL",
+    "created_at": "2026-09-23T15:13:46.319Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 33,
+  "fields": {
+    "container": 1,
+    "distance": 175.44,
+    "fill_level": 0.0,
+    "status": "NORMAL",
+    "created_at": "2026-09-23T15:14:00.054Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 34,
+  "fields": {
+    "container": 1,
+    "distance": 1.99,
+    "fill_level": 98.01,
+    "status": "FULL",
+    "created_at": "2026-09-23T15:14:15.527Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 35,
+  "fields": {
+    "container": 1,
+    "distance": 1.99,
+    "fill_level": 98.01,
+    "status": "FULL",
+    "created_at": "2026-09-23T15:14:31.949Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 36,
+  "fields": {
+    "container": 1,
+    "distance": 1.99,
+    "fill_level": 98.01,
+    "status": "FULL",
+    "created_at": "2026-09-23T15:14:47.156Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 37,
+  "fields": {
+    "container": 1,
+    "distance": 1.99,
+    "fill_level": 98.01,
+    "status": "FULL",
+    "created_at": "2026-09-23T15:15:02.617Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 38,
+  "fields": {
+    "container": 1,
+    "distance": 1.99,
+    "fill_level": 98.01,
+    "status": "FULL",
+    "created_at": "2026-09-23T15:15:16.890Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 39,
+  "fields": {
+    "container": 1,
+    "distance": 41.35,
+    "fill_level": 58.65,
+    "status": "HALF FULL",
+    "created_at": "2026-09-23T15:15:32.107Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 40,
+  "fields": {
+    "container": 1,
+    "distance": 41.35,
+    "fill_level": 58.65,
+    "status": "HALF FULL",
+    "created_at": "2026-09-23T15:15:49.310Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 41,
+  "fields": {
+    "container": 1,
+    "distance": 41.35,
+    "fill_level": 58.65,
+    "status": "HALF FULL",
+    "created_at": "2026-09-23T15:16:06.492Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 42,
+  "fields": {
+    "container": 1,
+    "distance": 41.26,
+    "fill_level": 58.74,
+    "status": "HALF FULL",
+    "created_at": "2026-09-23T15:16:23.598Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 43,
+  "fields": {
+    "container": 1,
+    "distance": 41.35,
+    "fill_level": 58.65,
+    "status": "HALF FULL",
+    "created_at": "2026-09-23T15:16:39.969Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 44,
+  "fields": {
+    "container": 1,
+    "distance": 41.26,
+    "fill_level": 58.74,
+    "status": "HALF FULL",
+    "created_at": "2026-09-23T15:16:53.719Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 45,
+  "fields": {
+    "container": 1,
+    "distance": 10.07,
+    "fill_level": 89.93,
+    "status": "FULL",
+    "created_at": "2026-09-23T15:17:08.772Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 46,
+  "fields": {
+    "container": 1,
+    "distance": 10.07,
+    "fill_level": 89.93,
+    "status": "FULL",
+    "created_at": "2026-09-23T15:17:24.950Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 47,
+  "fields": {
+    "container": 1,
+    "distance": 10.07,
+    "fill_level": 89.93,
+    "status": "FULL",
+    "created_at": "2026-09-23T15:17:40.969Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 48,
+  "fields": {
+    "container": 1,
+    "distance": 10.07,
+    "fill_level": 89.93,
+    "status": "FULL",
+    "created_at": "2026-09-23T15:17:58.639Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 49,
+  "fields": {
+    "container": 1,
+    "distance": 10.07,
+    "fill_level": 89.93,
+    "status": "FULL",
+    "created_at": "2026-09-23T15:18:14.908Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 50,
+  "fields": {
+    "container": 1,
+    "distance": 10.07,
+    "fill_level": 89.93,
+    "status": "FULL",
+    "created_at": "2026-09-23T15:18:30.076Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 51,
+  "fields": {
+    "container": 1,
+    "distance": 10.07,
+    "fill_level": 89.93,
+    "status": "FULL",
+    "created_at": "2026-09-23T15:18:42.062Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 52,
+  "fields": {
+    "container": 1,
+    "distance": 10.07,
+    "fill_level": 89.93,
+    "status": "FULL",
+    "created_at": "2026-09-23T15:18:58.281Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 53,
+  "fields": {
+    "container": 1,
+    "distance": 10.07,
+    "fill_level": 89.93,
+    "status": "FULL",
+    "created_at": "2026-09-23T15:19:13.676Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 54,
+  "fields": {
+    "container": 1,
+    "distance": 10.07,
+    "fill_level": 89.93,
+    "status": "FULL",
+    "created_at": "2026-09-23T15:19:27.732Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 55,
+  "fields": {
+    "container": 1,
+    "distance": 55.39,
+    "fill_level": 44.61,
+    "status": "NORMAL",
+    "created_at": "2026-09-23T15:19:42.995Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 56,
+  "fields": {
+    "container": 1,
+    "distance": 55.39,
+    "fill_level": 44.61,
+    "status": "NORMAL",
+    "created_at": "2026-09-23T15:19:55.795Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 57,
+  "fields": {
+    "container": 1,
+    "distance": 55.39,
+    "fill_level": 44.61,
+    "status": "NORMAL",
+    "created_at": "2026-09-23T15:20:09.812Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 58,
+  "fields": {
+    "container": 1,
+    "distance": 55.5,
+    "fill_level": 44.5,
+    "status": "NORMAL",
+    "created_at": "2026-09-23T15:20:26.431Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 59,
+  "fields": {
+    "container": 1,
+    "distance": 55.39,
+    "fill_level": 44.61,
+    "status": "NORMAL",
+    "created_at": "2026-09-23T15:20:43.472Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 60,
+  "fields": {
+    "container": 1,
+    "distance": 55.39,
+    "fill_level": 44.61,
+    "status": "NORMAL",
+    "created_at": "2026-09-23T15:21:00.190Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 61,
+  "fields": {
+    "container": 1,
+    "distance": 55.39,
+    "fill_level": 44.61,
+    "status": "NORMAL",
+    "created_at": "2026-09-23T15:21:15.249Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 62,
+  "fields": {
+    "container": 1,
+    "distance": 55.39,
+    "fill_level": 44.61,
+    "status": "NORMAL",
+    "created_at": "2026-09-23T15:21:29.962Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 63,
+  "fields": {
+    "container": 1,
+    "distance": 55.39,
+    "fill_level": 44.61,
+    "status": "NORMAL",
+    "created_at": "2026-09-23T15:21:43.706Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 64,
+  "fields": {
+    "container": 1,
+    "distance": 1.99,
+    "fill_level": 98.01,
+    "status": "FULL",
+    "created_at": "2026-09-23T15:21:58.776Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 65,
+  "fields": {
+    "container": 1,
+    "distance": 1.99,
+    "fill_level": 98.01,
+    "status": "FULL",
+    "created_at": "2026-09-23T15:22:15.397Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 66,
+  "fields": {
+    "container": 1,
+    "distance": 1.99,
+    "fill_level": 98.01,
+    "status": "FULL",
+    "created_at": "2026-09-23T15:22:33.795Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 67,
+  "fields": {
+    "container": 1,
+    "distance": 1.99,
+    "fill_level": 98.01,
+    "status": "FULL",
+    "created_at": "2026-09-23T15:22:48.525Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 68,
+  "fields": {
+    "container": 1,
+    "distance": 1.99,
+    "fill_level": 98.01,
+    "status": "FULL",
+    "created_at": "2026-09-23T15:23:04.703Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 69,
+  "fields": {
+    "container": 1,
+    "distance": 1.99,
+    "fill_level": 98.01,
+    "status": "FULL",
+    "created_at": "2026-09-23T15:23:19.354Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 70,
+  "fields": {
+    "container": 1,
+    "distance": 53.39,
+    "fill_level": 46.61,
+    "status": "NORMAL",
+    "created_at": "2026-09-23T15:23:34.648Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 71,
+  "fields": {
+    "container": 1,
+    "distance": 53.39,
+    "fill_level": 46.61,
+    "status": "NORMAL",
+    "created_at": "2026-09-23T15:23:51.603Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 72,
+  "fields": {
+    "container": 1,
+    "distance": 53.37,
+    "fill_level": 46.63,
+    "status": "NORMAL",
+    "created_at": "2026-09-23T15:24:09.239Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 73,
+  "fields": {
+    "container": 1,
+    "distance": 53.39,
+    "fill_level": 46.61,
+    "status": "NORMAL",
+    "created_at": "2026-09-23T15:24:26.818Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 74,
+  "fields": {
+    "container": 1,
+    "distance": 53.39,
+    "fill_level": 46.61,
+    "status": "NORMAL",
+    "created_at": "2026-09-23T15:24:39.227Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 75,
+  "fields": {
+    "container": 1,
+    "distance": 53.39,
+    "fill_level": 46.61,
+    "status": "NORMAL",
+    "created_at": "2026-09-23T15:24:51.248Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 76,
+  "fields": {
+    "container": 1,
+    "distance": 53.39,
+    "fill_level": 46.61,
+    "status": "NORMAL",
+    "created_at": "2026-09-23T15:25:03.233Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 77,
+  "fields": {
+    "container": 1,
+    "distance": 53.39,
+    "fill_level": 46.61,
+    "status": "NORMAL",
+    "created_at": "2026-09-23T15:25:15.368Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 78,
+  "fields": {
+    "container": 1,
+    "distance": 53.39,
+    "fill_level": 46.61,
+    "status": "NORMAL",
+    "created_at": "2026-09-23T15:25:27.130Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 79,
+  "fields": {
+    "container": 1,
+    "distance": 53.39,
+    "fill_level": 46.61,
+    "status": "NORMAL",
+    "created_at": "2026-09-23T15:25:41.703Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 80,
+  "fields": {
+    "container": 1,
+    "distance": 53.39,
+    "fill_level": 46.61,
+    "status": "NORMAL",
+    "created_at": "2026-09-23T15:25:58.321Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 81,
+  "fields": {
+    "container": 1,
+    "distance": 53.39,
+    "fill_level": 46.61,
+    "status": "NORMAL",
+    "created_at": "2026-09-23T15:26:10.562Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 82,
+  "fields": {
+    "container": 1,
+    "distance": 53.39,
+    "fill_level": 46.61,
+    "status": "NORMAL",
+    "created_at": "2026-09-23T15:26:22.543Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 83,
+  "fields": {
+    "container": 1,
+    "distance": 53.39,
+    "fill_level": 46.61,
+    "status": "NORMAL",
+    "created_at": "2026-09-23T15:26:34.471Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 84,
+  "fields": {
+    "container": 1,
+    "distance": 53.39,
+    "fill_level": 46.61,
+    "status": "NORMAL",
+    "created_at": "2026-09-23T15:26:46.423Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 85,
+  "fields": {
+    "container": 1,
+    "distance": 53.39,
+    "fill_level": 46.61,
+    "status": "NORMAL",
+    "created_at": "2026-09-23T15:27:02.751Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 86,
+  "fields": {
+    "container": 1,
+    "distance": 53.39,
+    "fill_level": 46.61,
+    "status": "NORMAL",
+    "created_at": "2026-09-23T15:27:18.249Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 87,
+  "fields": {
+    "container": 1,
+    "distance": 53.39,
+    "fill_level": 46.61,
+    "status": "NORMAL",
+    "created_at": "2026-09-23T15:27:34.689Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 88,
+  "fields": {
+    "container": 1,
+    "distance": 53.39,
+    "fill_level": 46.61,
+    "status": "NORMAL",
+    "created_at": "2026-09-23T15:27:52.168Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 89,
+  "fields": {
+    "container": 1,
+    "distance": 53.39,
+    "fill_level": 46.61,
+    "status": "NORMAL",
+    "created_at": "2026-09-23T15:28:10.077Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 90,
+  "fields": {
+    "container": 1,
+    "distance": 53.39,
+    "fill_level": 46.61,
+    "status": "NORMAL",
+    "created_at": "2026-09-23T15:28:27.116Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 91,
+  "fields": {
+    "container": 1,
+    "distance": 53.39,
+    "fill_level": 46.61,
+    "status": "NORMAL",
+    "created_at": "2026-09-23T15:28:44.740Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 92,
+  "fields": {
+    "container": 1,
+    "distance": 53.39,
+    "fill_level": 46.61,
+    "status": "NORMAL",
+    "created_at": "2026-09-23T15:28:57.007Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 93,
+  "fields": {
+    "container": 1,
+    "distance": 53.39,
+    "fill_level": 46.61,
+    "status": "NORMAL",
+    "created_at": "2026-09-23T15:29:10.536Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 94,
+  "fields": {
+    "container": 1,
+    "distance": 36.29,
+    "fill_level": 63.71,
+    "status": "HALF FULL",
+    "created_at": "2026-09-23T15:29:25.519Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 95,
+  "fields": {
+    "container": 1,
+    "distance": 36.29,
+    "fill_level": 63.71,
+    "status": "HALF FULL",
+    "created_at": "2026-09-23T15:29:39.825Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 96,
+  "fields": {
+    "container": 1,
+    "distance": 36.29,
+    "fill_level": 63.71,
+    "status": "HALF FULL",
+    "created_at": "2026-09-23T15:29:53.898Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 97,
+  "fields": {
+    "container": 1,
+    "distance": 1.99,
+    "fill_level": 98.01,
+    "status": "FULL",
+    "created_at": "2026-09-23T15:30:09.456Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 98,
+  "fields": {
+    "container": 1,
+    "distance": 1.99,
+    "fill_level": 98.01,
+    "status": "FULL",
+    "created_at": "2026-09-23T15:30:23.591Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 99,
+  "fields": {
+    "container": 1,
+    "distance": 1.99,
+    "fill_level": 98.01,
+    "status": "FULL",
+    "created_at": "2026-09-23T15:30:40.272Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 100,
+  "fields": {
+    "container": 1,
+    "distance": 1.99,
+    "fill_level": 98.01,
+    "status": "FULL",
+    "created_at": "2026-09-23T15:30:55.229Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 101,
+  "fields": {
+    "container": 1,
+    "distance": 1.99,
+    "fill_level": 98.01,
+    "status": "FULL",
+    "created_at": "2026-09-23T15:31:11.056Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 102,
+  "fields": {
+    "container": 1,
+    "distance": 20.0,
+    "fill_level": 80.0,
+    "status": "FULL",
+    "created_at": "2026-09-23T15:36:00.388Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 103,
+  "fields": {
+    "container": 1,
+    "distance": 19.16,
+    "fill_level": 80.84,
+    "status": "FULL",
+    "created_at": "2026-09-23T15:39:18.117Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 104,
+  "fields": {
+    "container": 1,
+    "distance": 19.14,
+    "fill_level": 80.86,
+    "status": "FULL",
+    "created_at": "2026-09-23T15:39:33.459Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 105,
+  "fields": {
+    "container": 1,
+    "distance": 19.14,
+    "fill_level": 80.86,
+    "status": "FULL",
+    "created_at": "2026-09-23T15:39:48.160Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 106,
+  "fields": {
+    "container": 1,
+    "distance": 19.14,
+    "fill_level": 80.86,
+    "status": "FULL",
+    "created_at": "2026-09-23T15:40:01.423Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 107,
+  "fields": {
+    "container": 1,
+    "distance": 19.14,
+    "fill_level": 80.86,
+    "status": "FULL",
+    "created_at": "2026-09-23T15:40:17.485Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 108,
+  "fields": {
+    "container": 1,
+    "distance": 19.14,
+    "fill_level": 80.86,
+    "status": "FULL",
+    "created_at": "2026-09-23T15:40:29.671Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 109,
+  "fields": {
+    "container": 1,
+    "distance": 19.14,
+    "fill_level": 80.86,
+    "status": "FULL",
+    "created_at": "2026-09-23T15:40:46.470Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 110,
+  "fields": {
+    "container": 1,
+    "distance": 19.14,
+    "fill_level": 80.86,
+    "status": "FULL",
+    "created_at": "2026-09-23T15:41:02.128Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 111,
+  "fields": {
+    "container": 1,
+    "distance": 19.14,
+    "fill_level": 80.86,
+    "status": "FULL",
+    "created_at": "2026-09-23T15:41:18.352Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 112,
+  "fields": {
+    "container": 1,
+    "distance": 19.14,
+    "fill_level": 80.86,
+    "status": "FULL",
+    "created_at": "2026-09-23T15:41:34.500Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 113,
+  "fields": {
+    "container": 1,
+    "distance": 19.14,
+    "fill_level": 80.86,
+    "status": "FULL",
+    "created_at": "2026-09-23T15:41:50.882Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 114,
+  "fields": {
+    "container": 1,
+    "distance": 19.14,
+    "fill_level": 80.86,
+    "status": "FULL",
+    "created_at": "2026-09-23T15:42:08.022Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 115,
+  "fields": {
+    "container": 1,
+    "distance": 19.14,
+    "fill_level": 80.86,
+    "status": "FULL",
+    "created_at": "2026-09-23T15:42:24.050Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 116,
+  "fields": {
+    "container": 1,
+    "distance": 19.14,
+    "fill_level": 80.86,
+    "status": "FULL",
+    "created_at": "2026-09-23T15:42:40.546Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 117,
+  "fields": {
+    "container": 1,
+    "distance": 19.14,
+    "fill_level": 80.86,
+    "status": "FULL",
+    "created_at": "2026-09-23T15:42:56.716Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 118,
+  "fields": {
+    "container": 1,
+    "distance": 19.14,
+    "fill_level": 80.86,
+    "status": "FULL",
+    "created_at": "2026-09-23T15:43:13.352Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 119,
+  "fields": {
+    "container": 1,
+    "distance": 19.14,
+    "fill_level": 80.86,
+    "status": "FULL",
+    "created_at": "2026-09-23T15:43:27.659Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 120,
+  "fields": {
+    "container": 1,
+    "distance": 19.14,
+    "fill_level": 80.86,
+    "status": "FULL",
+    "created_at": "2026-09-23T15:43:42.599Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 121,
+  "fields": {
+    "container": 1,
+    "distance": 19.14,
+    "fill_level": 80.86,
+    "status": "FULL",
+    "created_at": "2026-09-23T15:43:59.354Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 122,
+  "fields": {
+    "container": 1,
+    "distance": 19.14,
+    "fill_level": 80.86,
+    "status": "FULL",
+    "created_at": "2026-09-23T15:44:13.348Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 123,
+  "fields": {
+    "container": 1,
+    "distance": 19.14,
+    "fill_level": 80.86,
+    "status": "FULL",
+    "created_at": "2026-09-23T15:44:31.750Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 124,
+  "fields": {
+    "container": 1,
+    "distance": 19.14,
+    "fill_level": 80.86,
+    "status": "FULL",
+    "created_at": "2026-09-23T15:44:47.694Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 125,
+  "fields": {
+    "container": 2,
+    "distance": 50.0,
+    "fill_level": 50.0,
+    "status": "HALF FULL",
+    "created_at": "2026-09-23T15:45:47.885Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 126,
+  "fields": {
+    "container": 1,
+    "distance": 19.19,
+    "fill_level": 80.81,
+    "status": "FULL",
+    "created_at": "2026-09-23T15:48:59.987Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 127,
+  "fields": {
+    "container": 1,
+    "distance": 19.09,
+    "fill_level": 80.91,
+    "status": "FULL",
+    "created_at": "2026-09-23T15:49:13.859Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 128,
+  "fields": {
+    "container": 1,
+    "distance": 19.09,
+    "fill_level": 80.91,
+    "status": "FULL",
+    "created_at": "2026-09-23T15:49:31.855Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 129,
+  "fields": {
+    "container": 1,
+    "distance": 19.09,
+    "fill_level": 80.91,
+    "status": "FULL",
+    "created_at": "2026-09-23T15:49:48.429Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 130,
+  "fields": {
+    "container": 1,
+    "distance": 19.09,
+    "fill_level": 80.91,
+    "status": "FULL",
+    "created_at": "2026-09-23T15:50:00.650Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 131,
+  "fields": {
+    "container": 1,
+    "distance": 19.09,
+    "fill_level": 80.91,
+    "status": "FULL",
+    "created_at": "2026-09-23T15:50:12.619Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 132,
+  "fields": {
+    "container": 1,
+    "distance": 19.09,
+    "fill_level": 80.91,
+    "status": "FULL",
+    "created_at": "2026-09-23T15:50:25.272Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 133,
+  "fields": {
+    "container": 1,
+    "distance": 19.09,
+    "fill_level": 80.91,
+    "status": "FULL",
+    "created_at": "2026-09-23T15:50:40.704Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 134,
+  "fields": {
+    "container": 1,
+    "distance": 19.09,
+    "fill_level": 80.91,
+    "status": "FULL",
+    "created_at": "2026-09-23T15:50:58.594Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 135,
+  "fields": {
+    "container": 1,
+    "distance": 19.09,
+    "fill_level": 80.91,
+    "status": "FULL",
+    "created_at": "2026-09-23T15:51:15.610Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 136,
+  "fields": {
+    "container": 1,
+    "distance": 19.09,
+    "fill_level": 80.91,
+    "status": "FULL",
+    "created_at": "2026-09-23T15:51:33.338Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 137,
+  "fields": {
+    "container": 1,
+    "distance": 19.09,
+    "fill_level": 80.91,
+    "status": "FULL",
+    "created_at": "2026-09-23T15:51:50.249Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 138,
+  "fields": {
+    "container": 1,
+    "distance": 19.09,
+    "fill_level": 80.91,
+    "status": "FULL",
+    "created_at": "2026-09-23T15:52:08.038Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 139,
+  "fields": {
+    "container": 1,
+    "distance": 19.09,
+    "fill_level": 80.91,
+    "status": "FULL",
+    "created_at": "2026-09-23T15:52:25.863Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 140,
+  "fields": {
+    "container": 1,
+    "distance": 19.09,
+    "fill_level": 80.91,
+    "status": "FULL",
+    "created_at": "2026-09-23T15:52:40.690Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 141,
+  "fields": {
+    "container": 1,
+    "distance": 19.09,
+    "fill_level": 80.91,
+    "status": "FULL",
+    "created_at": "2026-09-23T15:52:55.497Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 142,
+  "fields": {
+    "container": 1,
+    "distance": 19.16,
+    "fill_level": 80.84,
+    "status": "FULL",
+    "created_at": "2026-09-23T15:53:12.791Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 143,
+  "fields": {
+    "container": 1,
+    "distance": 19.09,
+    "fill_level": 80.91,
+    "status": "FULL",
+    "created_at": "2026-09-23T15:53:29.583Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 144,
+  "fields": {
+    "container": 1,
+    "distance": 19.09,
+    "fill_level": 80.91,
+    "status": "FULL",
+    "created_at": "2026-09-23T15:53:46.023Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 145,
+  "fields": {
+    "container": 1,
+    "distance": 19.19,
+    "fill_level": 80.81,
+    "status": "FULL",
+    "created_at": "2026-09-23T15:55:06.675Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 146,
+  "fields": {
+    "container": 1,
+    "distance": 19.19,
+    "fill_level": 80.81,
+    "status": "FULL",
+    "created_at": "2026-09-23T15:56:19.719Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 147,
+  "fields": {
+    "container": 1,
+    "distance": 19.19,
+    "fill_level": 80.81,
+    "status": "FULL",
+    "created_at": "2026-09-23T15:58:07.990Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 148,
+  "fields": {
+    "container": 1,
+    "distance": 19.19,
+    "fill_level": 80.81,
+    "status": "FULL",
+    "created_at": "2026-09-23T15:59:59.987Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 149,
+  "fields": {
+    "container": 3,
+    "distance": 19.19,
+    "fill_level": 80.81,
+    "status": "FULL",
+    "created_at": "2026-09-23T16:10:08.948Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 150,
+  "fields": {
+    "container": 3,
+    "distance": 19.09,
+    "fill_level": 80.91,
+    "status": "FULL",
+    "created_at": "2026-09-23T16:10:21.936Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 151,
+  "fields": {
+    "container": 3,
+    "distance": 19.09,
+    "fill_level": 80.91,
+    "status": "FULL",
+    "created_at": "2026-09-23T16:10:41.308Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 152,
+  "fields": {
+    "container": 3,
+    "distance": 19.09,
+    "fill_level": 80.91,
+    "status": "FULL",
+    "created_at": "2026-09-23T16:11:00.225Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 153,
+  "fields": {
+    "container": 3,
+    "distance": 19.09,
+    "fill_level": 80.91,
+    "status": "FULL",
+    "created_at": "2026-09-23T16:11:16.411Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 154,
+  "fields": {
+    "container": 3,
+    "distance": 19.19,
+    "fill_level": 80.81,
+    "status": "FULL",
+    "created_at": "2026-09-23T16:45:29.179Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 155,
+  "fields": {
+    "container": 3,
+    "distance": 120.99,
+    "fill_level": 0.0,
+    "status": "NORMAL",
+    "created_at": "2026-09-23T16:45:41.467Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 156,
+  "fields": {
+    "container": 3,
+    "distance": 120.98,
+    "fill_level": 0.0,
+    "status": "NORMAL",
+    "created_at": "2026-09-23T16:45:56.730Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 157,
+  "fields": {
+    "container": 3,
+    "distance": 8.01,
+    "fill_level": 91.99,
+    "status": "FULL",
+    "created_at": "2026-09-23T16:46:11.982Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 158,
+  "fields": {
+    "container": 3,
+    "distance": 58.5,
+    "fill_level": 41.5,
+    "status": "NORMAL",
+    "created_at": "2026-09-23T17:04:23.930Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 159,
+  "fields": {
+    "container": 3,
+    "distance": 58.52,
+    "fill_level": 41.48,
+    "status": "NORMAL",
+    "created_at": "2026-09-23T17:04:40.339Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 160,
+  "fields": {
+    "container": 3,
+    "distance": 58.43,
+    "fill_level": 41.57,
+    "status": "NORMAL",
+    "created_at": "2026-09-23T17:04:58.688Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 161,
+  "fields": {
+    "container": 3,
+    "distance": 58.43,
+    "fill_level": 41.57,
+    "status": "NORMAL",
+    "created_at": "2026-09-23T17:05:17.003Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 162,
+  "fields": {
+    "container": 3,
+    "distance": 58.43,
+    "fill_level": 41.57,
+    "status": "NORMAL",
+    "created_at": "2026-09-23T17:05:34.717Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 163,
+  "fields": {
+    "container": 3,
+    "distance": 58.43,
+    "fill_level": 41.57,
+    "status": "NORMAL",
+    "created_at": "2026-09-23T17:05:54.495Z"
+  }
+},
+{
+  "model": "sensor.sensorreading",
+  "pk": 164,
+  "fields": {
+    "container": 2,
+    "distance": 50.0,
+    "fill_level": 50.0,
+    "status": "HALF FULL",
+    "created_at": "2026-09-24T05:50:23.921Z"
+  }
+}
+]

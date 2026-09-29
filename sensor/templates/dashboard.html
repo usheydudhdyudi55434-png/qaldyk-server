@@ -1,0 +1,714 @@
+{% load static %}
+
+<!DOCTYPE html>
+
+<html lang="kk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+```
+<title>Qaldyk — Smart Waste Monitoring</title>
+
+<!-- Leaflet -->
+<link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+>
+
+<!-- Qaldyk CSS -->
+<link
+    rel="stylesheet"
+    href="{% static 'sensor/css/dashboard.css' %}"
+>
+```
+
+</head>
+
+<body>
+
+<!-- =========================================================
+     HEADER
+========================================================= -->
+
+<header class="topbar">
+
+```
+<div class="header-content">
+
+    <div class="brand">
+
+        <div class="brand-icon">
+            🗑️
+        </div>
+
+        <div class="brand-text">
+            <h1>QALDYQ</h1>
+
+            <p>
+                Smart Waste Monitoring System
+            </p>
+        </div>
+
+    </div>
+
+
+    <div class="header-actions">
+
+        <div class="live-status">
+            <span class="live-dot"></span>
+            LIVE MONITORING
+        </div>
+
+        <button
+            id="themeToggle"
+            class="theme-toggle"
+            type="button"
+            aria-label="Change theme"
+        >
+            🌙
+        </button>
+
+    </div>
+
+</div>
+```
+
+</header>
+
+<!-- =========================================================
+     MAIN
+========================================================= -->
+
+<main>
+
+```
+<!-- =====================================================
+     SYSTEM OVERVIEW
+====================================================== -->
+
+<section class="overview-section">
+
+    <div class="section-header">
+
+        <div>
+            <h2>System Overview</h2>
+
+            <p>
+                Real-time container status
+            </p>
+        </div>
+
+        <div class="refresh-status">
+            <span class="refresh-dot"></span>
+            Auto refresh: 5 sec
+        </div>
+
+    </div>
+
+
+    <!-- Statistics -->
+
+    <div class="stats-wrapper">
+
+
+        <!-- Total -->
+
+        <div class="stat-card">
+
+            <div class="stat-top">
+
+                <span class="stat-title">
+                    Total Containers
+                </span>
+
+                <span class="stat-icon">
+                    🗑️
+                </span>
+
+            </div>
+
+            <div
+                class="stat-number"
+                id="totalContainers"
+            >
+                0
+            </div>
+
+            <div class="stat-footer">
+                Active monitoring units
+            </div>
+
+        </div>
+
+
+        <!-- Full -->
+
+        <div class="stat-card stat-danger">
+
+            <div class="stat-top">
+
+                <span class="stat-title">
+                    Full
+                </span>
+
+                <span class="stat-icon">
+                    🔴
+                </span>
+
+            </div>
+
+            <div
+                class="stat-number"
+                id="fullContainers"
+            >
+                0
+            </div>
+
+            <div class="stat-footer">
+                Collection required
+            </div>
+
+        </div>
+
+
+        <!-- Half -->
+
+        <div class="stat-card stat-warning">
+
+            <div class="stat-top">
+
+                <span class="stat-title">
+                    Half Full
+                </span>
+
+                <span class="stat-icon">
+                    🟠
+                </span>
+
+            </div>
+
+            <div
+                class="stat-number"
+                id="halfContainers"
+            >
+                0
+            </div>
+
+            <div class="stat-footer">
+                Monitor level
+            </div>
+
+        </div>
+
+
+        <!-- Normal -->
+
+        <div class="stat-card stat-success">
+
+            <div class="stat-top">
+
+                <span class="stat-title">
+                    Normal
+                </span>
+
+                <span class="stat-icon">
+                    🟢
+                </span>
+
+            </div>
+
+            <div
+                class="stat-number"
+                id="normalContainers"
+            >
+                0
+            </div>
+
+            <div class="stat-footer">
+                Operating normally
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- =====================================================
+     ALERTS
+====================================================== -->
+
+<section
+    id="alertBox"
+    class="alert-box"
+>
+
+    <div class="alert-header">
+
+        <div class="alert-header-icon">
+            ⚠️
+        </div>
+
+        <div>
+
+            <h2>
+                COLLECTION REQUIRED
+            </h2>
+
+            <p>
+                One or more containers require attention
+            </p>
+
+        </div>
+
+    </div>
+
+    <div id="alertList"></div>
+
+</section>
+
+
+<!-- =====================================================
+     CONTAINER MONITORING
+====================================================== -->
+
+<section class="containers-section">
+
+    <div class="section-header">
+
+        <div>
+
+            <h2>
+                Container Monitoring
+            </h2>
+
+            <p>
+                Live sensor data
+            </p>
+
+        </div>
+
+        <div class="monitoring-badge">
+            ESP32 + HC-SR04
+        </div>
+
+    </div>
+
+
+    <div class="container-wrapper">
+
+
+        <!-- =================================================
+             CONTAINER 1
+        ================================================== -->
+
+        <article class="card">
+
+            <div class="card-header">
+
+                <div class="container-name">
+
+                    <div class="container-number">
+                        #01
+                    </div>
+
+                    <div>
+
+                        <h3>
+                            Container #1
+                        </h3>
+
+                        <span>
+                            Monitoring unit
+                        </span>
+
+                    </div>
+
+                </div>
+
+                <div class="sensor-status">
+                    SENSOR
+                </div>
+
+            </div>
+
+
+            <div class="fill-row">
+
+                <div
+                    class="fill"
+                    id="fill1"
+                >
+                    NO DATA
+                </div>
+
+                <div class="fill-label">
+                    FILL LEVEL
+                </div>
+
+            </div>
+
+
+            <div class="progress">
+
+                <div
+                    class="progress-bar progress-normal"
+                    id="progress1"
+                ></div>
+
+            </div>
+
+
+            <div class="sensor-grid">
+
+                <div class="sensor-box">
+
+                    <div class="sensor-box-label">
+                        Distance
+                    </div>
+
+                    <div class="sensor-box-value">
+
+                        <span id="distance1">
+                            --
+                        </span>
+
+                        <small>cm</small>
+
+                    </div>
+
+                </div>
+
+
+                <div class="sensor-box">
+
+                    <div class="sensor-box-label">
+                        Status
+                    </div>
+
+                    <div
+                        class="sensor-box-value"
+                        id="status1"
+                    >
+                        NO DATA
+                    </div>
+
+                </div>
+
+            </div>
+
+        </article>
+
+
+        <!-- =================================================
+             CONTAINER 2
+        ================================================== -->
+
+        <article class="card">
+
+            <div class="card-header">
+
+                <div class="container-name">
+
+                    <div class="container-number">
+                        #02
+                    </div>
+
+                    <div>
+
+                        <h3>
+                            Container #2
+                        </h3>
+
+                        <span>
+                            Monitoring unit
+                        </span>
+
+                    </div>
+
+                </div>
+
+                <div class="sensor-status">
+                    SENSOR
+                </div>
+
+            </div>
+
+
+            <div class="fill-row">
+
+                <div
+                    class="fill"
+                    id="fill2"
+                >
+                    NO DATA
+                </div>
+
+                <div class="fill-label">
+                    FILL LEVEL
+                </div>
+
+            </div>
+
+
+            <div class="progress">
+
+                <div
+                    class="progress-bar progress-normal"
+                    id="progress2"
+                ></div>
+
+            </div>
+
+
+            <div class="sensor-grid">
+
+                <div class="sensor-box">
+
+                    <div class="sensor-box-label">
+                        Distance
+                    </div>
+
+                    <div class="sensor-box-value">
+
+                        <span id="distance2">
+                            --
+                        </span>
+
+                        <small>cm</small>
+
+                    </div>
+
+                </div>
+
+
+                <div class="sensor-box">
+
+                    <div class="sensor-box-label">
+                        Status
+                    </div>
+
+                    <div
+                        class="sensor-box-value"
+                        id="status2"
+                    >
+                        NO DATA
+                    </div>
+
+                </div>
+
+            </div>
+
+        </article>
+
+
+        <!-- =================================================
+             CONTAINER 3
+        ================================================== -->
+
+        <article class="card">
+
+            <div class="card-header">
+
+                <div class="container-name">
+
+                    <div class="container-number">
+                        #03
+                    </div>
+
+                    <div>
+
+                        <h3>
+                            Container #3
+                        </h3>
+
+                        <span>
+                            Monitoring unit
+                        </span>
+
+                    </div>
+
+                </div>
+
+                <div class="sensor-status">
+                    SENSOR
+                </div>
+
+            </div>
+
+
+            <div class="fill-row">
+
+                <div
+                    class="fill"
+                    id="fill3"
+                >
+                    NO DATA
+                </div>
+
+                <div class="fill-label">
+                    FILL LEVEL
+                </div>
+
+            </div>
+
+
+            <div class="progress">
+
+                <div
+                    class="progress-bar progress-normal"
+                    id="progress3"
+                ></div>
+
+            </div>
+
+
+            <div class="sensor-grid">
+
+                <div class="sensor-box">
+
+                    <div class="sensor-box-label">
+                        Distance
+                    </div>
+
+                    <div class="sensor-box-value">
+
+                        <span id="distance3">
+                            --
+                        </span>
+
+                        <small>cm</small>
+
+                    </div>
+
+                </div>
+
+
+                <div class="sensor-box">
+
+                    <div class="sensor-box-label">
+                        Status
+                    </div>
+
+                    <div
+                        class="sensor-box-value"
+                        id="status3"
+                    >
+                        NO DATA
+                    </div>
+
+                </div>
+
+            </div>
+
+        </article>
+
+
+    </div>
+
+</section>
+
+
+<!-- =====================================================
+     MAP
+====================================================== -->
+
+<section class="map-section">
+
+    <div class="section-header">
+
+        <div>
+
+            <h2>
+                🗺️ Container Map
+            </h2>
+
+            <p>
+                Almaty monitoring zone
+            </p>
+
+        </div>
+
+        <div class="map-legend">
+
+            <span>
+                <i class="legend-dot normal"></i>
+                Normal
+            </span>
+
+            <span>
+                <i class="legend-dot warning"></i>
+                Half Full
+            </span>
+
+            <span>
+                <i class="legend-dot danger"></i>
+                Full
+            </span>
+
+        </div>
+
+    </div>
+
+
+    <div class="map-wrapper">
+
+        <div
+            id="map"
+            aria-label="Container locations map"
+        ></div>
+
+        <div class="map-overlay">
+
+            <div class="map-live">
+                <span></span>
+                LIVE MAP
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+```
+
+</main>
+
+<!-- =========================================================
+     FOOTER
+========================================================= -->
+
+<footer>
+
+```
+<span>
+    QALDYQ IoT SYSTEM
+</span>
+
+<span>
+    ESP32 • HC-SR04 • Django REST • PostgreSQL
+</span>
+```
+
+</footer>
+
+<!-- =========================================================
+     LEAFLET
+========================================================= -->
+
+<script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
+</script>
+
+<!-- =========================================================
+     QALDYQ JAVASCRIPT
+========================================================= -->
+
+<script
+    src="{% static 'sensor/js/dashboard.js' %}">
+</script>
+
+</body>
+</html>

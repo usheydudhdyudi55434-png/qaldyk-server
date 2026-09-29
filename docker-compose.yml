@@ -1,0 +1,40 @@
+services:
+  postgres:
+    image: postgres:18
+    container_name: qaldyk-postgres
+    environment:
+      POSTGRES_DB: qaldyk_db
+      POSTGRES_USER: qaldyk_user
+      POSTGRES_PASSWORD: baxa2005
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U qaldyk_user -d qaldyk_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    volumes:
+      - postgres_data:/var/lib/postgresql
+
+  django:
+    build: .
+    container_name: qaldyk-django
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:v0.52.1
+    container_name: qaldyk-cadvisor
+
+    ports:
+      - "8080:8080"
+
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /sys:/sys:ro
+      - /var/lib/docker:/var/lib/docker:ro
+      - /dev/disk:/dev/disk:ro  
+
+volumes:
+  postgres_data:
