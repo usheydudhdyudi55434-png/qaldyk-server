@@ -7,21 +7,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-```
-<title>Qaldyk — Smart Waste Monitoring</title>
+    <title>Qaldyk — Ақылды қалдықтарды бақылау</title>
 
-<!-- Leaflet -->
-<link
-    rel="stylesheet"
-    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
->
+    <!-- Leaflet -->
+    <link
+        rel="stylesheet"
+        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    >
 
-<!-- Qaldyk CSS -->
-<link
-    rel="stylesheet"
-    href="{% static 'sensor/css/dashboard.css' %}"
->
-```
+    <!-- Qaldyk CSS -->
+    <link
+        rel="stylesheet"
+        href="{% static 'sensor/css/dashboard.css' %}"
+    >
 
 </head>
 
@@ -33,46 +31,44 @@
 
 <header class="topbar">
 
-```
-<div class="header-content">
+    <div class="header-content">
 
-    <div class="brand">
+        <div class="brand">
 
-        <div class="brand-icon">
-            🗑️
+            <div class="brand-icon">
+                🗑️
+            </div>
+
+            <div class="brand-text">
+                <h1>QALDYQ</h1>
+
+                <p>
+                    Ақылды қалдықтарды бақылау жүйесі
+                </p>
+            </div>
+
         </div>
 
-        <div class="brand-text">
-            <h1>QALDYQ</h1>
 
-            <p>
-                Smart Waste Monitoring System
-            </p>
+        <div class="header-actions">
+
+            <div class="live-status">
+                <span class="live-dot"></span>
+                НАҚТЫ УАҚЫТТА БАҚЫЛАУ
+            </div>
+
+            <button
+                id="themeToggle"
+                class="theme-toggle"
+                type="button"
+                aria-label="Тақырыпты өзгерту"
+            >
+                🌙
+            </button>
+
         </div>
 
     </div>
-
-
-    <div class="header-actions">
-
-        <div class="live-status">
-            <span class="live-dot"></span>
-            LIVE MONITORING
-        </div>
-
-        <button
-            id="themeToggle"
-            class="theme-toggle"
-            type="button"
-            aria-label="Change theme"
-        >
-            🌙
-        </button>
-
-    </div>
-
-</div>
-```
 
 </header>
 
@@ -82,7 +78,6 @@
 
 <main>
 
-```
 <!-- =====================================================
      SYSTEM OVERVIEW
 ====================================================== -->
@@ -92,16 +87,16 @@
     <div class="section-header">
 
         <div>
-            <h2>System Overview</h2>
+            <h2>Жүйеге шолу</h2>
 
             <p>
-                Real-time container status
+                Контейнерлердің нақты уақыттағы күйі
             </p>
         </div>
 
         <div class="refresh-status">
             <span class="refresh-dot"></span>
-            Auto refresh: 5 sec
+            Автоматты жаңарту: 5 сек
         </div>
 
     </div>
@@ -119,7 +114,7 @@
             <div class="stat-top">
 
                 <span class="stat-title">
-                    Total Containers
+                    Контейнерлер саны
                 </span>
 
                 <span class="stat-icon">
@@ -136,7 +131,7 @@
             </div>
 
             <div class="stat-footer">
-                Active monitoring units
+                Белсенді бақылау құрылғылары
             </div>
 
         </div>
@@ -149,7 +144,7 @@
             <div class="stat-top">
 
                 <span class="stat-title">
-                    Full
+                    Толы
                 </span>
 
                 <span class="stat-icon">
@@ -166,7 +161,7 @@
             </div>
 
             <div class="stat-footer">
-                Collection required
+                Қоқысты шығару қажет
             </div>
 
         </div>
@@ -179,7 +174,7 @@
             <div class="stat-top">
 
                 <span class="stat-title">
-                    Half Full
+                    Жартылай толы
                 </span>
 
                 <span class="stat-icon">
@@ -196,7 +191,7 @@
             </div>
 
             <div class="stat-footer">
-                Monitor level
+                Толу деңгейін бақылау қажет
             </div>
 
         </div>
@@ -209,7 +204,7 @@
             <div class="stat-top">
 
                 <span class="stat-title">
-                    Normal
+                    Қалыпты
                 </span>
 
                 <span class="stat-icon">
@@ -226,7 +221,7 @@
             </div>
 
             <div class="stat-footer">
-                Operating normally
+                Қалыпты жұмыс істеп тұр
             </div>
 
         </div>
@@ -254,11 +249,11 @@
         <div>
 
             <h2>
-                COLLECTION REQUIRED
+                ҚОҚЫСТЫ ШЫҒАРУ ҚАЖЕТ
             </h2>
 
             <p>
-                One or more containers require attention
+                Бір немесе бірнеше контейнерге назар аудару қажет
             </p>
 
         </div>
@@ -281,11 +276,11 @@
         <div>
 
             <h2>
-                Container Monitoring
+                Контейнерлерді бақылау
             </h2>
 
             <p>
-                Live sensor data
+                Датчиктердің нақты уақыттағы деректері
             </p>
 
         </div>
@@ -317,11 +312,11 @@
                     <div>
 
                         <h3>
-                            Container #1
+                            Контейнер #1
                         </h3>
 
                         <span>
-                            Monitoring unit
+                            Бақылау құрылғысы
                         </span>
 
                     </div>
@@ -329,7 +324,7 @@
                 </div>
 
                 <div class="sensor-status">
-                    SENSOR
+                    ДАТЧИК
                 </div>
 
             </div>
@@ -341,11 +336,11 @@
                     class="fill"
                     id="fill1"
                 >
-                    NO DATA
+                    ДЕРЕК ЖОҚ
                 </div>
 
                 <div class="fill-label">
-                    FILL LEVEL
+                    ТОЛУ ДЕҢГЕЙІ
                 </div>
 
             </div>
@@ -366,7 +361,7 @@
                 <div class="sensor-box">
 
                     <div class="sensor-box-label">
-                        Distance
+                        Қашықтық
                     </div>
 
                     <div class="sensor-box-value">
@@ -375,7 +370,7 @@
                             --
                         </span>
 
-                        <small>cm</small>
+                        <small>см</small>
 
                     </div>
 
@@ -385,14 +380,14 @@
                 <div class="sensor-box">
 
                     <div class="sensor-box-label">
-                        Status
+                        Күйі
                     </div>
 
                     <div
                         class="sensor-box-value"
                         id="status1"
                     >
-                        NO DATA
+                        ДЕРЕК ЖОҚ
                     </div>
 
                 </div>
@@ -419,11 +414,11 @@
                     <div>
 
                         <h3>
-                            Container #2
+                            Контейнер #2
                         </h3>
 
                         <span>
-                            Monitoring unit
+                            Бақылау құрылғысы
                         </span>
 
                     </div>
@@ -431,7 +426,7 @@
                 </div>
 
                 <div class="sensor-status">
-                    SENSOR
+                    ДАТЧИК
                 </div>
 
             </div>
@@ -443,11 +438,11 @@
                     class="fill"
                     id="fill2"
                 >
-                    NO DATA
+                    ДЕРЕК ЖОҚ
                 </div>
 
                 <div class="fill-label">
-                    FILL LEVEL
+                    ТОЛУ ДЕҢГЕЙІ
                 </div>
 
             </div>
@@ -468,7 +463,7 @@
                 <div class="sensor-box">
 
                     <div class="sensor-box-label">
-                        Distance
+                        Қашықтық
                     </div>
 
                     <div class="sensor-box-value">
@@ -477,7 +472,7 @@
                             --
                         </span>
 
-                        <small>cm</small>
+                        <small>см</small>
 
                     </div>
 
@@ -487,14 +482,14 @@
                 <div class="sensor-box">
 
                     <div class="sensor-box-label">
-                        Status
+                        Күйі
                     </div>
 
                     <div
                         class="sensor-box-value"
                         id="status2"
                     >
-                        NO DATA
+                        ДЕРЕК ЖОҚ
                     </div>
 
                 </div>
@@ -521,11 +516,11 @@
                     <div>
 
                         <h3>
-                            Container #3
+                            Контейнер #3
                         </h3>
 
                         <span>
-                            Monitoring unit
+                            Бақылау құрылғысы
                         </span>
 
                     </div>
@@ -533,7 +528,7 @@
                 </div>
 
                 <div class="sensor-status">
-                    SENSOR
+                    ДАТЧИК
                 </div>
 
             </div>
@@ -545,11 +540,11 @@
                     class="fill"
                     id="fill3"
                 >
-                    NO DATA
+                    ДЕРЕК ЖОҚ
                 </div>
 
                 <div class="fill-label">
-                    FILL LEVEL
+                    ТОЛУ ДЕҢГЕЙІ
                 </div>
 
             </div>
@@ -570,7 +565,7 @@
                 <div class="sensor-box">
 
                     <div class="sensor-box-label">
-                        Distance
+                        Қашықтық
                     </div>
 
                     <div class="sensor-box-value">
@@ -579,7 +574,7 @@
                             --
                         </span>
 
-                        <small>cm</small>
+                        <small>см</small>
 
                     </div>
 
@@ -589,14 +584,14 @@
                 <div class="sensor-box">
 
                     <div class="sensor-box-label">
-                        Status
+                        Күйі
                     </div>
 
                     <div
                         class="sensor-box-value"
                         id="status3"
                     >
-                        NO DATA
+                        ДЕРЕК ЖОҚ
                     </div>
 
                 </div>
@@ -622,11 +617,11 @@
         <div>
 
             <h2>
-                🗺️ Container Map
+                🗺️ Контейнерлер картасы
             </h2>
 
             <p>
-                Almaty monitoring zone
+                Алматыдағы бақылау аймағы
             </p>
 
         </div>
@@ -635,17 +630,17 @@
 
             <span>
                 <i class="legend-dot normal"></i>
-                Normal
+                Қалыпты
             </span>
 
             <span>
                 <i class="legend-dot warning"></i>
-                Half Full
+                Жартылай толы
             </span>
 
             <span>
                 <i class="legend-dot danger"></i>
-                Full
+                Толы
             </span>
 
         </div>
@@ -657,14 +652,14 @@
 
         <div
             id="map"
-            aria-label="Container locations map"
+            aria-label="Контейнерлер орналасқан карта"
         ></div>
 
         <div class="map-overlay">
 
             <div class="map-live">
                 <span></span>
-                LIVE MAP
+                НАҚТЫ УАҚЫТТАҒЫ КАРТА
             </div>
 
         </div>
@@ -672,7 +667,6 @@
     </div>
 
 </section>
-```
 
 </main>
 
@@ -682,15 +676,13 @@
 
 <footer>
 
-```
-<span>
-    QALDYQ IoT SYSTEM
-</span>
+    <span>
+        QALDYQ IoT ЖҮЙЕСІ
+    </span>
 
-<span>
-    ESP32 • HC-SR04 • Django REST • PostgreSQL
-</span>
-```
+    <span>
+        ESP32 • HC-SR04 • Django REST • PostgreSQL
+    </span>
 
 </footer>
 
