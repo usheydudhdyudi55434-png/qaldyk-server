@@ -1,0 +1,92 @@
+{% load static %}
+
+<!DOCTYPE html>
+
+<html lang="kk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Qaldyq — Кіру</title>
+
+    <link rel="icon" href="data:,">
+
+    <!-- Apply the saved theme before first paint -->
+    <script>
+        try {
+            if (localStorage.getItem("qaldyk-theme") === "light") {
+                document.documentElement.dataset.theme = "light";
+            }
+        } catch (error) {}
+    </script>
+
+    <link
+        rel="stylesheet"
+        href="{% static 'sensor/css/dashboard.css' %}?v={{ css_version }}"
+    >
+
+</head>
+
+<body class="login-page">
+
+<svg class="icon-sprite" aria-hidden="true" focusable="false">
+    <symbol id="i-logo" viewBox="0 0 24 24">
+        <path d="M4 7h16"/>
+        <path d="M9 7V4h6v3"/>
+        <path d="M6 7l1 14h10l1-14"/>
+        <path d="M10 17v-3M14 17v-6"/>
+    </symbol>
+    <symbol id="i-full" viewBox="0 0 24 24">
+        <path d="M8 3h8l5 5v8l-5 5H8l-5-5V8z"/>
+        <path d="M12 8v5M12 16.5v.01"/>
+    </symbol>
+</svg>
+
+<main class="login-card">
+
+    <div class="brand">
+
+        <span class="brand-mark">
+            <svg class="icon"><use href="#i-logo"></use></svg>
+        </span>
+
+        <div>
+            <div class="brand-name">Qaldyq</div>
+            <div class="brand-note">Қалдықтарды бақылау жүйесі</div>
+        </div>
+
+    </div>
+
+    <h1>Диспетчер панеліне кіру</h1>
+
+    {% if form.non_field_errors %}
+    <div class="login-error level-full" role="alert">
+        <svg class="icon" aria-hidden="true"><use href="#i-full"></use></svg>
+        {{ form.non_field_errors.0 }}
+    </div>
+    {% endif %}
+
+    <form method="post" class="login-form">
+
+        {% csrf_token %}
+
+        <input type="hidden" name="next" value="{{ next }}">
+
+        <label class="login-field">
+            <span>Логин</span>
+            {{ form.username }}
+        </label>
+
+        <label class="login-field">
+            <span>Құпия сөз</span>
+            {{ form.password }}
+        </label>
+
+        <button type="submit" class="login-submit">Кіру</button>
+
+    </form>
+
+</main>
+
+</body>
+</html>

@@ -2,12 +2,16 @@
 import os
 from datetime import timedelta
 
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth.views import LoginView
 from django.contrib.staticfiles import finders
 from django.shortcuts import render
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from .models import SensorReading, Container
@@ -20,6 +24,12 @@ HISTORY_POINTS = 120
 @csrf_exempt
 @api_view(['GET', 'POST'])
 def sensor_data(request, container_id):
+
+    # Devices POST without a session; reading the data needs a login
+    if request.method == 'GET' and not request.user.is_authenticated:
+        return Response({
+            "error": "Authentication required"
+        }, status=403)
 
     try:
         container = Container.objects.get(id=container_id)
@@ -108,6 +118,7 @@ def sensor_data(request, container_id):
 
 
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def containers_overview(request):
 
     containers = []
@@ -141,6 +152,7 @@ def containers_overview(request):
 
 
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def containers_history(request):
 
     try:
@@ -189,6 +201,28 @@ def asset_version(path):
     return int(os.path.getmtime(finders.find(path)))
 
 
+class DispatcherLoginForm(AuthenticationForm):
+
+    error_messages = {
+        "invalid_login": "Логин немесе құпия сөз қате.",
+        "inactive": "Бұл аккаунт өшірілген."
+    }
+
+
+class DispatcherLoginView(LoginView):
+
+    template_name = 'login.html'
+    authentication_form = DispatcherLoginForm
+    redirect_authenticated_user = True
+
+    def get_context_data(self, **kwargs):
+        return super().get_context_data(
+            css_version=asset_version('sensor/css/dashboard.css'),
+            **kwargs
+        )
+
+
+@login_required
 def dashboard(request):
 
     reading = SensorReading.objects.order_by('-created_at').first()

@@ -90,6 +90,10 @@
     <symbol id="i-moon" viewBox="0 0 24 24">
         <path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/>
     </symbol>
+    <symbol id="i-logout" viewBox="0 0 24 24">
+        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+        <path d="m16 17 5-5-5-5M21 12H9"/>
+    </symbol>
 </svg>
 
 <!-- =========================================================
@@ -128,6 +132,20 @@
             >
                 <svg class="icon"><use id="themeIcon" href="#i-sun"></use></svg>
             </button>
+
+            <span class="user-name">{{ user.get_username }}</span>
+
+            <form method="post" action="{% url 'logout' %}" class="logout-form">
+                {% csrf_token %}
+                <button
+                    class="icon-button"
+                    type="submit"
+                    aria-label="Жүйеден шығу"
+                    title="Жүйеден шығу"
+                >
+                    <svg class="icon"><use href="#i-logout"></use></svg>
+                </button>
+            </form>
 
         </div>
 

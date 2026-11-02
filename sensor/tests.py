@@ -1,5 +1,6 @@
 from datetime import UTC, datetime, timedelta
 
+from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.utils import timezone
 
@@ -19,9 +20,98 @@ def add_reading(container, fill_level, age=timedelta(0)):
     return reading
 
 
+def create_user():
+    return get_user_model().objects.create_user(
+        username="dispatcher",
+        password="correct-horse-battery"
+    )
+
+
+class AccessTests(TestCase):
+
+    def setUp(self):
+        self.container = Container.objects.create(
+            name="A",
+            location="Almaty"
+        )
+
+    def test_anonymous_dashboard_redirects_to_login(self):
+        response = self.client.get('/dashboard/')
+
+        self.assertRedirects(response, '/login/?next=/dashboard/')
+
+    def test_anonymous_cannot_read_sensor_data(self):
+        urls = (
+            '/api/containers/',
+            '/api/containers/history/',
+            f'/api/sensor/{self.container.id}/',
+        )
+
+        for url in urls:
+            self.assertEqual(self.client.get(url).status_code, 403, url)
+
+    def test_device_can_post_without_login(self):
+        response = self.client.post(
+            f'/api/sensor/{self.container.id}/',
+            {"distance": 10, "fill_level": 90},
+            content_type='application/json'
+        )
+
+        self.assertEqual(response.status_code, 201)
+
+    def test_logged_in_user_can_read_sensor_data(self):
+        self.client.force_login(create_user())
+
+        response = self.client.get(f'/api/sensor/{self.container.id}/')
+
+        self.assertEqual(response.status_code, 200)
+
+
+class LoginTests(TestCase):
+
+    def setUp(self):
+        create_user()
+
+    def login(self, password, next_url=''):
+        return self.client.post('/login/', {
+            "username": "dispatcher",
+            "password": password,
+            "next": next_url
+        })
+
+    def test_correct_password_opens_the_dashboard(self):
+        response = self.login("correct-horse-battery")
+
+        self.assertRedirects(response, '/dashboard/')
+
+    def test_wrong_password_shows_error_and_stays_logged_out(self):
+        response = self.login("wrong")
+
+        self.assertContains(response, "Логин немесе құпия сөз қате.")
+        self.assertEqual(self.client.get('/dashboard/').status_code, 302)
+
+    def test_external_next_url_is_ignored(self):
+        response = self.login(
+            "correct-horse-battery",
+            next_url='https://evil.example.com/'
+        )
+
+        self.assertRedirects(response, '/dashboard/')
+
+    def test_logout_ends_the_session(self):
+        self.login("correct-horse-battery")
+
+        response = self.client.post('/logout/')
+
+        self.assertRedirects(response, '/login/')
+        self.assertEqual(self.client.get('/dashboard/').status_code, 302)
+
+
 class DashboardTests(TestCase):
 
     def test_assets_are_versioned_so_browsers_reload_them(self):
+        self.client.force_login(create_user())
+
         response = self.client.get('/dashboard/')
 
         self.assertRegex(response.content.decode(), r'dashboard\.js\?v=\d+"')
@@ -83,6 +173,9 @@ class SensorLocationTests(TestCase):
 
 class ContainersOverviewTests(TestCase):
 
+    def setUp(self):
+        self.client.force_login(create_user())
+
     def test_returns_newest_reading_for_each_container(self):
         container = Container.objects.create(
             name="A",
@@ -112,6 +205,7 @@ class ContainersOverviewTests(TestCase):
 class ContainersHistoryTests(TestCase):
 
     def setUp(self):
+        self.client.force_login(create_user())
         self.container = Container.objects.create(
             name="A",
             location="Almaty"

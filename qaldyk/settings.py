@@ -23,11 +23,24 @@ SECRET_KEY = 'django-insecure--xj=^fae)@uri2nlrfa7*kzfh_5hwu4h9&px6bi1%v1=hl8vjm
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
+
+# The Cloudflare tunnel address changes when cloudflared restarts
+TUNNEL_HOST = "ensuring-gamecube-kinds-reasons.trycloudflare.com"
+
 ALLOWED_HOSTS = [
     "127.0.0.1",
     "localhost",
-    "ensuring-gamecube-kinds-reasons.trycloudflare.com",
+    TUNNEL_HOST,
 ]
+
+CSRF_TRUSTED_ORIGINS = [
+    f"https://{TUNNEL_HOST}",
+]
+
+LOGIN_URL = '/login/'
+LOGIN_REDIRECT_URL = '/dashboard/'
+LOGOUT_REDIRECT_URL = '/login/'
+
 # Application definition
 
 INSTALLED_APPS = [

@@ -2,6 +2,8 @@ const CONTAINERS_URL = "/api/containers/";
 
 const HISTORY_URL = "/api/containers/history/";
 
+const LOGIN_URL = "/login/";
+
 const REFRESH_INTERVAL = 5000;
 
 const HISTORY_REFRESH_INTERVAL = 60000;
@@ -288,19 +290,33 @@ function initThemeToggle() {
 // DATA
 // ============================================================
 
+async function fetchJson(url) {
+
+    const response = await fetch(url);
+
+    // The session has ended, so the data can only be reached after a new login
+    if (response.status === 401 || response.status === 403) {
+        window.location.assign(
+            `${LOGIN_URL}?next=${encodeURIComponent(window.location.pathname)}`
+        );
+    }
+
+    if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+    }
+
+    return response.json();
+
+}
+
+
 async function refreshContainers() {
 
     if (!document.hidden) {
 
         try {
 
-            const response = await fetch(CONTAINERS_URL);
-
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}`);
-            }
-
-            const data = await response.json();
+            const data = await fetchJson(CONTAINERS_URL);
 
             state.clockOffset =
                 new Date(data.server_time).getTime() - Date.now();
@@ -346,13 +362,7 @@ async function loadHistory() {
 
     try {
 
-        const response = await fetch(`${HISTORY_URL}?hours=${state.hours}`);
-
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}`);
-        }
-
-        const data = await response.json();
+        const data = await fetchJson(`${HISTORY_URL}?hours=${state.hours}`);
 
         // A newer range selection already replaced this request
         if (request !== state.historyRequest) {
