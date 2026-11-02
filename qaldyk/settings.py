@@ -26,7 +26,7 @@ DEBUG = True
 ALLOWED_HOSTS = [
     "127.0.0.1",
     "localhost",
-    "cab-perspective-technique-litigation.trycloudflare.com",
+    "ensuring-gamecube-kinds-reasons.trycloudflare.com",
 ]
 # Application definition
 

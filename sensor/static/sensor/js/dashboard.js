@@ -1,14 +1,37 @@
-const API_BASE_URL = "/api/sensor/";
+const CONTAINERS_URL = "/api/containers/";
 
-const CONTAINER_IDS = [1, 2, 3];
+const HISTORY_URL = "/api/containers/history/";
 
 const REFRESH_INTERVAL = 5000;
+
+const HISTORY_REFRESH_INTERVAL = 60000;
+
+// A sensor is considered offline when it has been silent for this long
+const OFFLINE_AFTER = 5 * 60 * 1000;
+
+// Same thresholds as the sensor_data view
+const FULL_LEVEL = 80;
+
+const HALF_LEVEL = 50;
 
 // Almaty center
 const ALMATY_CENTER = [43.238949, 76.889709];
 
-// 2GIS API KEY
-const GIS_API_KEY = "97b20387-e967-45a0-86b9-064216dab634";
+const SERIES_SLOTS = 8;
+
+const LEVELS = {
+    full: { label: "Толы", icon: "i-full" },
+    half: { label: "Жартылай толы", icon: "i-half" },
+    normal: { label: "Қалыпты", icon: "i-normal" },
+    none: { label: "Дерек жоқ", icon: "i-none" }
+};
+
+const THRESHOLDS = [
+    { value: FULL_LEVEL, color: "var(--status-full)", name: "Толы шегі" },
+    { value: HALF_LEVEL, color: "var(--status-half)", name: "Жартылай шегі" }
+];
+
+const SVG_NS = "http://www.w3.org/2000/svg";
 
 // ------------------------------------------------------------
 // GLOBAL VARIABLES
@@ -16,9 +39,21 @@ const GIS_API_KEY = "97b20387-e967-45a0-86b9-064216dab634";
 
 let map = null;
 
+let mapFitted = false;
+
 const markers = {};
 
-const containerData = {};
+const state = {
+    containers: [],
+    clockOffset: 0,
+    selectedId: null,
+    filter: "all",
+    query: "",
+    sort: { key: "fill", direction: "desc" },
+    hours: 24,
+    history: null,
+    historyRequest: 0
+};
 
 
 // ------------------------------------------------------------
@@ -27,87 +62,821 @@ const containerData = {};
 
 document.addEventListener("DOMContentLoaded", () => {
 
-    console.log("QALDYQ dashboard starting...");
-
-    initTheme();
-
     initThemeToggle();
 
     initMap();
 
-    loadAllContainers();
+    initTableControls();
+
+    initRangeFilter();
+
+    initChartResize();
+
+    refreshContainers();
+
+    loadHistory();
 
     setInterval(() => {
-        loadAllContainers();
-    }, REFRESH_INTERVAL);
+        if (!document.hidden) {
+            loadHistory();
+        }
+    }, HISTORY_REFRESH_INTERVAL);
 
 });
+
+
+// ============================================================
+// HELPERS
+// ============================================================
+
+function el(tag, attributes = {}, ...children) {
+
+    const node = document.createElement(tag);
+
+    for (const [name, value] of Object.entries(attributes)) {
+        if (name === "class") {
+            node.className = value;
+        } else if (value !== null && value !== undefined) {
+            node.setAttribute(name, value);
+        }
+    }
+
+    node.append(...children);
+
+    return node;
+
+}
+
+
+function svgEl(tag, attributes = {}) {
+
+    const node = document.createElementNS(SVG_NS, tag);
+
+    for (const [name, value] of Object.entries(attributes)) {
+        node.setAttribute(name, value);
+    }
+
+    return node;
+
+}
+
+
+function icon(name) {
+
+    const svg = svgEl("svg", { class: "icon", "aria-hidden": "true" });
+
+    svg.append(svgEl("use", { href: `#${name}` }));
+
+    return svg;
+
+}
+
+
+function setText(elementId, value) {
+
+    document.getElementById(elementId).textContent = value;
+
+}
+
+
+function pad(value) {
+
+    return String(value).padStart(2, "0");
+
+}
+
+
+function formatClock(date) {
+
+    return `${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+
+}
+
+
+function formatShortTime(date) {
+
+    return `${pad(date.getHours())}:${pad(date.getMinutes())}`;
+
+}
+
+
+function formatDay(date) {
+
+    return `${pad(date.getDate())}.${pad(date.getMonth() + 1)}`;
+
+}
+
+
+function formatDateTime(date) {
+
+    return `${formatDay(date)}.${date.getFullYear()} ${formatClock(date)}`;
+
+}
+
+
+function formatFill(value) {
+
+    return value === null ? "–" : `${value.toFixed(1)}%`;
+
+}
+
+
+function formatDistance(value) {
+
+    return value === null ? "–" : `${value.toFixed(1)} см`;
+
+}
+
+
+function formatAge(age) {
+
+    const seconds = Math.max(Math.floor(age / 1000), 0);
+
+    if (seconds < 60) {
+        return `${seconds} сек бұрын`;
+    }
+
+    if (seconds < 3600) {
+        return `${Math.floor(seconds / 60)} мин бұрын`;
+    }
+
+    if (seconds < 86400) {
+        return `${Math.floor(seconds / 3600)} сағ бұрын`;
+    }
+
+    return `${Math.floor(seconds / 86400)} күн бұрын`;
+
+}
+
+
+function serverNow() {
+
+    return Date.now() + state.clockOffset;
+
+}
+
+
+// Re-rendering a list must not drop keyboard focus from its current item
+function renderKeepingFocus(parent, render) {
+
+    const focused = document.activeElement;
+
+    const focusedId =
+        parent.contains(focused) ? focused.dataset.focusId : null;
+
+    render();
+
+    if (focusedId) {
+        const next = parent.querySelector(
+            `[data-focus-id="${CSS.escape(focusedId)}"]`
+        );
+
+        if (next) {
+            next.focus();
+        }
+    }
+
+}
 
 
 // ============================================================
 // THEME
 // ============================================================
 
-function initTheme() {
+function isLightTheme() {
 
-    const savedTheme = localStorage.getItem("qaldyk-theme");
+    return document.documentElement.dataset.theme === "light";
 
-    if (savedTheme === "light") {
+}
 
-        document.body.classList.add("light-theme");
 
-        updateThemeButton();
+function updateThemeIcon() {
 
-    } else {
+    document
+        .getElementById("themeIcon")
+        .setAttribute("href", isLightTheme() ? "#i-moon" : "#i-sun");
 
-        document.body.classList.remove("light-theme");
-
-        updateThemeButton();
-
-    }
 }
 
 
 function initThemeToggle() {
 
-    const themeButton = document.getElementById("themeToggle");
+    updateThemeIcon();
 
-    if (!themeButton) {
-        return;
+    document
+        .getElementById("themeToggle")
+        .addEventListener("click", () => {
+
+            const theme = isLightTheme() ? "dark" : "light";
+
+            document.documentElement.dataset.theme = theme;
+
+            try {
+                localStorage.setItem("qaldyk-theme", theme);
+            } catch (error) {
+                console.warn("Theme was not saved:", error);
+            }
+
+            updateThemeIcon();
+
+        });
+
+}
+
+
+// ============================================================
+// DATA
+// ============================================================
+
+async function refreshContainers() {
+
+    if (!document.hidden) {
+
+        try {
+
+            const response = await fetch(CONTAINERS_URL);
+
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+
+            const data = await response.json();
+
+            state.clockOffset =
+                new Date(data.server_time).getTime() - Date.now();
+
+            const isFirstLoad = state.containers.length === 0;
+
+            state.containers = data.containers.map(describeContainer);
+
+            setConnection(true);
+
+            setText("lastUpdated", formatClock(new Date()));
+
+            renderAll();
+
+            // The history request may have finished before the containers
+            if (isFirstLoad) {
+                renderChart();
+                renderChartTable();
+            }
+
+        } catch (error) {
+
+            console.error("Containers error:", error);
+
+            setConnection(false);
+
+        }
+
     }
 
-    themeButton.addEventListener("click", () => {
+    setTimeout(refreshContainers, REFRESH_INTERVAL);
 
-        document.body.classList.toggle("light-theme");
+}
 
-        const isLight =
-            document.body.classList.contains("light-theme");
 
-        localStorage.setItem(
-            "qaldyk-theme",
-            isLight ? "light" : "dark"
+async function loadHistory() {
+
+    const request = ++state.historyRequest;
+
+    const chart = document.getElementById("trendChart");
+
+    chart.classList.add("is-loading");
+
+    try {
+
+        const response = await fetch(`${HISTORY_URL}?hours=${state.hours}`);
+
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        // A newer range selection already replaced this request
+        if (request !== state.historyRequest) {
+            return;
+        }
+
+        state.history = data;
+
+        renderChart();
+
+        renderChartTable();
+
+    } catch (error) {
+
+        console.error("History error:", error);
+
+    } finally {
+
+        if (request === state.historyRequest) {
+            chart.classList.remove("is-loading");
+        }
+
+    }
+
+}
+
+
+function describeContainer(container, index) {
+
+    const base = {
+        ...container,
+        slot: index < SERIES_SLOTS ? index + 1 : null
+    };
+
+    if (!container.latest) {
+        return {
+            ...base,
+            fill: null,
+            distance: null,
+            level: "none",
+            age: null,
+            lastAt: null,
+            offline: true
+        };
+    }
+
+    const fill = Math.min(
+        Math.max(Number(container.latest.fill_level) || 0, 0),
+        100
+    );
+
+    const lastAt = new Date(container.latest.created_at);
+
+    const age = serverNow() - lastAt.getTime();
+
+    return {
+        ...base,
+        fill,
+        distance: Number(container.latest.distance) || 0,
+        level: getLevel(fill),
+        age,
+        lastAt,
+        offline: age > OFFLINE_AFTER
+    };
+
+}
+
+
+function getLevel(fill) {
+
+    if (fill >= FULL_LEVEL) {
+        return "full";
+    }
+
+    if (fill >= HALF_LEVEL) {
+        return "half";
+    }
+
+    return "normal";
+
+}
+
+
+function setConnection(isOnline) {
+
+    const connection = document.getElementById("connection");
+
+    connection.classList.toggle("is-online", isOnline);
+
+    connection.classList.toggle("is-error", !isOnline);
+
+    setText(
+        "connectionText",
+        isOnline ? "Сервер қосулы" : "Сервермен байланыс жоқ"
+    );
+
+}
+
+
+function renderAll() {
+
+    renderKpis();
+
+    renderQueue();
+
+    renderTable();
+
+    renderMap();
+
+    renderChartLegend();
+
+}
+
+
+// ============================================================
+// KPI
+// ============================================================
+
+function renderKpis() {
+
+    const containers = state.containers;
+
+    const count = level =>
+        containers.filter(item => item.level === level).length;
+
+    const withData = containers.filter(item => item.fill !== null);
+
+    setText("kpiTotal", containers.length);
+
+    setText("kpiFull", count("full"));
+
+    setText("kpiHalf", count("half"));
+
+    setText("kpiNormal", count("normal"));
+
+    setText("kpiOffline", containers.filter(item => item.offline).length);
+
+    setText(
+        "kpiAverage",
+        withData.length === 0
+            ? "–"
+            : `${Math.round(
+                withData.reduce((sum, item) => sum + item.fill, 0)
+                / withData.length
+            )}%`
+    );
+
+    const share = document.getElementById("kpiShare");
+
+    const parts = ["normal", "half", "full", "none"]
+        .map(level => ({ level, amount: count(level) }))
+        .filter(part => part.amount > 0);
+
+    share.replaceChildren(...parts.map(part => {
+        const name = `${LEVELS[part.level].label}: ${part.amount}`;
+        const segment = el("span", { class: `level-${part.level}`, title: name });
+        segment.style.flexGrow = part.amount;
+        return segment;
+    }));
+
+    share.setAttribute(
+        "aria-label",
+        parts
+            .map(part => `${LEVELS[part.level].label}: ${part.amount}`)
+            .join(", ") || "Контейнер жоқ"
+    );
+
+}
+
+
+// ============================================================
+// ATTENTION QUEUE
+// ============================================================
+
+function renderQueue() {
+
+    const list = document.getElementById("queueList");
+
+    const items = state.containers
+        .filter(item => item.level === "full" || item.offline)
+        .sort((a, b) =>
+            Number(b.level === "full") - Number(a.level === "full")
+            || (b.fill ?? -1) - (a.fill ?? -1)
         );
 
-        updateThemeButton();
+    setText("queueCount", items.length);
+
+    renderKeepingFocus(list, () => {
+
+        if (items.length === 0) {
+
+            list.replaceChildren(
+                el(
+                    "div",
+                    { class: "queue-empty level-normal" },
+                    icon("i-normal"),
+                    state.containers.length === 0
+                        ? "Әзірге контейнер қосылмаған"
+                        : "Барлық контейнер қалыпты жұмыс істеп тұр"
+                )
+            );
+
+            return;
+
+        }
+
+        list.replaceChildren(...items.map(item => {
+
+            const isFull = item.level === "full";
+
+            const button = el(
+                "button",
+                {
+                    type: "button",
+                    class:
+                        `queue-item ${isFull ? "level-full" : "level-none"}`
+                        + (item.id === state.selectedId ? " is-selected" : ""),
+                    "data-focus-id": `queue-${item.id}`
+                },
+                icon(isFull ? "i-full" : "i-offline"),
+                el(
+                    "span",
+                    { class: "queue-text" },
+                    el("span", { class: "queue-name" }, item.name),
+                    el("span", { class: "queue-reason" }, getQueueReason(item))
+                ),
+                el("span", { class: "queue-value" }, formatFill(item.fill))
+            );
+
+            button.addEventListener("click", () => selectContainer(item.id));
+
+            return button;
+
+        }));
 
     });
 
 }
 
 
-function updateThemeButton() {
+function getQueueReason(item) {
 
-    const themeButton = document.getElementById("themeToggle");
+    if (item.lastAt === null) {
+        return "Датчик әлі дерек жібермеген";
+    }
 
-    if (!themeButton) {
+    if (item.level !== "full") {
+        return `Датчик үнсіз, соңғы дерек ${formatAge(item.age)}`;
+    }
+
+    if (item.offline) {
+        return `Шығару қажет, соңғы дерек ${formatAge(item.age)}`;
+    }
+
+    return "Қоқысты шығару қажет";
+
+}
+
+
+// ============================================================
+// TABLE
+// ============================================================
+
+function initTableControls() {
+
+    document
+        .getElementById("tableSearch")
+        .addEventListener("input", event => {
+            state.query = event.target.value.trim().toLocaleLowerCase("kk");
+            renderTable();
+        });
+
+    const filters = document.getElementById("tableFilters");
+
+    filters.addEventListener("click", event => {
+
+        const button = event.target.closest("button");
+
+        if (!button) {
+            return;
+        }
+
+        state.filter = button.dataset.filter;
+
+        for (const item of filters.querySelectorAll("button")) {
+            item.setAttribute("aria-pressed", String(item === button));
+        }
+
+        renderTable();
+
+    });
+
+    for (const header of document.querySelectorAll("th[data-sort]")) {
+
+        header.querySelector("button").addEventListener("click", () => {
+
+            const key = header.dataset.sort;
+
+            if (state.sort.key === key) {
+                state.sort.direction =
+                    state.sort.direction === "asc" ? "desc" : "asc";
+            } else {
+                state.sort = {
+                    key,
+                    direction: key === "fill" ? "desc" : "asc"
+                };
+            }
+
+            renderTable();
+
+        });
+
+    }
+
+}
+
+
+function matchesFilters(item) {
+
+    if (state.filter === "offline" && !item.offline) {
+        return false;
+    }
+
+    if (
+        state.filter !== "all"
+        && state.filter !== "offline"
+        && item.level !== state.filter
+    ) {
+        return false;
+    }
+
+    return `${item.name} ${item.location}`
+        .toLocaleLowerCase("kk")
+        .includes(state.query);
+
+}
+
+
+function compareContainers(a, b) {
+
+    const { key, direction } = state.sort;
+
+    const left = a[key];
+
+    const right = b[key];
+
+    // Containers without data stay at the bottom in both directions
+    if (left === null || right === null) {
+        return Number(left === null) - Number(right === null);
+    }
+
+    const result = typeof left === "string"
+        ? left.localeCompare(right, "kk", { numeric: true })
+        : left - right;
+
+    return direction === "asc" ? result : -result;
+
+}
+
+
+function renderTable() {
+
+    for (const header of document.querySelectorAll("th[data-sort]")) {
+
+        if (header.dataset.sort === state.sort.key) {
+            header.setAttribute(
+                "aria-sort",
+                state.sort.direction === "asc" ? "ascending" : "descending"
+            );
+        } else {
+            header.removeAttribute("aria-sort");
+        }
+
+    }
+
+    const body = document.getElementById("tableBody");
+
+    const rows = state.containers
+        .filter(matchesFilters)
+        .sort(compareContainers);
+
+    renderKeepingFocus(body, () => {
+
+        if (rows.length === 0) {
+
+            body.replaceChildren(
+                el(
+                    "tr",
+                    {},
+                    el(
+                        "td",
+                        { class: "table-empty", colspan: "6" },
+                        state.containers.length === 0
+                            ? "Әзірге контейнер қосылмаған"
+                            : "Сүзгіге сәйкес контейнер табылмады"
+                    )
+                )
+            );
+
+            return;
+
+        }
+
+        body.replaceChildren(...rows.map(createTableRow));
+
+    });
+
+}
+
+
+function createTableRow(item) {
+
+    const meterFill = el("span");
+
+    meterFill.style.width = `${item.fill ?? 0}%`;
+
+    const lastSeen = el("span", { class: "last-seen" });
+
+    if (item.offline) {
+        lastSeen.append(icon("i-offline"));
+    }
+
+    lastSeen.append(
+        item.lastAt === null ? "Дерек жоқ" : formatAge(item.age)
+    );
+
+    if (item.lastAt !== null) {
+        lastSeen.title = formatDateTime(item.lastAt);
+    }
+
+    const row = el(
+        "tr",
+        {
+            "data-id": item.id,
+            class:
+                (item.offline ? "is-offline" : "")
+                + (item.id === state.selectedId ? " is-selected" : "")
+        },
+        el(
+            "td",
+            {},
+            el(
+                "button",
+                {
+                    type: "button",
+                    class: "row-name",
+                    "data-focus-id": `row-${item.id}`,
+                    "aria-pressed": String(item.id === state.selectedId)
+                },
+                item.name
+            )
+        ),
+        el("td", { class: "cell-secondary" }, item.location),
+        el(
+            "td",
+            {},
+            el(
+                "div",
+                { class: `meter-cell level-${item.level}` },
+                el("div", { class: "meter" }, meterFill),
+                el("span", { class: "meter-value" }, formatFill(item.fill))
+            )
+        ),
+        el(
+            "td",
+            { class: "align-end numeric" },
+            formatDistance(item.distance)
+        ),
+        el(
+            "td",
+            {},
+            el(
+                "span",
+                { class: `badge level-${item.level}` },
+                icon(LEVELS[item.level].icon),
+                LEVELS[item.level].label
+            )
+        ),
+        el("td", {}, lastSeen)
+    );
+
+    row.addEventListener("click", () => selectContainer(item.id));
+
+    return row;
+
+}
+
+
+// ============================================================
+// SELECTION
+// ============================================================
+
+function selectContainer(containerId) {
+
+    const nextId = state.selectedId === containerId ? null : containerId;
+
+    if (map) {
+        map.closePopup();
+    }
+
+    setSelected(nextId);
+
+    if (nextId !== null && markers[nextId]) {
+        markers[nextId].openPopup();
+    }
+
+}
+
+
+function setSelected(containerId) {
+
+    if (state.selectedId === containerId) {
         return;
     }
 
-    const isLight =
-        document.body.classList.contains("light-theme");
+    state.selectedId = containerId;
 
-    themeButton.textContent =
-        isLight ? "☀️" : "🌙";
+    renderQueue();
+
+    renderTable();
+
+    renderChartLegend();
+
+    renderChart();
 
 }
 
@@ -118,1058 +887,746 @@ function updateThemeButton() {
 
 function initMap() {
 
-    const mapElement =
-        document.getElementById("map");
-
-    if (!mapElement) {
-
-        console.error("Map element not found");
-
+    if (typeof L === "undefined") {
+        console.error("Leaflet was not loaded");
         return;
     }
 
-    map = L.map("map", {
-
-        zoomControl: true,
-
-        attributionControl: true
-
-    }).setView(
-
-        ALMATY_CENTER,
-
-        12
-
-    );
-
-
-    // --------------------------------------------------------
-    // 2GIS TILE LAYER
-    // --------------------------------------------------------
+    map = L.map("map").setView(ALMATY_CENTER, 12);
 
     L.tileLayer(
 
-        `https://tile{s}.maps.2gis.com/v2/tiles/online_hd/{z}/{x}/{y}.png?key=${GIS_API_KEY}`,
+        "https://tile{s}.maps.2gis.com/tiles?x={x}&y={y}&z={z}&v=1",
 
         {
-
-            subdomains: [
-                "0",
-                "1",
-                "2",
-                "3",
-                "4"
-            ],
-
+            subdomains: ["0", "1", "2", "3", "4"],
             minZoom: 1,
-
             maxZoom: 18,
-
-            attribution:
-                "&copy; 2GIS"
-
+            attribution: "&copy; 2GIS"
         }
 
     ).addTo(map);
 
-
-    // --------------------------------------------------------
-    // Fix Leaflet size after page load
-    // --------------------------------------------------------
-
-    setTimeout(() => {
-
-        if (map) {
-
-            map.invalidateSize();
-
-        }
-
-    }, 300);
+    new ResizeObserver(() => map.invalidateSize())
+        .observe(document.getElementById("map"));
 
 }
 
 
-// ============================================================
-// LOAD ALL CONTAINERS
-// ============================================================
-
-async function loadAllContainers() {
-
-    console.log(
-        "Loading sensor data..."
-    );
-
-    for (const containerId of CONTAINER_IDS) {
-
-        await loadContainer(containerId);
-
-    }
-
-    updateStatistics();
-
-    updateAlerts();
-
-}
-
-
-// ============================================================
-// LOAD ONE CONTAINER
-// ============================================================
-
-async function loadContainer(containerId) {
-
-    try {
-
-        const response =
-            await fetch(
-                `${API_BASE_URL}${containerId}/`
-            );
-
-
-        if (!response.ok) {
-
-            throw new Error(
-                `HTTP ${response.status}`
-            );
-
-        }
-
-
-        const data =
-            await response.json();
-
-
-        console.log(
-            `Container #${containerId}:`,
-            data
-        );
-
-
-        if (!Array.isArray(data) || data.length === 0) {
-
-            showNoData(containerId);
-
-            return;
-        }
-
-
-        // API returns newest first
-        const latest =
-            data[0];
-
-
-        containerData[containerId] =
-            latest;
-
-
-        updateContainerUI(
-            containerId,
-            latest
-        );
-
-
-        updateMapMarker(
-            containerId,
-            latest
-        );
-
-
-    } catch (error) {
-
-        console.error(
-            `Container #${containerId} error:`,
-            error
-        );
-
-
-        showNoData(containerId);
-
-    }
-
-}
-
-
-// ============================================================
-// UPDATE CONTAINER CARD
-// ============================================================
-
-function updateContainerUI(
-    containerId,
-    data
-) {
-
-    const fillLevel =
-        Number(data.fill_level) || 0;
-
-    const distance =
-        Number(data.distance) || 0;
-
-    const status =
-        data.status || "NORMAL";
-
-
-    // --------------------------------------------------------
-    // Fill level
-    // --------------------------------------------------------
-
-    const fillElement =
-        document.getElementById(
-            `fill${containerId}`
-        );
-
-
-    if (fillElement) {
-
-        fillElement.textContent =
-            `${fillLevel.toFixed(1)}%`;
-
-    }
-
-
-    // --------------------------------------------------------
-    // Distance
-    // --------------------------------------------------------
-
-    const distanceElement =
-        document.getElementById(
-            `distance${containerId}`
-        );
-
-
-    if (distanceElement) {
-
-        distanceElement.textContent =
-            distance.toFixed(2);
-
-    }
-
-
-    // --------------------------------------------------------
-    // Status
-    // --------------------------------------------------------
-
-    const statusElement =
-        document.getElementById(
-            `status${containerId}`
-        );
-
-
-    if (statusElement) {
-
-        statusElement.textContent =
-            formatStatus(status);
-
-    }
-
-
-    // --------------------------------------------------------
-    // Progress bar
-    // --------------------------------------------------------
-
-    const progressElement =
-        document.getElementById(
-            `progress${containerId}`
-        );
-
-
-    if (progressElement) {
-
-        progressElement.style.width =
-            `${Math.min(
-                Math.max(fillLevel, 0),
-                100
-            )}%`;
-
-
-        progressElement.classList.remove(
-
-            "progress-normal",
-
-            "progress-half",
-
-            "progress-full"
-
-        );
-
-
-        if (fillLevel >= 80) {
-
-            progressElement.classList.add(
-                "progress-full"
-            );
-
-        } else if (fillLevel >= 50) {
-
-            progressElement.classList.add(
-                "progress-half"
-            );
-
-        } else {
-
-            progressElement.classList.add(
-                "progress-normal"
-            );
-
-        }
-
-    }
-
-
-    // --------------------------------------------------------
-    // Fill color/state
-    // --------------------------------------------------------
-
-    if (fillElement) {
-
-        fillElement.classList.remove(
-
-            "fill-normal",
-
-            "fill-half",
-
-            "fill-full"
-
-        );
-
-
-        if (fillLevel >= 80) {
-
-            fillElement.classList.add(
-                "fill-full"
-            );
-
-        } else if (fillLevel >= 50) {
-
-            fillElement.classList.add(
-                "fill-half"
-            );
-
-        } else {
-
-            fillElement.classList.add(
-                "fill-normal"
-            );
-
-        }
-
-    }
-
-
-    // --------------------------------------------------------
-    // Status color
-    // --------------------------------------------------------
-
-    if (statusElement) {
-
-        statusElement.classList.remove(
-
-            "status-normal",
-
-            "status-half",
-
-            "status-full"
-
-        );
-
-
-        if (fillLevel >= 80) {
-
-            statusElement.classList.add(
-                "status-full"
-            );
-
-        } else if (fillLevel >= 50) {
-
-            statusElement.classList.add(
-                "status-half"
-            );
-
-        } else {
-
-            statusElement.classList.add(
-                "status-normal"
-            );
-
-        }
-
-    }
-
-}
-
-
-// ============================================================
-// NO DATA
-// ============================================================
-
-function showNoData(containerId) {
-
-    const fillElement =
-        document.getElementById(
-            `fill${containerId}`
-        );
-
-    const distanceElement =
-        document.getElementById(
-            `distance${containerId}`
-        );
-
-    const statusElement =
-        document.getElementById(
-            `status${containerId}`
-        );
-
-    const progressElement =
-        document.getElementById(
-            `progress${containerId}`
-        );
-
-
-    if (fillElement) {
-
-        fillElement.textContent =
-            "NO DATA";
-
-    }
-
-
-    if (distanceElement) {
-
-        distanceElement.textContent =
-            "--";
-
-    }
-
-
-    if (statusElement) {
-
-        statusElement.textContent =
-            "NO DATA";
-
-    }
-
-
-    if (progressElement) {
-
-        progressElement.style.width =
-            "0%";
-
-    }
-
-}
-
-
-// ============================================================
-// STATUS TEXT
-// ============================================================
-
-function formatStatus(status) {
-
-    switch (status) {
-
-        case "FULL":
-            return "FULL";
-
-        case "HALF FULL":
-            return "HALF FULL";
-
-        case "NORMAL":
-            return "NORMAL";
-
-        default:
-            return status || "UNKNOWN";
-
-    }
-
-}
-
-
-// ============================================================
-// STATISTICS
-// ============================================================
-
-function updateStatistics() {
-
-    let total = 0;
-
-    let full = 0;
-
-    let half = 0;
-
-    let normal = 0;
-
-
-    for (const containerId of CONTAINER_IDS) {
-
-        const data =
-            containerData[containerId];
-
-
-        if (!data) {
-            continue;
-        }
-
-
-        total++;
-
-
-        const fillLevel =
-            Number(data.fill_level) || 0;
-
-
-        if (fillLevel >= 80) {
-
-            full++;
-
-        } else if (fillLevel >= 50) {
-
-            half++;
-
-        } else {
-
-            normal++;
-
-        }
-
-    }
-
-
-    setText(
-        "totalContainers",
-        total
-    );
-
-    setText(
-        "fullContainers",
-        full
-    );
-
-    setText(
-        "halfContainers",
-        half
-    );
-
-    setText(
-        "normalContainers",
-        normal
-    );
-
-}
-
-
-// ============================================================
-// UPDATE ALERTS
-// ============================================================
-
-function updateAlerts() {
-
-    const alertBox =
-        document.getElementById(
-            "alertBox"
-        );
-
-    const alertList =
-        document.getElementById(
-            "alertList"
-        );
-
-
-    if (!alertBox || !alertList) {
-        return;
-    }
-
-
-    const fullContainers = [];
-
-
-    for (const containerId of CONTAINER_IDS) {
-
-        const data =
-            containerData[containerId];
-
-
-        if (!data) {
-            continue;
-        }
-
-
-        const fillLevel =
-            Number(data.fill_level) || 0;
-
-
-        if (fillLevel >= 80) {
-
-            fullContainers.push({
-
-                id: containerId,
-
-                fill: fillLevel,
-
-                distance:
-                    Number(data.distance) || 0
-
-            });
-
-        }
-
-    }
-
-
-    // --------------------------------------------------------
-    // No alerts
-    // --------------------------------------------------------
-
-    if (fullContainers.length === 0) {
-
-        alertBox.style.display =
-            "none";
-
-        alertList.innerHTML = "";
-
-        return;
-
-    }
-
-
-    // --------------------------------------------------------
-    // Show alert
-    // --------------------------------------------------------
-
-    alertBox.style.display =
-        "block";
-
-
-    alertList.innerHTML = "";
-
-
-    fullContainers.forEach(item => {
-
-        const alertItem =
-            document.createElement("div");
-
-
-        alertItem.className =
-            "alert-item";
-
-
-        alertItem.innerHTML = `
-
-            <div class="alert-item-left">
-
-                <span class="alert-item-icon">
-                    🔴
-                </span>
-
-                <div>
-
-                    <strong>
-                        Container #${item.id}
-                    </strong>
-
-                    <span>
-                        Collection required
-                    </span>
-
-                </div>
-
-            </div>
-
-            <div class="alert-item-right">
-
-                ${item.fill.toFixed(1)}%
-
-            </div>
-
-        `;
-
-
-        alertList.appendChild(
-            alertItem
-        );
-
-    });
-
-}
-
-
-// ============================================================
-// MAP MARKERS
-// ============================================================
-
-function updateMapMarker(
-    containerId,
-    data
-) {
+function renderMap() {
 
     if (!map) {
         return;
     }
 
+    const located = state.containers.filter(item =>
+        item.latitude !== null && item.longitude !== null
+    );
 
-    /*
-     * --------------------------------------------------------
-     * IMPORTANT
-     *
-     * These are demo coordinates.
-     * Replace them with latitude/longitude
-     * from your PostgreSQL Container model.
-     * --------------------------------------------------------
-     */
-
-    const containerLocations = {
-
-        1: [
-            43.238949,
-            76.889709
-        ],
-
-        2: [
-            43.245000,
-            76.900000
-        ],
-
-        3: [
-            43.230000,
-            76.875000
-        ]
-
-    };
-
-
-    const location =
-        containerLocations[containerId];
-
-
-    if (!location) {
-        return;
+    for (const item of located) {
+        updateMarker(item);
     }
 
+    const locatedIds = new Set(located.map(item => item.id));
 
-    const fillLevel =
-        Number(data.fill_level) || 0;
+    for (const id of Object.keys(markers)) {
+        if (!locatedIds.has(Number(id))) {
+            markers[id].remove();
+            delete markers[id];
+        }
+    }
 
+    const missing = state.containers.length - located.length;
 
-    const status =
-        data.status || "NORMAL";
+    setText(
+        "mapNote",
+        missing > 0
+            ? `${missing} контейнердің координаты көрсетілмеген`
+            : "Алматыдағы бақылау аймағы"
+    );
 
+    if (!mapFitted && located.length > 0) {
 
-    const markerColor =
-        getMarkerColor(fillLevel);
-
-
-    // --------------------------------------------------------
-    // Create custom marker
-    // --------------------------------------------------------
-
-    const icon =
-        createContainerIcon(
-            containerId,
-            markerColor
+        map.fitBounds(
+            located.map(item => [item.latitude, item.longitude]),
+            { padding: [60, 60], maxZoom: 15 }
         );
 
+        mapFitted = true;
 
-    // --------------------------------------------------------
-    // Existing marker
-    // --------------------------------------------------------
+    }
 
-    if (markers[containerId]) {
-
-        markers[containerId]
-            .setLatLng(location)
-            .setIcon(icon);
+}
 
 
-        markers[containerId]
-            .setPopupContent(
-                createPopupContent(
-                    containerId,
-                    data
-                )
-            );
+function updateMarker(item) {
 
+    const level = item.offline ? "none" : item.level;
+
+    const label = item.fill === null ? "–" : String(Math.round(item.fill));
+
+    const iconKey = `${level}-${label}`;
+
+    const location = [item.latitude, item.longitude];
+
+    const existing = markers[item.id];
+
+    if (existing) {
+
+        existing.setLatLng(location);
+
+        // Rebuilding the icon on every poll would make the marker flicker
+        if (existing.iconKey !== iconKey) {
+            existing.setIcon(createMarkerIcon(level, label));
+            existing.iconKey = iconKey;
+        }
+
+        existing.setPopupContent(createPopupContent(item));
 
         return;
 
     }
 
+    const marker = L.marker(location, {
+        icon: createMarkerIcon(level, label),
+        title: item.name,
+        alt: item.name
+    }).addTo(map);
 
-    // --------------------------------------------------------
-    // New marker
-    // --------------------------------------------------------
+    marker.iconKey = iconKey;
 
-    const marker =
-        L.marker(
-            location,
-            {
-                icon: icon
-            }
-        ).addTo(map);
+    marker.bindPopup(createPopupContent(item), { minWidth: 210 });
+
+    marker.on("popupopen", () => setSelected(item.id));
+
+    marker.on("popupclose", () => {
+        if (state.selectedId === item.id) {
+            setSelected(null);
+        }
+    });
+
+    markers[item.id] = marker;
+
+}
 
 
-    marker.bindPopup(
-        createPopupContent(
-            containerId,
-            data
+function createMarkerIcon(level, label) {
+
+    return L.divIcon({
+        className: "qaldyk-marker",
+        html: `<div class="map-marker level-${level}">${label}</div>`,
+        iconSize: [38, 38],
+        iconAnchor: [19, 19],
+        popupAnchor: [0, -20]
+    });
+
+}
+
+
+function createPopupContent(item) {
+
+    const row = (label, value) =>
+        el("div", {}, el("dt", {}, label), el("dd", {}, value));
+
+    return el(
+        "div",
+        {},
+        el("div", { class: "popup-title" }, item.name),
+        el("div", { class: "popup-location" }, item.location),
+        el(
+            "dl",
+            { class: "popup-rows" },
+            row("Толу деңгейі", formatFill(item.fill)),
+            row("Қашықтық", formatDistance(item.distance)),
+            row("Күйі", LEVELS[item.level].label),
+            row(
+                "Соңғы дерек",
+                item.lastAt === null ? "Дерек жоқ" : formatAge(item.age)
+            )
         )
     );
 
-
-    markers[containerId] =
-        marker;
-
 }
 
 
 // ============================================================
-// MARKER COLOR
+// TREND CHART
 // ============================================================
 
-function getMarkerColor(
-    fillLevel
-) {
+function initRangeFilter() {
 
-    if (fillLevel >= 80) {
+    const filters = document.getElementById("rangeFilters");
 
-        return "#ef4444";
+    filters.addEventListener("click", event => {
 
-    }
+        const button = event.target.closest("button");
 
+        if (!button) {
+            return;
+        }
 
-    if (fillLevel >= 50) {
+        state.hours = Number(button.dataset.hours);
 
-        return "#f59e0b";
+        for (const item of filters.querySelectorAll("button")) {
+            item.setAttribute("aria-pressed", String(item === button));
+        }
 
-    }
+        loadHistory();
 
+    });
 
-    return "#22c55e";
+    document
+        .getElementById("trendDetails")
+        .addEventListener("toggle", renderChartTable);
 
 }
 
 
-// ============================================================
-// CREATE CUSTOM MARKER
-// ============================================================
+function initChartResize() {
 
-function createContainerIcon(
-    containerId,
-    color
-) {
+    const chart = document.getElementById("trendChart");
 
-    return L.divIcon({
+    let lastWidth = 0;
 
-        className:
-            "qaldyk-container-marker",
+    new ResizeObserver(() => {
+        if (chart.clientWidth !== lastWidth) {
+            lastWidth = chart.clientWidth;
+            renderChart();
+        }
+    }).observe(chart);
 
-        html: `
+}
 
-            <div
-                class="qaldyk-marker"
-                style="
-                    background:${color};
-                    box-shadow:
-                        0 0 0 5px
-                        ${color}33,
-                        0 8px 20px
-                        rgba(0,0,0,.35);
-                "
-            >
 
-                <span>
-                    ${containerId}
-                </span>
+// Color follows the container; only the first eight get their own hue
+function seriesColor(item) {
 
-            </div>
+    return item.slot === null ? "var(--muted)" : `var(--series-${item.slot})`;
 
-        `,
+}
 
-        iconSize: [
-            42,
-            42
-        ],
 
-        iconAnchor: [
-            21,
-            21
-        ],
+function renderChartLegend() {
 
-        popupAnchor: [
-            0,
-            -20
-        ]
+    const legend = document.getElementById("trendLegend");
+
+    renderKeepingFocus(legend, () => {
+
+        legend.replaceChildren(...state.containers.map(item => {
+
+            const key = el("span", { class: "line-key" });
+
+            key.style.setProperty("--key", seriesColor(item));
+
+            const button = el(
+                "button",
+                {
+                    type: "button",
+                    "data-focus-id": `legend-${item.id}`,
+                    "aria-pressed": String(item.id === state.selectedId)
+                },
+                key,
+                item.name
+            );
+
+            button.addEventListener("click", () => selectContainer(item.id));
+
+            return el("li", {}, button);
+
+        }));
 
     });
 
 }
 
 
-// ============================================================
-// POPUP CONTENT
-// ============================================================
+function getChartSeries() {
 
-function createPopupContent(
-    containerId,
-    data
-) {
+    if (!state.history) {
+        return [];
+    }
 
-    const fillLevel =
-        Number(data.fill_level) || 0;
-
-
-    const distance =
-        Number(data.distance) || 0;
-
-
-    const status =
-        data.status || "NORMAL";
-
-
-    const statusColor =
-        getMarkerColor(fillLevel);
-
-
-    return `
-
-        <div class="qaldyk-popup">
-
-            <div class="popup-title">
-
-                <span>
-                    🗑️
-                </span>
-
-                Container #${containerId}
-
-            </div>
-
-
-            <div class="popup-divider"></div>
-
-
-            <div class="popup-row">
-
-                <span>
-                    Fill level
-                </span>
-
-                <strong
-                    style="
-                        color:${statusColor};
-                    "
-                >
-                    ${fillLevel.toFixed(1)}%
-                </strong>
-
-            </div>
-
-
-            <div class="popup-row">
-
-                <span>
-                    Distance
-                </span>
-
-                <strong>
-                    ${distance.toFixed(2)} cm
-                </strong>
-
-            </div>
-
-
-            <div class="popup-row">
-
-                <span>
-                    Status
-                </span>
-
-                <strong
-                    style="
-                        color:${statusColor};
-                    "
-                >
-                    ${status}
-                </strong>
-
-            </div>
-
-
-            <div class="popup-time">
-
-                Updated:
-                ${formatDate(
-                    data.created_at
-                )}
-
-            </div>
-
-        </div>
-
-    `;
+    return state.containers
+        .map(item => ({
+            item,
+            points: state.history.series[item.id] || []
+        }))
+        .filter(series => series.points.length > 0);
 
 }
 
 
-// ============================================================
-// DATE FORMAT
-// ============================================================
+function renderChart() {
 
-function formatDate(
-    dateString
-) {
+    const host = document.getElementById("trendChart");
 
-    if (!dateString) {
-        return "--";
+    const width = host.clientWidth;
+
+    if (width === 0) {
+        return;
     }
 
+    const series = getChartSeries();
 
-    const date =
-        new Date(dateString);
+    const isNarrow = width < 560;
 
+    const useDirectLabels = !isNarrow && series.length <= 4;
 
-    if (Number.isNaN(
-        date.getTime()
-    )) {
+    const height = isNarrow ? 240 : 300;
 
-        return dateString;
+    const margin = {
+        top: 12,
+        right: useDirectLabels ? 136 : 12,
+        bottom: 28,
+        left: 40
+    };
+
+    const plotWidth = width - margin.left - margin.right;
+
+    const plotHeight = height - margin.top - margin.bottom;
+
+    const endTime = serverNow();
+
+    const startTime = endTime - state.hours * 3600 * 1000;
+
+    const x = time =>
+        margin.left + (time - startTime) / (endTime - startTime) * plotWidth;
+
+    const y = value =>
+        margin.top + (1 - value / 100) * plotHeight;
+
+    const svg = svgEl("svg", {
+        viewBox: `0 0 ${width} ${height}`,
+        height,
+        role: "img",
+        tabindex: "0",
+        "aria-label":
+            "Контейнерлердің толу деңгейінің графигі. Мәндерді көру үшін "
+            + "сол және оң көрсеткілерді басыңыз."
+    });
+
+    drawChartGrid(svg, { x, y, margin, plotWidth, startTime, endTime, isNarrow });
+
+    const selectedId = state.selectedId;
+
+    const bucket = (state.history ? state.history.bucket_seconds : 0) * 1000;
+
+    for (const { item, points } of series) {
+
+        const dimmed = selectedId !== null && selectedId !== item.id;
+
+        const group = svgEl("g", { opacity: dimmed ? "0.22" : "1" });
+
+        group.style.color = seriesColor(item);
+
+        drawSeriesLine(group, points, bucket, x, y);
+
+        svg.append(group);
 
     }
 
+    drawThresholdLabels(svg, margin, y);
 
-    return date.toLocaleString(
-        "kk-KZ",
-        {
-            day: "2-digit",
-            month: "2-digit",
-            year: "numeric",
-            hour: "2-digit",
-            minute: "2-digit",
-            second: "2-digit"
+    if (useDirectLabels) {
+        drawEndLabels(svg, series, x, y);
+    }
+
+    host.replaceChildren(svg);
+
+    if (series.length === 0 && state.history) {
+        host.append(el(
+            "div",
+            { class: "chart-empty" },
+            el(
+                "span",
+                {},
+                "Таңдалған кезеңде дерек жоқ. Ұзағырақ кезеңді таңдап көріңіз."
+            )
+        ));
+    }
+
+    attachCrosshair(host, svg, series, { x, y, margin, plotHeight, width });
+
+}
+
+
+function drawChartGrid(svg, { x, y, margin, plotWidth, startTime, endTime, isNarrow }) {
+
+    const right = margin.left + plotWidth;
+
+    for (const value of [0, 25, 50, 75, 100]) {
+
+        svg.append(svgEl("line", {
+            x1: margin.left,
+            x2: right,
+            y1: y(value),
+            y2: y(value),
+            stroke: value === 0 ? "var(--axis)" : "var(--grid)",
+            "stroke-width": 1
+        }));
+
+        const label = svgEl("text", {
+            x: margin.left - 8,
+            y: y(value) + 4,
+            "text-anchor": "end",
+            class: "chart-axis"
+        });
+
+        label.textContent = `${value}%`;
+
+        svg.append(label);
+
+    }
+
+    for (const threshold of THRESHOLDS) {
+
+        svg.append(svgEl("line", {
+            x1: margin.left,
+            x2: right,
+            y1: y(threshold.value),
+            y2: y(threshold.value),
+            stroke: threshold.color,
+            "stroke-width": 1
+        }));
+
+    }
+
+    const tickCount = isNarrow ? 3 : 6;
+
+    const isWeek = endTime - startTime > 24 * 3600 * 1000;
+
+    for (let index = 0; index <= tickCount; index++) {
+
+        const time = startTime + (endTime - startTime) * index / tickCount;
+
+        const date = new Date(time);
+
+        const anchor =
+            index === 0 ? "start" : index === tickCount ? "end" : "middle";
+
+        const label = svgEl("text", {
+            x: x(time),
+            y: y(0) + 18,
+            "text-anchor": anchor,
+            class: "chart-axis"
+        });
+
+        label.textContent = isWeek ? formatDay(date) : formatShortTime(date);
+
+        svg.append(label);
+
+    }
+
+}
+
+
+// Drawn above the lines, with a halo, so a line never strikes through the text
+function drawThresholdLabels(svg, margin, y) {
+
+    for (const threshold of THRESHOLDS) {
+
+        const label = svgEl("text", {
+            x: margin.left + 6,
+            y: y(threshold.value) - 5,
+            class: "chart-axis chart-threshold"
+        });
+
+        label.textContent = threshold.name;
+
+        svg.append(label);
+
+    }
+
+}
+
+
+function drawSeriesLine(group, points, bucket, x, y) {
+
+    let path = "";
+
+    points.forEach(([time, value], index) => {
+
+        const previous = points[index - 1];
+
+        const next = points[index + 1];
+
+        // A sensor outage stays visible as a gap instead of a straight line
+        const startsSegment = !previous || time - previous[0] > bucket * 3;
+
+        const endsSegment = !next || next[0] - time > bucket * 3;
+
+        if (startsSegment && endsSegment) {
+            group.append(svgEl("circle", {
+                cx: x(time),
+                cy: y(value),
+                r: 2.5,
+                fill: "currentColor"
+            }));
         }
-    );
+
+        path += `${startsSegment ? "M" : "L"}${x(time).toFixed(1)} ${y(value).toFixed(1)}`;
+
+    });
+
+    group.append(svgEl("path", {
+        d: path,
+        fill: "none",
+        stroke: "currentColor",
+        "stroke-width": 2,
+        "stroke-linecap": "round",
+        "stroke-linejoin": "round"
+    }));
+
+    const [lastTime, lastValue] = points[points.length - 1];
+
+    group.append(svgEl("circle", {
+        cx: x(lastTime),
+        cy: y(lastValue),
+        r: 4,
+        fill: "currentColor",
+        stroke: "var(--surface)",
+        "stroke-width": 2
+    }));
 
 }
 
 
-// ============================================================
-// HELPER
-// ============================================================
+function drawEndLabels(svg, series, x, y) {
 
-function setText(
-    elementId,
-    value
-) {
+    const labels = series
+        .map(({ item, points }) => {
+            const [time, value] = points[points.length - 1];
+            return { item, value, x: x(time) + 9, y: y(value) };
+        })
+        .sort((a, b) => a.y - b.y);
 
-    const element =
-        document.getElementById(
-            elementId
+    labels.forEach((label, index) => {
+
+        const previous = labels[index - 1];
+
+        const next = labels[index + 1];
+
+        // Converging lines rely on the legend and tooltip instead
+        if (
+            (previous && label.y - previous.y < 14)
+            || (next && next.y - label.y < 14)
+        ) {
+            return;
+        }
+
+        const text = svgEl("text", {
+            x: label.x,
+            y: label.y + 4,
+            class: "chart-label"
+        });
+
+        text.textContent =
+            `${truncate(label.item.name, 14)} ${Math.round(label.value)}%`;
+
+        svg.append(text);
+
+    });
+
+}
+
+
+function truncate(text, length) {
+
+    return text.length > length ? `${text.slice(0, length - 1)}…` : text;
+
+}
+
+
+function attachCrosshair(host, svg, series, { x, y, margin, plotHeight, width }) {
+
+    const times = [...new Set(
+        series.flatMap(({ points }) => points.map(point => point[0]))
+    )].sort((a, b) => a - b);
+
+    if (times.length === 0) {
+        return;
+    }
+
+    const valuesByTime = series.map(({ item, points }) => ({
+        item,
+        values: new Map(points)
+    }));
+
+    const overlay = svgEl("g", { "pointer-events": "none" });
+
+    svg.append(overlay);
+
+    const tooltip = el("div", { class: "chart-tooltip", hidden: "" });
+
+    host.append(tooltip);
+
+    let activeIndex = null;
+
+    const hide = () => {
+        activeIndex = null;
+        overlay.replaceChildren();
+        tooltip.hidden = true;
+    };
+
+    const show = index => {
+
+        activeIndex = index;
+
+        const time = times[index];
+
+        const position = x(time);
+
+        overlay.replaceChildren(svgEl("line", {
+            x1: position,
+            x2: position,
+            y1: margin.top,
+            y2: margin.top + plotHeight,
+            stroke: "var(--muted)",
+            "stroke-width": 1
+        }));
+
+        const rows = valuesByTime
+            .filter(({ values }) => values.has(time))
+            .map(({ item, values }) => ({ item, value: values.get(time) }))
+            .sort((a, b) => b.value - a.value);
+
+        for (const row of rows) {
+            overlay.append(svgEl("circle", {
+                cx: position,
+                cy: y(row.value),
+                r: 4,
+                fill: seriesColor(row.item),
+                stroke: "var(--surface)",
+                "stroke-width": 2
+            }));
+        }
+
+        tooltip.replaceChildren(
+            el("div", { class: "tooltip-time" }, formatDateTime(new Date(time))),
+            ...rows.map(row => {
+                const key = el("span", { class: "line-key" });
+                key.style.setProperty("--key", seriesColor(row.item));
+                return el(
+                    "div",
+                    { class: "tooltip-row" },
+                    key,
+                    el("strong", {}, formatFill(row.value)),
+                    el("span", {}, row.item.name)
+                );
+            })
         );
 
+        tooltip.hidden = false;
 
-    if (element) {
+        const tooltipWidth = tooltip.offsetWidth;
 
-        element.textContent =
-            value;
+        const left =
+            position + 12 + tooltipWidth > width
+                ? Math.max(position - 12 - tooltipWidth, 0)
+                : position + 12;
 
+        tooltip.style.left = `${left}px`;
+
+        tooltip.style.top = `${margin.top}px`;
+
+    };
+
+    svg.addEventListener("pointermove", event => {
+
+        const box = svg.getBoundingClientRect();
+
+        const pointer = event.clientX - box.left;
+
+        let nearest = 0;
+
+        times.forEach((time, index) => {
+            if (Math.abs(x(time) - pointer) < Math.abs(x(times[nearest]) - pointer)) {
+                nearest = index;
+            }
+        });
+
+        show(nearest);
+
+    });
+
+    svg.addEventListener("pointerleave", hide);
+
+    svg.addEventListener("blur", hide);
+
+    svg.addEventListener("keydown", event => {
+
+        if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") {
+            return;
+        }
+
+        event.preventDefault();
+
+        const step = event.key === "ArrowLeft" ? -1 : 1;
+
+        const start = activeIndex === null ? times.length : activeIndex;
+
+        show(Math.min(Math.max(start + step, 0), times.length - 1));
+
+    });
+
+}
+
+
+// The same values as the chart, reachable without hovering
+function renderChartTable() {
+
+    const details = document.getElementById("trendDetails");
+
+    if (!details.open) {
+        return;
     }
+
+    const target = document.getElementById("trendTable");
+
+    const series = getChartSeries();
+
+    if (series.length === 0) {
+        target.replaceChildren(
+            el("div", { class: "table-empty" }, "Таңдалған кезеңде дерек жоқ")
+        );
+        return;
+    }
+
+    const lookups = series.map(({ points }) => new Map(points));
+
+    const times = [...new Set(
+        series.flatMap(({ points }) => points.map(point => point[0]))
+    )].sort((a, b) => b - a);
+
+    target.replaceChildren(el(
+        "table",
+        { class: "data-table" },
+        el(
+            "thead",
+            {},
+            el(
+                "tr",
+                {},
+                el("th", { scope: "col" }, "Уақыт"),
+                ...series.map(({ item }) =>
+                    el("th", { scope: "col", class: "align-end" }, item.name)
+                )
+            )
+        ),
+        el(
+            "tbody",
+            {},
+            ...times.map(time => el(
+                "tr",
+                {},
+                el("td", { class: "numeric" }, formatDateTime(new Date(time))),
+                ...lookups.map(values => el(
+                    "td",
+                    { class: "align-end numeric" },
+                    formatFill(values.has(time) ? values.get(time) : null)
+                ))
+            ))
+        )
+    ));
 
 }

@@ -7,7 +7,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Qaldyk — Ақылды қалдықтарды бақылау</title>
+    <title>Qaldyq — Мониторинг панелі</title>
+
+    <link rel="icon" href="data:,">
+
+    <!-- Apply the saved theme before first paint -->
+    <script>
+        try {
+            if (localStorage.getItem("qaldyk-theme") === "light") {
+                document.documentElement.dataset.theme = "light";
+            }
+        } catch (error) {}
+    </script>
 
     <!-- Leaflet -->
     <link
@@ -18,7 +29,7 @@
     <!-- Qaldyk CSS -->
     <link
         rel="stylesheet"
-        href="{% static 'sensor/css/dashboard.css' %}"
+        href="{% static 'sensor/css/dashboard.css' %}?v={{ css_version }}"
     >
 
 </head>
@@ -26,44 +37,96 @@
 <body>
 
 <!-- =========================================================
+     ICONS
+========================================================= -->
+
+<svg class="icon-sprite" aria-hidden="true" focusable="false">
+    <symbol id="i-logo" viewBox="0 0 24 24">
+        <path d="M4 7h16"/>
+        <path d="M9 7V4h6v3"/>
+        <path d="M6 7l1 14h10l1-14"/>
+        <path d="M10 17v-3M14 17v-6"/>
+    </symbol>
+    <symbol id="i-bin" viewBox="0 0 24 24">
+        <path d="M4 7h16"/>
+        <path d="M9 7V4h6v3"/>
+        <path d="M6 7l1 14h10l1-14"/>
+    </symbol>
+    <symbol id="i-full" viewBox="0 0 24 24">
+        <path d="M8 3h8l5 5v8l-5 5H8l-5-5V8z"/>
+        <path d="M12 8v5M12 16.5v.01"/>
+    </symbol>
+    <symbol id="i-half" viewBox="0 0 24 24">
+        <path d="M12 4 2.5 20h19z"/>
+        <path d="M12 10v4.5M12 17.5v.01"/>
+    </symbol>
+    <symbol id="i-normal" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="9"/>
+        <path d="m8 12 3 3 5-6"/>
+    </symbol>
+    <symbol id="i-none" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="9"/>
+        <path d="M8 12h8"/>
+    </symbol>
+    <symbol id="i-offline" viewBox="0 0 24 24">
+        <path d="M3 3l18 18"/>
+        <path d="M8.5 16.5a5 5 0 0 1 7 0"/>
+        <path d="M5 12.5a10 10 0 0 1 5-2.8M14.5 10a10 10 0 0 1 4.5 2.5"/>
+        <path d="M2 8.8a15 15 0 0 1 4.5-2.7M10.5 5.1A15 15 0 0 1 22 8.8"/>
+        <path d="M12 20v.01"/>
+    </symbol>
+    <symbol id="i-gauge" viewBox="0 0 24 24">
+        <path d="M4 19a9.5 9.5 0 1 1 16 0"/>
+        <path d="m12 14 4-5"/>
+    </symbol>
+    <symbol id="i-search" viewBox="0 0 24 24">
+        <circle cx="11" cy="11" r="7"/>
+        <path d="m20 20-4-4"/>
+    </symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="4"/>
+        <path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5 19 19M5 19l1.5-1.5M17.5 6.5 19 5"/>
+    </symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24">
+        <path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/>
+    </symbol>
+</svg>
+
+<!-- =========================================================
      HEADER
 ========================================================= -->
 
 <header class="topbar">
 
-    <div class="header-content">
+    <div class="topbar-inner">
 
         <div class="brand">
 
-            <div class="brand-icon">
-                🗑️
-            </div>
+            <span class="brand-mark">
+                <svg class="icon"><use href="#i-logo"></use></svg>
+            </span>
 
-            <div class="brand-text">
-                <h1>QALDYQ</h1>
-
-                <p>
-                    Ақылды қалдықтарды бақылау жүйесі
-                </p>
+            <div>
+                <div class="brand-name">Qaldyq</div>
+                <div class="brand-note">Қалдықтарды бақылау жүйесі</div>
             </div>
 
         </div>
 
+        <div class="topbar-actions">
 
-        <div class="header-actions">
-
-            <div class="live-status">
-                <span class="live-dot"></span>
-                НАҚТЫ УАҚЫТТА БАҚЫЛАУ
+            <div id="connection" class="connection" role="status">
+                <span class="connection-dot"></span>
+                <span id="connectionText">Қосылуда…</span>
             </div>
 
             <button
                 id="themeToggle"
-                class="theme-toggle"
+                class="icon-button"
                 type="button"
                 aria-label="Тақырыпты өзгерту"
             >
-                🌙
+                <svg class="icon"><use id="themeIcon" href="#i-sun"></use></svg>
             </button>
 
         </div>
@@ -76,593 +139,223 @@
      MAIN
 ========================================================= -->
 
-<main>
+<main class="page">
 
 <!-- =====================================================
      SYSTEM OVERVIEW
 ====================================================== -->
 
-<section class="overview-section">
+<section aria-labelledby="overviewTitle">
 
     <div class="section-header">
 
-        <div>
-            <h2>Жүйеге шолу</h2>
+        <h1 id="overviewTitle">Жүйеге шолу</h1>
 
-            <p>
-                Контейнерлердің нақты уақыттағы күйі
-            </p>
-        </div>
-
-        <div class="refresh-status">
-            <span class="refresh-dot"></span>
-            Автоматты жаңарту: 5 сек
+        <div class="section-meta">
+            Әр 5 секунд сайын жаңарады ·
+            соңғы жаңарту <span id="lastUpdated" class="numeric">--:--:--</span>
         </div>
 
     </div>
 
+    <div class="kpi-grid">
 
-    <!-- Statistics -->
-
-    <div class="stats-wrapper">
-
-
-        <!-- Total -->
-
-        <div class="stat-card">
-
-            <div class="stat-top">
-
-                <span class="stat-title">
-                    Контейнерлер саны
-                </span>
-
-                <span class="stat-icon">
-                    🗑️
-                </span>
-
+        <article class="kpi">
+            <div class="kpi-label">
+                <svg class="icon"><use href="#i-bin"></use></svg>
+                Барлық контейнер
             </div>
-
-            <div
-                class="stat-number"
-                id="totalContainers"
-            >
-                0
-            </div>
-
-            <div class="stat-footer">
-                Белсенді бақылау құрылғылары
-            </div>
-
-        </div>
-
-
-        <!-- Full -->
-
-        <div class="stat-card stat-danger">
-
-            <div class="stat-top">
-
-                <span class="stat-title">
-                    Толы
-                </span>
-
-                <span class="stat-icon">
-                    🔴
-                </span>
-
-            </div>
-
-            <div
-                class="stat-number"
-                id="fullContainers"
-            >
-                0
-            </div>
-
-            <div class="stat-footer">
-                Қоқысты шығару қажет
-            </div>
-
-        </div>
-
-
-        <!-- Half -->
-
-        <div class="stat-card stat-warning">
-
-            <div class="stat-top">
-
-                <span class="stat-title">
-                    Жартылай толы
-                </span>
-
-                <span class="stat-icon">
-                    🟠
-                </span>
-
-            </div>
-
-            <div
-                class="stat-number"
-                id="halfContainers"
-            >
-                0
-            </div>
-
-            <div class="stat-footer">
-                Толу деңгейін бақылау қажет
-            </div>
-
-        </div>
-
-
-        <!-- Normal -->
-
-        <div class="stat-card stat-success">
-
-            <div class="stat-top">
-
-                <span class="stat-title">
-                    Қалыпты
-                </span>
-
-                <span class="stat-icon">
-                    🟢
-                </span>
-
-            </div>
-
-            <div
-                class="stat-number"
-                id="normalContainers"
-            >
-                0
-            </div>
-
-            <div class="stat-footer">
-                Қалыпты жұмыс істеп тұр
-            </div>
-
-        </div>
-
-    </div>
-
-</section>
-
-
-<!-- =====================================================
-     ALERTS
-====================================================== -->
-
-<section
-    id="alertBox"
-    class="alert-box"
->
-
-    <div class="alert-header">
-
-        <div class="alert-header-icon">
-            ⚠️
-        </div>
-
-        <div>
-
-            <h2>
-                ҚОҚЫСТЫ ШЫҒАРУ ҚАЖЕТ
-            </h2>
-
-            <p>
-                Бір немесе бірнеше контейнерге назар аудару қажет
-            </p>
-
-        </div>
-
-    </div>
-
-    <div id="alertList"></div>
-
-</section>
-
-
-<!-- =====================================================
-     CONTAINER MONITORING
-====================================================== -->
-
-<section class="containers-section">
-
-    <div class="section-header">
-
-        <div>
-
-            <h2>
-                Контейнерлерді бақылау
-            </h2>
-
-            <p>
-                Датчиктердің нақты уақыттағы деректері
-            </p>
-
-        </div>
-
-        <div class="monitoring-badge">
-            ESP32 + HC-SR04
-        </div>
-
-    </div>
-
-
-    <div class="container-wrapper">
-
-
-        <!-- =================================================
-             CONTAINER 1
-        ================================================== -->
-
-        <article class="card">
-
-            <div class="card-header">
-
-                <div class="container-name">
-
-                    <div class="container-number">
-                        #01
-                    </div>
-
-                    <div>
-
-                        <h3>
-                            Контейнер #1
-                        </h3>
-
-                        <span>
-                            Бақылау құрылғысы
-                        </span>
-
-                    </div>
-
-                </div>
-
-                <div class="sensor-status">
-                    ДАТЧИК
-                </div>
-
-            </div>
-
-
-            <div class="fill-row">
-
-                <div
-                    class="fill"
-                    id="fill1"
-                >
-                    ДЕРЕК ЖОҚ
-                </div>
-
-                <div class="fill-label">
-                    ТОЛУ ДЕҢГЕЙІ
-                </div>
-
-            </div>
-
-
-            <div class="progress">
-
-                <div
-                    class="progress-bar progress-normal"
-                    id="progress1"
-                ></div>
-
-            </div>
-
-
-            <div class="sensor-grid">
-
-                <div class="sensor-box">
-
-                    <div class="sensor-box-label">
-                        Қашықтық
-                    </div>
-
-                    <div class="sensor-box-value">
-
-                        <span id="distance1">
-                            --
-                        </span>
-
-                        <small>см</small>
-
-                    </div>
-
-                </div>
-
-
-                <div class="sensor-box">
-
-                    <div class="sensor-box-label">
-                        Күйі
-                    </div>
-
-                    <div
-                        class="sensor-box-value"
-                        id="status1"
-                    >
-                        ДЕРЕК ЖОҚ
-                    </div>
-
-                </div>
-
-            </div>
-
+            <div id="kpiTotal" class="kpi-value">–</div>
+            <div id="kpiShare" class="share-bar" role="img"></div>
         </article>
 
-
-        <!-- =================================================
-             CONTAINER 2
-        ================================================== -->
-
-        <article class="card">
-
-            <div class="card-header">
-
-                <div class="container-name">
-
-                    <div class="container-number">
-                        #02
-                    </div>
-
-                    <div>
-
-                        <h3>
-                            Контейнер #2
-                        </h3>
-
-                        <span>
-                            Бақылау құрылғысы
-                        </span>
-
-                    </div>
-
-                </div>
-
-                <div class="sensor-status">
-                    ДАТЧИК
-                </div>
-
-            </div>
-
-
-            <div class="fill-row">
-
-                <div
-                    class="fill"
-                    id="fill2"
-                >
-                    ДЕРЕК ЖОҚ
-                </div>
-
-                <div class="fill-label">
-                    ТОЛУ ДЕҢГЕЙІ
-                </div>
-
-            </div>
-
-
-            <div class="progress">
-
-                <div
-                    class="progress-bar progress-normal"
-                    id="progress2"
-                ></div>
-
-            </div>
-
-
-            <div class="sensor-grid">
-
-                <div class="sensor-box">
-
-                    <div class="sensor-box-label">
-                        Қашықтық
-                    </div>
-
-                    <div class="sensor-box-value">
-
-                        <span id="distance2">
-                            --
-                        </span>
-
-                        <small>см</small>
-
-                    </div>
-
-                </div>
-
-
-                <div class="sensor-box">
-
-                    <div class="sensor-box-label">
-                        Күйі
-                    </div>
-
-                    <div
-                        class="sensor-box-value"
-                        id="status2"
-                    >
-                        ДЕРЕК ЖОҚ
-                    </div>
-
-                </div>
-
-            </div>
-
-        </article>
-
-
-        <!-- =================================================
-             CONTAINER 3
-        ================================================== -->
-
-        <article class="card">
-
-            <div class="card-header">
-
-                <div class="container-name">
-
-                    <div class="container-number">
-                        #03
-                    </div>
-
-                    <div>
-
-                        <h3>
-                            Контейнер #3
-                        </h3>
-
-                        <span>
-                            Бақылау құрылғысы
-                        </span>
-
-                    </div>
-
-                </div>
-
-                <div class="sensor-status">
-                    ДАТЧИК
-                </div>
-
-            </div>
-
-
-            <div class="fill-row">
-
-                <div
-                    class="fill"
-                    id="fill3"
-                >
-                    ДЕРЕК ЖОҚ
-                </div>
-
-                <div class="fill-label">
-                    ТОЛУ ДЕҢГЕЙІ
-                </div>
-
-            </div>
-
-
-            <div class="progress">
-
-                <div
-                    class="progress-bar progress-normal"
-                    id="progress3"
-                ></div>
-
-            </div>
-
-
-            <div class="sensor-grid">
-
-                <div class="sensor-box">
-
-                    <div class="sensor-box-label">
-                        Қашықтық
-                    </div>
-
-                    <div class="sensor-box-value">
-
-                        <span id="distance3">
-                            --
-                        </span>
-
-                        <small>см</small>
-
-                    </div>
-
-                </div>
-
-
-                <div class="sensor-box">
-
-                    <div class="sensor-box-label">
-                        Күйі
-                    </div>
-
-                    <div
-                        class="sensor-box-value"
-                        id="status3"
-                    >
-                        ДЕРЕК ЖОҚ
-                    </div>
-
-                </div>
-
-            </div>
-
-        </article>
-
-
-    </div>
-
-</section>
-
-
-<!-- =====================================================
-     MAP
-====================================================== -->
-
-<section class="map-section">
-
-    <div class="section-header">
-
-        <div>
-
-            <h2>
-                🗺️ Контейнерлер картасы
-            </h2>
-
-            <p>
-                Алматыдағы бақылау аймағы
-            </p>
-
-        </div>
-
-        <div class="map-legend">
-
-            <span>
-                <i class="legend-dot normal"></i>
-                Қалыпты
-            </span>
-
-            <span>
-                <i class="legend-dot warning"></i>
-                Жартылай толы
-            </span>
-
-            <span>
-                <i class="legend-dot danger"></i>
+        <article class="kpi level-full">
+            <div class="kpi-label">
+                <svg class="icon"><use href="#i-full"></use></svg>
                 Толы
-            </span>
+            </div>
+            <div id="kpiFull" class="kpi-value">–</div>
+            <div class="kpi-note">80% және жоғары, шығару қажет</div>
+        </article>
 
-        </div>
+        <article class="kpi level-half">
+            <div class="kpi-label">
+                <svg class="icon"><use href="#i-half"></use></svg>
+                Жартылай толы
+            </div>
+            <div id="kpiHalf" class="kpi-value">–</div>
+            <div class="kpi-note">50–79%, бақылауда ұстау</div>
+        </article>
+
+        <article class="kpi level-normal">
+            <div class="kpi-label">
+                <svg class="icon"><use href="#i-normal"></use></svg>
+                Қалыпты
+            </div>
+            <div id="kpiNormal" class="kpi-value">–</div>
+            <div class="kpi-note">50%-дан төмен</div>
+        </article>
+
+        <article class="kpi level-none">
+            <div class="kpi-label">
+                <svg class="icon"><use href="#i-offline"></use></svg>
+                Байланыс жоқ
+            </div>
+            <div id="kpiOffline" class="kpi-value">–</div>
+            <div class="kpi-note">5 минуттан астам дерек келмеген</div>
+        </article>
+
+        <article class="kpi">
+            <div class="kpi-label">
+                <svg class="icon"><use href="#i-gauge"></use></svg>
+                Орташа толу
+            </div>
+            <div id="kpiAverage" class="kpi-value">–</div>
+            <div class="kpi-note">Соңғы белгілі деректер бойынша</div>
+        </article>
 
     </div>
 
+</section>
 
-    <div class="map-wrapper">
+<!-- =====================================================
+     MAP AND ATTENTION QUEUE
+====================================================== -->
+
+<div class="ops-grid">
+
+    <section class="panel map-panel" aria-labelledby="mapTitle">
+
+        <div class="panel-header">
+
+            <div>
+                <h2 id="mapTitle">Контейнерлер картасы</h2>
+                <p id="mapNote" class="panel-note">Алматыдағы бақылау аймағы</p>
+            </div>
+
+            <ul class="map-legend">
+                <li class="level-normal"><i></i>Қалыпты</li>
+                <li class="level-half"><i></i>Жартылай</li>
+                <li class="level-full"><i></i>Толы</li>
+                <li class="level-none"><i></i>Байланыс жоқ</li>
+            </ul>
+
+        </div>
 
         <div
             id="map"
+            role="region"
             aria-label="Контейнерлер орналасқан карта"
         ></div>
 
-        <div class="map-overlay">
+    </section>
 
-            <div class="map-live">
-                <span></span>
-                НАҚТЫ УАҚЫТТАҒЫ КАРТА
+    <section class="panel queue-panel" aria-labelledby="queueTitle">
+
+        <div class="panel-header">
+
+            <div>
+                <h2 id="queueTitle">Назар аударыңыз</h2>
+                <p class="panel-note">Алдымен шығарылатын контейнерлер</p>
             </div>
 
+            <span id="queueCount" class="count-badge">0</span>
+
         </div>
+
+        <div id="queueList" class="queue-list"></div>
+
+    </section>
+
+</div>
+
+<!-- =====================================================
+     CONTAINER TABLE
+====================================================== -->
+
+<section aria-labelledby="tableTitle">
+
+    <div class="section-header">
+        <h2 id="tableTitle">Контейнерлер</h2>
+    </div>
+
+    <div class="filter-row">
+
+        <label class="search">
+            <svg class="icon"><use href="#i-search"></use></svg>
+            <span class="visually-hidden">Контейнерді іздеу</span>
+            <input
+                id="tableSearch"
+                type="search"
+                placeholder="Атауы немесе орны бойынша"
+                autocomplete="off"
+            >
+        </label>
+
+        <div id="tableFilters" class="segmented" role="group" aria-label="Күйі бойынша сүзу">
+            <button type="button" data-filter="all" aria-pressed="true">Барлығы</button>
+            <button type="button" data-filter="full" aria-pressed="false">Толы</button>
+            <button type="button" data-filter="half" aria-pressed="false">Жартылай</button>
+            <button type="button" data-filter="normal" aria-pressed="false">Қалыпты</button>
+            <button type="button" data-filter="offline" aria-pressed="false">Байланыс жоқ</button>
+        </div>
+
+    </div>
+
+    <div class="panel table-scroll">
+
+        <table class="data-table">
+
+            <thead>
+                <tr>
+                    <th data-sort="name" scope="col"><button type="button">Контейнер</button></th>
+                    <th data-sort="location" scope="col"><button type="button">Орны</button></th>
+                    <th data-sort="fill" scope="col"><button type="button">Толу деңгейі</button></th>
+                    <th data-sort="distance" class="align-end" scope="col"><button type="button">Қашықтық</button></th>
+                    <th scope="col">Күйі</th>
+                    <th data-sort="age" scope="col"><button type="button">Соңғы дерек</button></th>
+                </tr>
+            </thead>
+
+            <tbody id="tableBody"></tbody>
+
+        </table>
+
+    </div>
+
+</section>
+
+<!-- =====================================================
+     FILL LEVEL TREND
+====================================================== -->
+
+<section aria-labelledby="trendTitle">
+
+    <div class="section-header">
+        <h2 id="trendTitle">Толу динамикасы</h2>
+    </div>
+
+    <div class="filter-row">
+
+        <div id="rangeFilters" class="segmented" role="group" aria-label="Кезеңді таңдау">
+            <button type="button" data-hours="1" aria-pressed="false">1 сағат</button>
+            <button type="button" data-hours="6" aria-pressed="false">6 сағат</button>
+            <button type="button" data-hours="24" aria-pressed="true">24 сағат</button>
+            <button type="button" data-hours="168" aria-pressed="false">7 күн</button>
+        </div>
+
+    </div>
+
+    <div class="panel chart-panel">
+
+        <ul id="trendLegend" class="chart-legend"></ul>
+
+        <div id="trendChart" class="chart"></div>
+
+        <details id="trendDetails" class="chart-details">
+            <summary>Кесте түрінде көрсету</summary>
+            <div id="trendTable" class="chart-table"></div>
+        </details>
 
     </div>
 
@@ -674,15 +367,11 @@
      FOOTER
 ========================================================= -->
 
-<footer>
+<footer class="footer">
 
-    <span>
-        QALDYQ IoT ЖҮЙЕСІ
-    </span>
+    <span>Qaldyq IoT жүйесі</span>
 
-    <span>
-        ESP32 • HC-SR04 • Django REST • PostgreSQL
-    </span>
+    <span>ESP32 · HC-SR04 · Django REST · PostgreSQL</span>
 
 </footer>
 
@@ -699,7 +388,7 @@
 ========================================================= -->
 
 <script
-    src="{% static 'sensor/js/dashboard.js' %}">
+    src="{% static 'sensor/js/dashboard.js' %}?v={{ js_version }}">
 </script>
 
 </body>
