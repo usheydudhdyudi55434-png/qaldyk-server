@@ -394,11 +394,11 @@ ul {
     gap: 6px;
 }
 
-.map-legend i {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    background: var(--level);
+.map-legend .icon {
+    width: 14px;
+    height: 14px;
+    flex-basis: 14px;
+    color: var(--level);
 }
 
 #map {
@@ -410,24 +410,96 @@ ul {
     background: var(--surface-raised);
 }
 
-.map-marker {
-    width: 38px;
-    height: 38px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 2px solid var(--surface);
-    border-radius: 50%;
-    background: var(--level);
-    color: var(--level-ink);
-    font-size: 12px;
-    font-weight: 700;
-    box-shadow: 0 1px 4px rgba(0, 0, 0, .45);
-}
+/* Bin markers: the contents rise with the fill level */
 
 .leaflet-marker-icon.qaldyk-marker {
     background: transparent;
     border: 0;
+}
+
+.bin-marker {
+    width: 34px;
+    height: 46px;
+    transform-origin: 50% 95%;
+    transition: transform .15s ease;
+}
+
+.qaldyk-marker:hover .bin-marker,
+.qaldyk-marker:focus-visible .bin-marker {
+    transform: scale(1.15);
+}
+
+.bin-marker svg {
+    display: block;
+    overflow: visible;
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, .35));
+}
+
+.bin-shadow {
+    fill: rgba(0, 0, 0, .3);
+}
+
+.bin-body {
+    fill: var(--surface);
+}
+
+.bin-fill {
+    fill: var(--level);
+}
+
+.level-none .bin-fill {
+    opacity: .55;
+}
+
+.bin-ribs {
+    fill: none;
+    stroke: var(--level);
+    stroke-width: 1.2;
+    stroke-linecap: round;
+    opacity: .35;
+}
+
+.bin-outline,
+.bin-handle {
+    fill: none;
+    stroke: var(--level);
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.bin-lid {
+    fill: var(--level);
+}
+
+.bin-label {
+    fill: var(--ink);
+    font-size: 10px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    paint-order: stroke;
+    stroke: var(--surface);
+    stroke-width: 3px;
+    stroke-linejoin: round;
+}
+
+.bin-pulse {
+    fill: var(--level);
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: bin-pulse 1.8s ease-out infinite;
+}
+
+@keyframes bin-pulse {
+    from {
+        opacity: .6;
+        transform: scale(.6);
+    }
+
+    to {
+        opacity: 0;
+        transform: scale(2.6);
+    }
 }
 
 /* Keep the 2GIS tiles from glaring on the dark theme */

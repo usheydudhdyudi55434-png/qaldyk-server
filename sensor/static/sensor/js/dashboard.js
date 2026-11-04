@@ -973,9 +973,12 @@ function updateMarker(item) {
 
     const level = item.offline ? "none" : item.level;
 
-    const label = item.fill === null ? "–" : String(Math.round(item.fill));
+    const fill = item.fill === null ? null : Math.round(item.fill);
 
-    const iconKey = `${level}-${label}`;
+    const iconKey = `${level}-${fill}`;
+
+    // Full bins stay on top of their neighbours
+    const zIndexOffset = level === "full" ? 1000 : 0;
 
     const location = [item.latitude, item.longitude];
 
@@ -987,7 +990,8 @@ function updateMarker(item) {
 
         // Rebuilding the icon on every poll would make the marker flicker
         if (existing.iconKey !== iconKey) {
-            existing.setIcon(createMarkerIcon(level, label));
+            existing.setIcon(createMarkerIcon(level, fill));
+            existing.setZIndexOffset(zIndexOffset);
             existing.iconKey = iconKey;
         }
 
@@ -998,9 +1002,10 @@ function updateMarker(item) {
     }
 
     const marker = L.marker(location, {
-        icon: createMarkerIcon(level, label),
+        icon: createMarkerIcon(level, fill),
         title: item.name,
-        alt: item.name
+        alt: item.name,
+        zIndexOffset
     }).addTo(map);
 
     marker.iconKey = iconKey;
@@ -1020,14 +1025,57 @@ function updateMarker(item) {
 }
 
 
-function createMarkerIcon(level, label) {
+// The bin body is a trapezoid; its contents rise from the bottom edge
+const BIN_TOP = 13;
+
+const BIN_BOTTOM = 42;
+
+const BIN_TAPER = 3;
+
+
+function binContents(fill) {
+
+    if (fill === null || fill <= 0) {
+        return "";
+    }
+
+    const y = BIN_BOTTOM - (BIN_BOTTOM - BIN_TOP) * Math.min(fill, 100) / 100;
+
+    const inset = BIN_TAPER * (y - BIN_TOP) / (BIN_BOTTOM - BIN_TOP);
+
+    return `<path class="bin-fill" d="M${5 + inset} ${y}H${29 - inset}L26 ${BIN_BOTTOM}H8Z"/>`;
+
+}
+
+
+function createMarkerIcon(level, fill) {
+
+    const label = fill === null ? "–" : `${fill}%`;
+
+    const pulse = level === "full"
+        ? '<ellipse class="bin-pulse" cx="17" cy="44" rx="9" ry="3"/>'
+        : "";
 
     return L.divIcon({
         className: "qaldyk-marker",
-        html: `<div class="map-marker level-${level}">${label}</div>`,
-        iconSize: [38, 38],
-        iconAnchor: [19, 19],
-        popupAnchor: [0, -20]
+        html: `
+            <div class="bin-marker level-${level}">
+                <svg viewBox="0 0 34 46" width="34" height="46" aria-hidden="true">
+                    ${pulse}
+                    <ellipse class="bin-shadow" cx="17" cy="44" rx="8" ry="2"/>
+                    <path class="bin-body" d="M5 ${BIN_TOP}H29L26 ${BIN_BOTTOM}H8Z"/>
+                    ${binContents(fill)}
+                    <path class="bin-ribs" d="M12 18V37M17 18V37M22 18V37"/>
+                    <path class="bin-outline" d="M5 ${BIN_TOP}H29L26 ${BIN_BOTTOM}H8Z"/>
+                    <path class="bin-handle" d="M13 8V5.5H21V8"/>
+                    <rect class="bin-lid" x="3" y="8" width="28" height="4.5" rx="1.5"/>
+                    <text class="bin-label" x="17" y="31" text-anchor="middle">${label}</text>
+                </svg>
+            </div>
+        `,
+        iconSize: [34, 46],
+        iconAnchor: [17, 44],
+        popupAnchor: [0, -44]
     });
 
 }

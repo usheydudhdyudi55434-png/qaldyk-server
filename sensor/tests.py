@@ -1,6 +1,8 @@
 from datetime import UTC, datetime, timedelta
+from io import StringIO
 
 from django.contrib.auth import get_user_model
+from django.core.management import call_command
 from django.test import TestCase
 from django.utils import timezone
 
@@ -105,6 +107,25 @@ class LoginTests(TestCase):
 
         self.assertRedirects(response, '/login/')
         self.assertEqual(self.client.get('/dashboard/').status_code, 302)
+
+
+class AddCityContainersTests(TestCase):
+
+    def test_creates_ten_located_containers_and_is_safe_to_rerun(self):
+        existing = Container.objects.create(name="Container #2", location="Almaty")
+        add_reading(existing, 50)
+
+        call_command('add_city_containers', stdout=StringIO())
+        call_command('add_city_containers', stdout=StringIO())
+
+        self.assertEqual(Container.objects.count(), 10)
+        self.assertFalse(
+            Container.objects.filter(latitude__isnull=True).exists()
+        )
+
+        existing.refresh_from_db()
+        self.assertEqual(existing.location, "Медеу ауданы, Көк базар")
+        self.assertEqual(existing.readings.count(), 1)
 
 
 class DashboardTests(TestCase):
