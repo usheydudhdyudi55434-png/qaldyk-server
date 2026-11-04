@@ -14,8 +14,9 @@
     --axis: #383835;
     --border: rgba(255, 255, 255, .10);
     --hover: rgba(255, 255, 255, .05);
-    --accent: #3987e5;
-    --accent-wash: rgba(57, 135, 229, .16);
+    --brand: #2563eb;
+    --accent: #3b82f6;
+    --accent-wash: rgba(59, 130, 246, .16);
     --series-1: #3987e5;
     --series-2: #d95926;
     --series-3: #199e70;
@@ -44,8 +45,8 @@
     --axis: #c3c2b7;
     --border: rgba(11, 11, 11, .10);
     --hover: rgba(11, 11, 11, .04);
-    --accent: #2a78d6;
-    --accent-wash: rgba(42, 120, 214, .10);
+    --accent: #2563eb;
+    --accent-wash: rgba(37, 99, 235, .10);
     --series-1: #2a78d6;
     --series-2: #eb6834;
     --series-3: #1baf7a;
@@ -177,32 +178,33 @@ ul {
 .brand {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
     min-width: 0;
 }
 
-.brand-mark {
-    width: 34px;
-    height: 34px;
-    flex: 0 0 34px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 8px;
-    background: var(--accent);
-    color: #ffffff;
+.topbar .brand-note {
+    padding-left: 12px;
+    border-left: 1px solid var(--border);
 }
 
-.brand-mark .icon {
-    width: 20px;
-    height: 20px;
-    flex-basis: 20px;
+/* Logo: white wordmark on the dark theme, navy on the light theme */
+
+.brand-wordmark {
+    display: block;
+    width: auto;
+    height: 26px;
 }
 
-.brand-name {
-    font-size: 15px;
-    font-weight: 700;
-    line-height: 1.2;
+.wordmark-navy {
+    display: none;
+}
+
+:root[data-theme="light"] .wordmark-navy {
+    display: block;
+}
+
+:root[data-theme="light"] .wordmark-white {
+    display: none;
 }
 
 .brand-note {
@@ -1107,6 +1109,24 @@ ul {
     background: var(--surface);
 }
 
+.login-brand {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 0 4px;
+    text-align: center;
+}
+
+.login-brand .brand-wordmark {
+    height: 56px;
+}
+
+.login-brand .brand-note {
+    color: var(--ink-secondary);
+    font-size: 13px;
+}
+
 .login-card h1 {
     margin: 24px 0 16px;
     font-size: 18px;
@@ -1156,7 +1176,7 @@ ul {
     margin-top: 4px;
     border: 0;
     border-radius: 8px;
-    background: var(--accent);
+    background: var(--brand);
     color: #ffffff;
     font-weight: 600;
 }

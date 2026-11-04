@@ -9,7 +9,8 @@
 
     <title>Qaldyq — Мониторинг панелі</title>
 
-    <link rel="icon" href="data:,">
+    <link rel="icon" type="image/svg+xml" href="{% static 'sensor/img/qaldyq-icon.svg' %}">
+    <link rel="apple-touch-icon" href="{% static 'sensor/img/qaldyq-apple-touch-icon.png' %}">
 
     <!-- Apply the saved theme before first paint -->
     <script>
@@ -41,12 +42,6 @@
 ========================================================= -->
 
 <svg class="icon-sprite" aria-hidden="true" focusable="false">
-    <symbol id="i-logo" viewBox="0 0 24 24">
-        <path d="M4 7h16"/>
-        <path d="M9 7V4h6v3"/>
-        <path d="M6 7l1 14h10l1-14"/>
-        <path d="M10 17v-3M14 17v-6"/>
-    </symbol>
     <symbol id="i-bin" viewBox="0 0 24 24">
         <path d="M4 7h16"/>
         <path d="M9 7V4h6v3"/>
@@ -106,14 +101,23 @@
 
         <div class="brand">
 
-            <span class="brand-mark">
-                <svg class="icon"><use href="#i-logo"></use></svg>
-            </span>
+            <img
+                class="brand-wordmark wordmark-white"
+                src="{% static 'sensor/img/qaldyq-wordmark-white.png' %}"
+                alt="Qaldyq"
+                width="74"
+                height="26"
+            >
 
-            <div>
-                <div class="brand-name">Qaldyq</div>
-                <div class="brand-note">Қалдықтарды бақылау жүйесі</div>
-            </div>
+            <img
+                class="brand-wordmark wordmark-navy"
+                src="{% static 'sensor/img/qaldyq-wordmark-navy.png' %}"
+                alt="Qaldyq"
+                width="74"
+                height="26"
+            >
+
+            <div class="brand-note">Қалдықтарды бақылау жүйесі</div>
 
         </div>
 
