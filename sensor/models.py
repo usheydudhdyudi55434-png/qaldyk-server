@@ -25,6 +25,13 @@ class SensorReading(models.Model):
     distance = models.FloatField()
     fill_level = models.FloatField()
     status = models.CharField(max_length=20)
+
+    # Fire risk signs; empty on devices without temperature or gas sensors
+    temperature = models.FloatField(null=True, blank=True)
+    gas_level = models.IntegerField(null=True, blank=True)
+    fire_risk = models.CharField(max_length=10, blank=True, default="")
+    fire_note = models.CharField(max_length=200, blank=True, default="")
+
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

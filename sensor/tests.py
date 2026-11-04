@@ -6,6 +6,7 @@ from django.core.management import call_command
 from django.test import TestCase
 from django.utils import timezone
 
+from . import fire
 from .models import Container, SensorReading
 
 
@@ -279,3 +280,124 @@ class ContainersHistoryTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["series"], {})
+
+
+class FireAssessmentTests(TestCase):
+
+    def test_no_fire_sensors_means_no_risk_value(self):
+        self.assertEqual(fire.assess(None, None), ("", ""))
+
+    def test_normal_readings(self):
+        self.assertEqual(fire.assess(22, 900)[0], fire.NORMAL)
+
+    def test_single_signs(self):
+        self.assertEqual(fire.assess(55, 900)[0], fire.WARNING)
+        self.assertEqual(fire.assess(70, 900)[0], fire.DANGER)
+        self.assertEqual(fire.assess(22, 3200)[0], fire.WARNING)
+        self.assertEqual(fire.assess(22, 3900)[0], fire.DANGER)
+
+    def test_two_warning_signs_confirm_danger(self):
+        risk, note = fire.assess(55, 3200)
+
+        self.assertEqual(risk, fire.DANGER)
+        self.assertIn("Температура 55°C", note)
+        self.assertIn("Түтін/газ", note)
+
+    def test_fast_temperature_rise_is_a_warning(self):
+        now = timezone.now()
+        previous = (20, now - timedelta(minutes=2))
+
+        risk, note = fire.assess(40, None, previous=previous, now=now)
+
+        self.assertEqual(risk, fire.WARNING)
+        self.assertIn("минутына 10°C", note)
+
+    def test_old_previous_reading_is_not_compared(self):
+        now = timezone.now()
+        previous = (20, now - timedelta(hours=1))
+
+        self.assertEqual(
+            fire.assess(40, None, previous=previous, now=now)[0],
+            fire.NORMAL
+        )
+
+    def test_device_can_raise_but_not_lower_the_risk(self):
+        self.assertEqual(fire.assess(22, 900, device_risk=fire.WARNING)[0], fire.WARNING)
+        self.assertEqual(fire.assess(70, 900, device_risk=fire.NORMAL)[0], fire.DANGER)
+
+
+class FireApiTests(TestCase):
+
+    def setUp(self):
+        self.container = Container.objects.create(name="A", location="Almaty")
+        self.url = f'/api/sensor/{self.container.id}/'
+
+    def post(self, **fields):
+        return self.client.post(
+            self.url,
+            {"distance": 149.29, "fill_level": 0, **fields},
+            content_type='application/json'
+        )
+
+    def test_reading_from_the_new_firmware_is_saved_and_assessed(self):
+        response = self.post(
+            temperature=5.19,
+            gas_level=3628,
+            fire_risk="WARNING"
+        )
+
+        self.assertEqual(response.status_code, 201)
+        reading = SensorReading.objects.get()
+        self.assertEqual(reading.gas_level, 3628)
+        self.assertEqual(reading.fire_risk, fire.WARNING)
+        self.assertIn("Түтін/газ 89%", reading.fire_note)
+
+    def test_old_firmware_without_fire_sensors_still_works(self):
+        response = self.post()
+
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(SensorReading.objects.get().fire_risk, "")
+
+    def test_invalid_fire_values_are_rejected_and_nothing_is_saved(self):
+        for fields in (
+            {"temperature": "hot"},
+            {"temperature": 400},
+            {"gas_level": 5000},
+            {"gas_level": -1},
+            {"fire_risk": "PANIC"},
+        ):
+            self.assertEqual(self.post(**fields).status_code, 400, fields)
+
+        self.assertEqual(SensorReading.objects.count(), 0)
+
+    def test_overview_and_history_expose_fire_signs(self):
+        self.client.force_login(create_user())
+        self.post(temperature=72, gas_level=1000)
+
+        latest = self.client.get('/api/containers/').json()["containers"][0]["latest"]
+        self.assertEqual(latest["fire_risk"], fire.DANGER)
+        self.assertEqual(latest["temperature"], 72)
+
+        history = self.client.get(
+            '/api/containers/history/',
+            {"hours": 1, "metric": "temperature"}
+        ).json()
+        self.assertEqual(history["series"][str(self.container.id)][0][1], 72)
+
+        self.assertEqual(
+            self.client.get('/api/containers/history/', {"metric": "x"}).status_code,
+            400
+        )
+
+    def test_history_keeps_the_temperature_peak(self):
+        self.client.force_login(create_user())
+
+        for temperature in (20, 90, 20):
+            self.post(temperature=temperature)
+
+        points = self.client.get(
+            '/api/containers/history/',
+            {"hours": 1, "metric": "temperature"}
+        ).json()["series"][str(self.container.id)]
+
+        self.assertEqual(max(point[1] for point in points), 90)

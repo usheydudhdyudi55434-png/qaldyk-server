@@ -29,6 +29,7 @@
     --status-half: #fab219;
     --status-full: #d03b3b;
     --status-none: #898781;
+    --fire-warning: #ec835a;
     --radius: 10px;
     --gutter: 24px;
 }
@@ -151,6 +152,28 @@ ul {
 }
 
 .level-none {
+    --level: var(--status-none);
+    --level-ink: #ffffff;
+}
+
+/* Fire risk: the same --level contract, so icons and badges pick it up */
+
+.fire-DANGER {
+    --level: var(--status-full);
+    --level-ink: #ffffff;
+}
+
+.fire-WARNING {
+    --level: var(--fire-warning);
+    --level-ink: #0b0b0b;
+}
+
+.fire-NORMAL {
+    --level: var(--status-normal);
+    --level-ink: #ffffff;
+}
+
+.fire-NONE {
     --level: var(--status-none);
     --level-ink: #ffffff;
 }
@@ -316,7 +339,7 @@ ul {
 
 .kpi-grid {
     display: grid;
-    grid-template-columns: repeat(6, minmax(0, 1fr));
+    grid-template-columns: repeat(7, minmax(0, 1fr));
     gap: 12px;
 }
 
@@ -350,6 +373,112 @@ ul {
 .kpi-note {
     margin-top: 6px;
     color: var(--muted);
+    font-size: 12px;
+}
+
+.kpi-fire .kpi-label .icon {
+    color: var(--muted);
+}
+
+.kpi-fire.has-alert {
+    border-color: var(--status-full);
+    background: color-mix(in srgb, var(--status-full) 10%, var(--surface));
+}
+
+.kpi-fire.has-alert .kpi-label .icon {
+    color: var(--status-full);
+}
+
+/* FIRE ALERT BANNER */
+
+.fire-alert {
+    padding: 14px 16px;
+    border: 1px solid var(--fire-warning);
+    border-radius: var(--radius);
+    background: color-mix(in srgb, var(--fire-warning) 10%, var(--surface));
+}
+
+.fire-alert.is-danger {
+    border-color: var(--status-full);
+    background: color-mix(in srgb, var(--status-full) 12%, var(--surface));
+}
+
+.fire-alert-head {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.fire-alert-head > .icon {
+    width: 24px;
+    height: 24px;
+    flex-basis: 24px;
+    margin-top: 2px;
+    color: var(--fire-warning);
+}
+
+.fire-alert.is-danger .fire-alert-head > .icon {
+    color: var(--status-full);
+    animation: fire-blink 1.2s ease-in-out infinite;
+}
+
+@keyframes fire-blink {
+    50% {
+        opacity: .35;
+    }
+}
+
+.fire-alert-head h2 {
+    font-size: 15px;
+}
+
+.fire-alert-head p {
+    max-width: 760px;
+    margin: 4px 0 0;
+    color: var(--ink-secondary);
+    font-size: 13px;
+}
+
+.fire-alert-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.fire-alert-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--level);
+    border-radius: 8px;
+    background: var(--surface);
+    text-align: left;
+}
+
+.fire-alert-item:hover {
+    background: var(--surface-raised);
+}
+
+.fire-alert-item.is-selected {
+    background: var(--accent-wash);
+}
+
+.fire-alert-item > .icon {
+    margin-top: 2px;
+    color: var(--level);
+}
+
+.fire-alert-text {
+    display: grid;
+    gap: 2px;
+    min-width: 0;
+}
+
+.fire-alert-text span {
+    color: var(--ink-secondary);
     font-size: 12px;
 }
 
@@ -485,6 +614,39 @@ ul {
     stroke-linejoin: round;
 }
 
+.bin-fire-dot {
+    fill: var(--level);
+    stroke: var(--surface);
+    stroke-width: 1.5;
+}
+
+.bin-fire-flame {
+    fill: #ffffff;
+}
+
+.fire-WARNING .bin-fire-flame {
+    fill: #0b0b0b;
+}
+
+.bin-fire-pulse {
+    fill: var(--level);
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: bin-fire-pulse 1.2s ease-out infinite;
+}
+
+@keyframes bin-fire-pulse {
+    from {
+        opacity: .7;
+        transform: scale(1);
+    }
+
+    to {
+        opacity: 0;
+        transform: scale(2.4);
+    }
+}
+
 .bin-pulse {
     fill: var(--level);
     transform-box: fill-box;
@@ -576,6 +738,15 @@ ul {
 
 .popup-rows dt {
     color: var(--ink-secondary);
+}
+
+.popup-fire {
+    margin-top: 10px;
+    padding: 6px 8px;
+    border-left: 3px solid var(--level);
+    border-radius: 4px;
+    background: var(--surface-raised);
+    font-size: 12px;
 }
 
 .popup-rows dd {
@@ -756,7 +927,7 @@ ul {
 
 .data-table {
     width: 100%;
-    min-width: 820px;
+    min-width: 960px;
     border-collapse: collapse;
     font-size: 13px;
 }
@@ -880,6 +1051,21 @@ ul {
     height: 14px;
     flex-basis: 14px;
     color: var(--level);
+}
+
+.safety-cell {
+    display: grid;
+    gap: 2px;
+}
+
+.safety-cell .badge .icon {
+    color: var(--level);
+}
+
+.safety-values {
+    color: var(--ink-secondary);
+    font-size: 12px;
+    white-space: nowrap;
 }
 
 .last-seen {
@@ -1189,7 +1375,7 @@ ul {
 
 @media (max-width: 1240px) {
     .kpi-grid {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
+        grid-template-columns: repeat(4, minmax(0, 1fr));
     }
 }
 
@@ -1272,6 +1458,7 @@ ul {
     .table-scroll tr[data-id] td:nth-child(2) { grid-area: 3 / 1; }
     .table-scroll tr[data-id] td:nth-child(4) { grid-area: 3 / 2; }
     .table-scroll tr[data-id] td:nth-child(6) { grid-area: 4 / 1 / 4 / 3; }
+    .table-scroll tr[data-id] td:nth-child(7) { grid-area: 5 / 1 / 5 / 3; }
 
     .meter-cell {
         min-width: 0;

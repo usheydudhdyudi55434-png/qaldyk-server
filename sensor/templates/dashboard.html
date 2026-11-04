@@ -85,6 +85,9 @@
     <symbol id="i-moon" viewBox="0 0 24 24">
         <path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/>
     </symbol>
+    <symbol id="i-flame" viewBox="0 0 24 24">
+        <path d="M12 3c3 3.2 6 6.2 6 10a6 6 0 0 1-12 0c0-2 .9-3.7 2.4-5 .2 1.6 1 2.8 2.1 3.3C10.2 8.6 10.7 5.7 12 3z"/>
+    </symbol>
     <symbol id="i-logout" viewBox="0 0 24 24">
         <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
         <path d="m16 17 5-5-5-5M21 12H9"/>
@@ -164,6 +167,31 @@
 <main class="page">
 
 <!-- =====================================================
+     FIRE ALERT
+====================================================== -->
+
+<section id="fireAlert" class="fire-alert" role="alert" aria-labelledby="fireAlertTitle" hidden>
+
+    <div class="fire-alert-head">
+
+        <svg class="icon"><use href="#i-flame"></use></svg>
+
+        <div>
+            <h2 id="fireAlertTitle">Өрт қаупінің белгілері анықталды</h2>
+            <p>
+                Датчиктер өртті алдын ала болжамайды: олар жоғары температураны,
+                оның жылдам көтерілуін, түтін немесе жанғыш газды байқайды.
+                Контейнерді орнында тексеріңіз.
+            </p>
+        </div>
+
+    </div>
+
+    <div id="fireAlertList" class="fire-alert-list"></div>
+
+</section>
+
+<!-- =====================================================
      SYSTEM OVERVIEW
 ====================================================== -->
 
@@ -227,6 +255,15 @@
             <div class="kpi-note">5 минуттан астам дерек келмеген</div>
         </article>
 
+        <article id="kpiFireTile" class="kpi kpi-fire">
+            <div class="kpi-label">
+                <svg class="icon"><use href="#i-flame"></use></svg>
+                Өрт қаупі
+            </div>
+            <div id="kpiFire" class="kpi-value">–</div>
+            <div class="kpi-note">Температура, түтін немесе газ шектен асты</div>
+        </article>
+
         <article class="kpi">
             <div class="kpi-label">
                 <svg class="icon"><use href="#i-gauge"></use></svg>
@@ -278,7 +315,7 @@
 
             <div>
                 <h2 id="queueTitle">Назар аударыңыз</h2>
-                <p class="panel-note">Алдымен шығарылатын контейнерлер</p>
+                <p class="panel-note">Өрт қаупі, толы және үнсіз контейнерлер</p>
             </div>
 
             <span id="queueCount" class="count-badge">0</span>
@@ -320,6 +357,7 @@
             <button type="button" data-filter="half" aria-pressed="false">Жартылай</button>
             <button type="button" data-filter="normal" aria-pressed="false">Қалыпты</button>
             <button type="button" data-filter="offline" aria-pressed="false">Байланыс жоқ</button>
+            <button type="button" data-filter="fire" aria-pressed="false">Өрт қаупі</button>
         </div>
 
     </div>
@@ -335,6 +373,7 @@
                     <th data-sort="fill" scope="col"><button type="button">Толу деңгейі</button></th>
                     <th data-sort="distance" class="align-end" scope="col"><button type="button">Қашықтық</button></th>
                     <th scope="col">Күйі</th>
+                    <th data-sort="fireRank" scope="col"><button type="button">Қауіпсіздік</button></th>
                     <th data-sort="age" scope="col"><button type="button">Соңғы дерек</button></th>
                 </tr>
             </thead>
@@ -354,10 +393,16 @@
 <section aria-labelledby="trendTitle">
 
     <div class="section-header">
-        <h2 id="trendTitle">Толу динамикасы</h2>
+        <h2 id="trendTitle">Көрсеткіштер динамикасы</h2>
     </div>
 
     <div class="filter-row">
+
+        <div id="metricFilters" class="segmented" role="group" aria-label="Көрсеткішті таңдау">
+            <button type="button" data-metric="fill" aria-pressed="true">Толу деңгейі</button>
+            <button type="button" data-metric="temperature" aria-pressed="false">Температура</button>
+            <button type="button" data-metric="gas" aria-pressed="false">Түтін/газ</button>
+        </div>
 
         <div id="rangeFilters" class="segmented" role="group" aria-label="Кезеңді таңдау">
             <button type="button" data-hours="1" aria-pressed="false">1 сағат</button>
