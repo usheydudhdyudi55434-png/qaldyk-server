@@ -4,6 +4,11 @@ from django.urls import path, include
 from sensor.views import dashboard, DispatcherLoginView
 
 
+admin.site.site_header = "Qaldyq әкімшілік панелі"
+admin.site.site_title = "Qaldyq"
+admin.site.index_title = "Басқару"
+
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('sensor.urls')),
