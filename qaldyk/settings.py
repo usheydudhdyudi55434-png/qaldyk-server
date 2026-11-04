@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure--xj=^fae)@uri2nlrfa7*kzfh_5hwu4h9&px6bi1%v1=hl8vjm
 DEBUG = True
 
 # The Cloudflare tunnel address changes when cloudflared restarts
-TUNNEL_HOST = "ensuring-gamecube-kinds-reasons.trycloudflare.com"
+TUNNEL_HOST = "innovations-wrap-coupon-trips.trycloudflare.com"
 
 ALLOWED_HOSTS = [
     "127.0.0.1",
