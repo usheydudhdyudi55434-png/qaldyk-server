@@ -1,7 +1,14 @@
 global:
   scrape_interval: 5s
+  evaluation_interval: 15s
 
 scrape_configs:
+  # Resource usage of every Docker container
   - job_name: "cadvisor"
     static_configs:
       - targets: ["cadvisor:8080"]
+
+  # Prometheus' own health, so a broken scrape is visible too
+  - job_name: "prometheus"
+    static_configs:
+      - targets: ["localhost:9090"]

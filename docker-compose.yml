@@ -11,6 +11,9 @@ services:
       interval: 5s
       timeout: 5s
       retries: 10
+    # 5432 is taken by the Windows PostgreSQL service; reachable from this PC only
+    ports:
+      - "127.0.0.1:5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql
 
@@ -23,20 +26,31 @@ services:
       postgres:
         condition: service_healthy
 
+  # Collects CPU, memory, network and disk usage of every container
   cadvisor:
     image: ghcr.io/google/cadvisor:v0.57.0
     container_name: qaldyk-cadvisor
+    # Needed to read each container's network and block I/O counters
+    privileged: true
+    devices:
+      - /dev/kmsg
+    command:
+      - --docker_only=true
+      - --housekeeping_interval=10s
     ports:
       - "8080:8080"
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
       - /run/containerd/containerd.sock:/run/containerd/containerd.sock:ro
       - /sys:/sys:ro
       - /var/lib/docker:/var/lib/docker:ro
       - /dev/disk:/dev/disk:ro
+    restart: unless-stopped
 
+  # Scrapes cAdvisor every 5 s and stores the time series
   prometheus:
-    image: prom/prometheus:latest
+    image: prom/prometheus:v3.15.1
     container_name: qaldyk-prometheus
     ports:
       - "9090:9090"
@@ -45,16 +59,21 @@ services:
       - prometheus_data:/prometheus
     depends_on:
       - cadvisor
+    restart: unless-stopped
 
+  # Dashboards and alerts; everything under ./grafana is loaded on startup
   grafana:
-    image: grafana/grafana:latest
+    image: grafana/grafana:13.3.0
     container_name: qaldyk-grafana
     ports:
       - "3000:3000"
     volumes:
       - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
     depends_on:
       - prometheus
+    restart: unless-stopped
 
 volumes:
   postgres_data:

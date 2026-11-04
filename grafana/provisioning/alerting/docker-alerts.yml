@@ -1,0 +1,103 @@
+# Alert rules for the Docker containers; firing alerts show under Alerting -> Alert rules
+apiVersion: 1
+
+groups:
+  - orgId: 1
+    name: docker-containers
+    folder: Qaldyq
+    interval: 1m
+    rules:
+      # The stack runs five containers; fewer means one has stopped or crashed
+      - uid: qaldyq-container-stopped
+        title: Контейнер тоқтады
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: prometheus
+            model:
+              refId: A
+              expr: count(time() - container_last_seen{name=~"qaldyk-.+"} < 60)
+              instant: true
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              refId: C
+              type: threshold
+              expression: A
+              conditions:
+                - evaluator:
+                    type: lt
+                    params: [5]
+        for: 1m
+        noDataState: Alerting
+        execErrState: Error
+        labels:
+          severity: critical
+        annotations:
+          summary: Жұмыс істеп тұрған Qaldyq контейнерлері 5-тен аз
+          description: "Қазір жұмыс істеп тұрғаны: {{ $values.A.Value }}. Тексеру: docker compose ps"
+
+      - uid: qaldyq-container-high-cpu
+        title: Контейнер CPU жүктемесі жоғары
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: prometheus
+            model:
+              refId: A
+              expr: sum by (name) (rate(container_cpu_usage_seconds_total{name=~".+"}[2m])) * 100
+              instant: true
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              refId: C
+              type: threshold
+              expression: A
+              conditions:
+                - evaluator:
+                    type: gt
+                    params: [80]
+        for: 5m
+        noDataState: OK
+        execErrState: Error
+        labels:
+          severity: warning
+        annotations:
+          summary: "{{ $labels.name }} 5 минуттан бері бір CPU ядросының 80%-дан көбін жұмсап тұр"
+
+      - uid: qaldyq-container-high-memory
+        title: Контейнер жадты көп жұмсап тұр
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: prometheus
+            model:
+              refId: A
+              expr: sum by (name) (container_memory_working_set_bytes{name=~".+"}) / scalar(machine_memory_bytes) * 100
+              instant: true
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              refId: C
+              type: threshold
+              expression: A
+              conditions:
+                - evaluator:
+                    type: gt
+                    params: [25]
+        for: 5m
+        noDataState: OK
+        execErrState: Error
+        labels:
+          severity: warning
+        annotations:
+          summary: "{{ $labels.name }} 5 минуттан бері хост жадының 25%-дан көбін алып тұр"
