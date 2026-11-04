@@ -33,6 +33,16 @@ const THRESHOLDS = [
     { value: HALF_LEVEL, color: "var(--status-half)", name: "Жартылай шегі" }
 ];
 
+// Fire risk levels decided by the server (sensor/fire.py)
+const FIRE_RISKS = {
+    DANGER: { label: "Қауіпті", rank: 3 },
+    WARNING: { label: "Ескерту", rank: 2 },
+    NORMAL: { label: "Қалыпты", rank: 1 },
+    "": { label: "Датчик жоқ", rank: 0 }
+};
+
+const PAGE_TITLE = document.title;
+
 const SVG_NS = "http://www.w3.org/2000/svg";
 
 // ------------------------------------------------------------
@@ -53,8 +63,11 @@ const state = {
     query: "",
     sort: { key: "fill", direction: "desc" },
     hours: 24,
+    metric: "fill",
     history: null,
-    historyRequest: 0
+    historyRequest: 0,
+    fireThresholds: null,
+    fireSignature: null
 };
 
 
@@ -190,6 +203,36 @@ function formatDistance(value) {
 }
 
 
+function formatTemperature(value) {
+
+    return value === null ? "–" : `${value.toFixed(1)}°C`;
+
+}
+
+
+function gasPercent(value) {
+
+    const max = state.fireThresholds ? state.fireThresholds.gas_max : 4095;
+
+    return value / max * 100;
+
+}
+
+
+function formatGas(value) {
+
+    return value === null ? "–" : `${Math.round(gasPercent(value))}%`;
+
+}
+
+
+function numberOrNull(value) {
+
+    return value === null || value === undefined ? null : Number(value);
+
+}
+
+
 function formatAge(age) {
 
     const seconds = Math.max(Math.floor(age / 1000), 0);
@@ -321,6 +364,8 @@ async function refreshContainers() {
             state.clockOffset =
                 new Date(data.server_time).getTime() - Date.now();
 
+            state.fireThresholds = data.fire_thresholds || null;
+
             const isFirstLoad = state.containers.length === 0;
 
             state.containers = data.containers.map(describeContainer);
@@ -362,7 +407,9 @@ async function loadHistory() {
 
     try {
 
-        const data = await fetchJson(`${HISTORY_URL}?hours=${state.hours}`);
+        const data = await fetchJson(
+            `${HISTORY_URL}?hours=${state.hours}&metric=${state.metric}`
+        );
 
         // A newer range selection already replaced this request
         if (request !== state.historyRequest) {
@@ -405,9 +452,18 @@ function describeContainer(container, index) {
             level: "none",
             age: null,
             lastAt: null,
-            offline: true
+            offline: true,
+            temperature: null,
+            gas: null,
+            fireRisk: "",
+            fireRank: 0,
+            fireNote: ""
         };
     }
+
+    const fireRisk = FIRE_RISKS[container.latest.fire_risk]
+        ? container.latest.fire_risk
+        : "";
 
     const fill = Math.min(
         Math.max(Number(container.latest.fill_level) || 0, 0),
@@ -425,8 +481,21 @@ function describeContainer(container, index) {
         level: getLevel(fill),
         age,
         lastAt,
-        offline: age > OFFLINE_AFTER
+        offline: age > OFFLINE_AFTER,
+        temperature: numberOrNull(container.latest.temperature),
+        gas: numberOrNull(container.latest.gas_level),
+        fireRisk,
+        fireRank: FIRE_RISKS[fireRisk].rank,
+        fireNote: container.latest.fire_note || ""
     };
+
+}
+
+
+// WARNING and DANGER need a person to look; stale ones too, since a fire can kill the sensor
+function isFireAlert(item) {
+
+    return item.fireRank >= FIRE_RISKS.WARNING.rank;
 
 }
 
@@ -464,6 +533,8 @@ function setConnection(isOnline) {
 
 function renderAll() {
 
+    renderFireAlert();
+
     renderKpis();
 
     renderQueue();
@@ -473,6 +544,91 @@ function renderAll() {
     renderMap();
 
     renderChartLegend();
+
+}
+
+
+// ============================================================
+// FIRE ALERT
+// ============================================================
+
+function renderFireAlert() {
+
+    const alerts = state.containers
+        .filter(isFireAlert)
+        .sort((a, b) => b.fireRank - a.fireRank);
+
+    const hasDanger = alerts.some(item => item.fireRisk === "DANGER");
+
+    document.title = alerts.length === 0
+        ? PAGE_TITLE
+        : `${hasDanger ? "Өрт қаупі" : "Ескерту"} (${alerts.length}) · ${PAGE_TITLE}`;
+
+    const signature = alerts
+        .map(item => `${item.id}:${item.fireRisk}:${item.fireNote}:${item.offline}:${item.id === state.selectedId}`)
+        .join("|");
+
+    // The banner is a live region, so it is only rebuilt when something changed
+    if (signature === state.fireSignature) {
+        return;
+    }
+
+    state.fireSignature = signature;
+
+    const banner = document.getElementById("fireAlert");
+
+    banner.hidden = alerts.length === 0;
+
+    banner.classList.toggle("is-danger", hasDanger);
+
+    setText(
+        "fireAlertTitle",
+        hasDanger
+            ? "Өрт қаупінің белгілері анықталды"
+            : "Өрт қаупі: ескерту белгілері"
+    );
+
+    const list = document.getElementById("fireAlertList");
+
+    renderKeepingFocus(list, () => {
+
+        list.replaceChildren(...alerts.map(item => {
+
+            const details = [item.location, item.fireNote];
+
+            if (item.offline) {
+                details.push("датчик үнсіз, деректер ескі болуы мүмкін");
+            }
+
+            const button = el(
+                "button",
+                {
+                    type: "button",
+                    class:
+                        `fire-alert-item fire-${item.fireRisk}`
+                        + (item.id === state.selectedId ? " is-selected" : ""),
+                    "data-focus-id": `fire-${item.id}`
+                },
+                icon("i-flame"),
+                el(
+                    "span",
+                    { class: "fire-alert-text" },
+                    el(
+                        "strong",
+                        {},
+                        `${item.name} · ${FIRE_RISKS[item.fireRisk].label}`
+                    ),
+                    el("span", {}, details.filter(Boolean).join(" · "))
+                )
+            );
+
+            button.addEventListener("click", () => selectContainer(item.id));
+
+            return button;
+
+        }));
+
+    });
 
 }
 
@@ -499,6 +655,15 @@ function renderKpis() {
     setText("kpiNormal", count("normal"));
 
     setText("kpiOffline", containers.filter(item => item.offline).length);
+
+    setText("kpiFire", containers.filter(isFireAlert).length);
+
+    document
+        .getElementById("kpiFireTile")
+        .classList.toggle(
+            "has-alert",
+            containers.some(isFireAlert)
+        );
 
     setText(
         "kpiAverage",
@@ -542,9 +707,9 @@ function renderQueue() {
     const list = document.getElementById("queueList");
 
     const items = state.containers
-        .filter(item => item.level === "full" || item.offline)
+        .filter(item => isFireAlert(item) || item.level === "full" || item.offline)
         .sort((a, b) =>
-            Number(b.level === "full") - Number(a.level === "full")
+            queuePriority(a) - queuePriority(b)
             || (b.fill ?? -1) - (a.fill ?? -1)
         );
 
@@ -571,25 +736,37 @@ function renderQueue() {
 
         list.replaceChildren(...items.map(item => {
 
+            const isFire = isFireAlert(item);
+
             const isFull = item.level === "full";
+
+            const kind = isFire
+                ? `fire-${item.fireRisk}`
+                : isFull ? "level-full" : "level-none";
 
             const button = el(
                 "button",
                 {
                     type: "button",
                     class:
-                        `queue-item ${isFull ? "level-full" : "level-none"}`
+                        `queue-item ${kind}`
                         + (item.id === state.selectedId ? " is-selected" : ""),
                     "data-focus-id": `queue-${item.id}`
                 },
-                icon(isFull ? "i-full" : "i-offline"),
+                icon(isFire ? "i-flame" : isFull ? "i-full" : "i-offline"),
                 el(
                     "span",
                     { class: "queue-text" },
                     el("span", { class: "queue-name" }, item.name),
                     el("span", { class: "queue-reason" }, getQueueReason(item))
                 ),
-                el("span", { class: "queue-value" }, formatFill(item.fill))
+                el(
+                    "span",
+                    { class: "queue-value" },
+                    isFire && item.temperature !== null
+                        ? formatTemperature(item.temperature)
+                        : formatFill(item.fill)
+                )
             );
 
             button.addEventListener("click", () => selectContainer(item.id));
@@ -603,7 +780,30 @@ function renderQueue() {
 }
 
 
+function queuePriority(item) {
+
+    if (item.fireRisk === "DANGER") {
+        return 0;
+    }
+
+    if (isFireAlert(item)) {
+        return 1;
+    }
+
+    return item.level === "full" ? 2 : 3;
+
+}
+
+
 function getQueueReason(item) {
+
+    if (isFireAlert(item)) {
+        return (
+            `${FIRE_RISKS[item.fireRisk].label}: `
+            + (item.fireNote || "өрт қаупінің белгісі")
+            + (item.offline ? `, соңғы дерек ${formatAge(item.age)}` : "")
+        );
+    }
 
     if (item.lastAt === null) {
         return "Датчик әлі дерек жібермеген";
@@ -667,7 +867,7 @@ function initTableControls() {
             } else {
                 state.sort = {
                     key,
-                    direction: key === "fill" ? "desc" : "asc"
+                    direction: key === "fill" || key === "fireRank" ? "desc" : "asc"
                 };
             }
 
@@ -686,9 +886,12 @@ function matchesFilters(item) {
         return false;
     }
 
+    if (state.filter === "fire" && !isFireAlert(item)) {
+        return false;
+    }
+
     if (
-        state.filter !== "all"
-        && state.filter !== "offline"
+        !["all", "offline", "fire"].includes(state.filter)
         && item.level !== state.filter
     ) {
         return false;
@@ -754,7 +957,7 @@ function renderTable() {
                     {},
                     el(
                         "td",
-                        { class: "table-empty", colspan: "6" },
+                        { class: "table-empty", colspan: "7" },
                         state.containers.length === 0
                             ? "Әзірге контейнер қосылмаған"
                             : "Сүзгіге сәйкес контейнер табылмады"
@@ -841,12 +1044,44 @@ function createTableRow(item) {
                 LEVELS[item.level].label
             )
         ),
+        el("td", {}, createSafetyCell(item)),
         el("td", {}, lastSeen)
     );
 
     row.addEventListener("click", () => selectContainer(item.id));
 
     return row;
+
+}
+
+
+function createSafetyCell(item) {
+
+    const risk = FIRE_RISKS[item.fireRisk];
+
+    const iconName = isFireAlert(item)
+        ? "i-flame"
+        : item.fireRisk === "NORMAL" ? "i-normal" : "i-none";
+
+    const values = [
+        item.temperature === null ? null : formatTemperature(item.temperature),
+        item.gas === null ? null : `газ ${formatGas(item.gas)}`
+    ].filter(Boolean);
+
+    const cell = el(
+        "div",
+        {
+            class: `safety-cell fire-${item.fireRisk || "NONE"}`,
+            title: item.fireNote || null
+        },
+        el("span", { class: "badge" }, icon(iconName), risk.label)
+    );
+
+    if (values.length > 0) {
+        cell.append(el("span", { class: "safety-values numeric" }, values.join(" · ")));
+    }
+
+    return cell;
 
 }
 
@@ -879,6 +1114,8 @@ function setSelected(containerId) {
     }
 
     state.selectedId = containerId;
+
+    renderFireAlert();
 
     renderQueue();
 
@@ -975,10 +1212,15 @@ function updateMarker(item) {
 
     const fill = item.fill === null ? null : Math.round(item.fill);
 
-    const iconKey = `${level}-${fill}`;
+    const fireRisk = isFireAlert(item) ? item.fireRisk : "";
 
-    // Full bins stay on top of their neighbours
-    const zIndexOffset = level === "full" ? 1000 : 0;
+    const iconKey = `${level}-${fill}-${fireRisk}`;
+
+    // Fire risk first, then full bins, stay on top of their neighbours
+    const zIndexOffset =
+        fireRisk === "DANGER" ? 3000
+            : fireRisk ? 2000
+                : level === "full" ? 1000 : 0;
 
     const location = [item.latitude, item.longitude];
 
@@ -990,7 +1232,7 @@ function updateMarker(item) {
 
         // Rebuilding the icon on every poll would make the marker flicker
         if (existing.iconKey !== iconKey) {
-            existing.setIcon(createMarkerIcon(level, fill));
+            existing.setIcon(createMarkerIcon(level, fill, fireRisk));
             existing.setZIndexOffset(zIndexOffset);
             existing.iconKey = iconKey;
         }
@@ -1002,7 +1244,7 @@ function updateMarker(item) {
     }
 
     const marker = L.marker(location, {
-        icon: createMarkerIcon(level, fill),
+        icon: createMarkerIcon(level, fill, fireRisk),
         title: item.name,
         alt: item.name,
         zIndexOffset
@@ -1048,12 +1290,23 @@ function binContents(fill) {
 }
 
 
-function createMarkerIcon(level, fill) {
+function createMarkerIcon(level, fill, fireRisk = "") {
 
     const label = fill === null ? "–" : `${fill}%`;
 
     const pulse = level === "full"
         ? '<ellipse class="bin-pulse" cx="17" cy="44" rx="9" ry="3"/>'
+        : "";
+
+    // A flame badge on the lid; it pulses when the signs point to danger
+    const fireBadge = fireRisk
+        ? `
+            <g class="bin-fire fire-${fireRisk}">
+                ${fireRisk === "DANGER" ? '<circle class="bin-fire-pulse" cx="30" cy="9" r="7.5"/>' : ""}
+                <circle class="bin-fire-dot" cx="30" cy="9" r="7.5"/>
+                <path class="bin-fire-flame" d="M30 3.8c2 2.1 3.6 3.9 3.6 6a3.6 3.6 0 0 1-7.2 0c0-1.2.5-2.2 1.4-3 .1 1 .6 1.7 1.3 2-.2-1.8.1-3.4.9-5z"/>
+            </g>
+        `
         : "";
 
     return L.divIcon({
@@ -1070,6 +1323,7 @@ function createMarkerIcon(level, fill) {
                     <path class="bin-handle" d="M13 8V5.5H21V8"/>
                     <rect class="bin-lid" x="3" y="8" width="28" height="4.5" rx="1.5"/>
                     <text class="bin-label" x="17" y="31" text-anchor="middle">${label}</text>
+                    ${fireBadge}
                 </svg>
             </div>
         `,
@@ -1097,11 +1351,17 @@ function createPopupContent(item) {
             row("Толу деңгейі", formatFill(item.fill)),
             row("Қашықтық", formatDistance(item.distance)),
             row("Күйі", LEVELS[item.level].label),
+            row("Температура", formatTemperature(item.temperature)),
+            row("Түтін/газ", formatGas(item.gas)),
+            row("Өрт қаупі", FIRE_RISKS[item.fireRisk].label),
             row(
                 "Соңғы дерек",
                 item.lastAt === null ? "Дерек жоқ" : formatAge(item.age)
             )
-        )
+        ),
+        isFireAlert(item) && item.fireNote
+            ? el("div", { class: `popup-fire fire-${item.fireRisk}` }, item.fireNote)
+            : ""
     );
 
 }
@@ -1126,6 +1386,26 @@ function initRangeFilter() {
         state.hours = Number(button.dataset.hours);
 
         for (const item of filters.querySelectorAll("button")) {
+            item.setAttribute("aria-pressed", String(item === button));
+        }
+
+        loadHistory();
+
+    });
+
+    const metrics = document.getElementById("metricFilters");
+
+    metrics.addEventListener("click", event => {
+
+        const button = event.target.closest("button");
+
+        if (!button || button.dataset.metric === state.metric) {
+            return;
+        }
+
+        state.metric = button.dataset.metric;
+
+        for (const item of metrics.querySelectorAll("button")) {
             item.setAttribute("aria-pressed", String(item === button));
         }
 
@@ -1200,16 +1480,91 @@ function renderChartLegend() {
 
 function getChartSeries() {
 
-    if (!state.history) {
+    // A response for another metric is still in flight
+    if (!state.history || state.history.metric !== state.metric) {
         return [];
     }
+
+    const toDisplay = state.metric === "gas"
+        ? ([time, value]) => [time, gasPercent(value)]
+        : point => point;
 
     return state.containers
         .map(item => ({
             item,
-            points: state.history.series[item.id] || []
+            points: (state.history.series[item.id] || []).map(toDisplay)
         }))
         .filter(series => series.points.length > 0);
+
+}
+
+
+function evenTicks(low, high) {
+
+    const step = (high - low) / 4;
+
+    return [0, 1, 2, 3, 4].map(index => Math.round(low + step * index));
+
+}
+
+
+// Scale, labels and thresholds of the metric shown on the chart
+function chartMetric(series) {
+
+    const limits = state.fireThresholds;
+
+    if (state.metric === "temperature") {
+
+        const values = series.flatMap(({ points }) => points.map(point => point[1]));
+
+        const low = Math.min(0, Math.floor(Math.min(...values, 0) / 10) * 10);
+
+        const high = Math.max(80, Math.ceil((Math.max(...values, 0) + 5) / 10) * 10);
+
+        return {
+            min: low,
+            max: high,
+            ticks: evenTicks(low, high),
+            axis: value => `${value}°C`,
+            format: formatTemperature,
+            name: "температурасы",
+            empty: "Таңдалған кезеңде температура дерегі жоқ.",
+            thresholds: limits ? [
+                { value: limits.temperature_danger, color: "var(--status-full)", name: "Қауіпті" },
+                { value: limits.temperature_warning, color: "var(--fire-warning)", name: "Ескерту" }
+            ] : []
+        };
+
+    }
+
+    if (state.metric === "gas") {
+
+        return {
+            min: 0,
+            max: 100,
+            ticks: [0, 25, 50, 75, 100],
+            axis: value => `${value}%`,
+            format: value => value === null ? "–" : `${Math.round(value)}%`,
+            name: "түтін/газ деңгейі (сенсор шкаласынан)",
+            empty: "Таңдалған кезеңде түтін/газ дерегі жоқ.",
+            thresholds: limits ? [
+                { value: limits.gas_danger / limits.gas_max * 100, color: "var(--status-full)", name: "Қауіпті" },
+                { value: limits.gas_warning / limits.gas_max * 100, color: "var(--fire-warning)", name: "Ескерту" }
+            ] : []
+        };
+
+    }
+
+    return {
+        min: 0,
+        max: 100,
+        ticks: [0, 25, 50, 75, 100],
+        axis: value => `${value}%`,
+        format: formatFill,
+        name: "толу деңгейі",
+        empty: "Таңдалған кезеңде дерек жоқ. Ұзағырақ кезеңді таңдап көріңіз.",
+        thresholds: THRESHOLDS
+    };
 
 }
 
@@ -1226,6 +1581,8 @@ function renderChart() {
 
     const series = getChartSeries();
 
+    const metric = chartMetric(series);
+
     const isNarrow = width < 560;
 
     const useDirectLabels = !isNarrow && series.length <= 4;
@@ -1236,7 +1593,7 @@ function renderChart() {
         top: 12,
         right: useDirectLabels ? 136 : 12,
         bottom: 28,
-        left: 40
+        left: 46
     };
 
     const plotWidth = width - margin.left - margin.right;
@@ -1251,7 +1608,7 @@ function renderChart() {
         margin.left + (time - startTime) / (endTime - startTime) * plotWidth;
 
     const y = value =>
-        margin.top + (1 - value / 100) * plotHeight;
+        margin.top + (1 - (value - metric.min) / (metric.max - metric.min)) * plotHeight;
 
     const svg = svgEl("svg", {
         viewBox: `0 0 ${width} ${height}`,
@@ -1259,11 +1616,11 @@ function renderChart() {
         role: "img",
         tabindex: "0",
         "aria-label":
-            "Контейнерлердің толу деңгейінің графигі. Мәндерді көру үшін "
+            `Контейнерлердің ${metric.name} графигі. Мәндерді көру үшін `
             + "сол және оң көрсеткілерді басыңыз."
     });
 
-    drawChartGrid(svg, { x, y, margin, plotWidth, startTime, endTime, isNarrow });
+    drawChartGrid(svg, { x, y, margin, plotWidth, startTime, endTime, isNarrow, metric });
 
     const selectedId = state.selectedId;
 
@@ -1283,10 +1640,10 @@ function renderChart() {
 
     }
 
-    drawThresholdLabels(svg, margin, y);
+    drawThresholdLabels(svg, margin, y, metric);
 
     if (useDirectLabels) {
-        drawEndLabels(svg, series, x, y);
+        drawEndLabels(svg, series, x, y, metric);
     }
 
     host.replaceChildren(svg);
@@ -1295,31 +1652,27 @@ function renderChart() {
         host.append(el(
             "div",
             { class: "chart-empty" },
-            el(
-                "span",
-                {},
-                "Таңдалған кезеңде дерек жоқ. Ұзағырақ кезеңді таңдап көріңіз."
-            )
+            el("span", {}, metric.empty)
         ));
     }
 
-    attachCrosshair(host, svg, series, { x, y, margin, plotHeight, width });
+    attachCrosshair(host, svg, series, { x, y, margin, plotHeight, width, metric });
 
 }
 
 
-function drawChartGrid(svg, { x, y, margin, plotWidth, startTime, endTime, isNarrow }) {
+function drawChartGrid(svg, { x, y, margin, plotWidth, startTime, endTime, isNarrow, metric }) {
 
     const right = margin.left + plotWidth;
 
-    for (const value of [0, 25, 50, 75, 100]) {
+    for (const value of metric.ticks) {
 
         svg.append(svgEl("line", {
             x1: margin.left,
             x2: right,
             y1: y(value),
             y2: y(value),
-            stroke: value === 0 ? "var(--axis)" : "var(--grid)",
+            stroke: value === metric.min ? "var(--axis)" : "var(--grid)",
             "stroke-width": 1
         }));
 
@@ -1330,13 +1683,13 @@ function drawChartGrid(svg, { x, y, margin, plotWidth, startTime, endTime, isNar
             class: "chart-axis"
         });
 
-        label.textContent = `${value}%`;
+        label.textContent = metric.axis(value);
 
         svg.append(label);
 
     }
 
-    for (const threshold of THRESHOLDS) {
+    for (const threshold of metric.thresholds) {
 
         svg.append(svgEl("line", {
             x1: margin.left,
@@ -1364,7 +1717,7 @@ function drawChartGrid(svg, { x, y, margin, plotWidth, startTime, endTime, isNar
 
         const label = svgEl("text", {
             x: x(time),
-            y: y(0) + 18,
+            y: y(metric.min) + 18,
             "text-anchor": anchor,
             class: "chart-axis"
         });
@@ -1379,9 +1732,9 @@ function drawChartGrid(svg, { x, y, margin, plotWidth, startTime, endTime, isNar
 
 
 // Drawn above the lines, with a halo, so a line never strikes through the text
-function drawThresholdLabels(svg, margin, y) {
+function drawThresholdLabels(svg, margin, y, metric) {
 
-    for (const threshold of THRESHOLDS) {
+    for (const threshold of metric.thresholds) {
 
         const label = svgEl("text", {
             x: margin.left + 6,
@@ -1449,7 +1802,7 @@ function drawSeriesLine(group, points, bucket, x, y) {
 }
 
 
-function drawEndLabels(svg, series, x, y) {
+function drawEndLabels(svg, series, x, y, metric) {
 
     const labels = series
         .map(({ item, points }) => {
@@ -1479,7 +1832,7 @@ function drawEndLabels(svg, series, x, y) {
         });
 
         text.textContent =
-            `${truncate(label.item.name, 14)} ${Math.round(label.value)}%`;
+            `${truncate(label.item.name, 14)} ${metric.axis(Math.round(label.value))}`;
 
         svg.append(text);
 
@@ -1495,7 +1848,7 @@ function truncate(text, length) {
 }
 
 
-function attachCrosshair(host, svg, series, { x, y, margin, plotHeight, width }) {
+function attachCrosshair(host, svg, series, { x, y, margin, plotHeight, width, metric }) {
 
     const times = [...new Set(
         series.flatMap(({ points }) => points.map(point => point[0]))
@@ -1568,7 +1921,7 @@ function attachCrosshair(host, svg, series, { x, y, margin, plotHeight, width })
                     "div",
                     { class: "tooltip-row" },
                     key,
-                    el("strong", {}, formatFill(row.value)),
+                    el("strong", {}, metric.format(row.value)),
                     el("span", {}, row.item.name)
                 );
             })
@@ -1652,6 +2005,8 @@ function renderChartTable() {
 
     const lookups = series.map(({ points }) => new Map(points));
 
+    const metric = chartMetric(series);
+
     const times = [...new Set(
         series.flatMap(({ points }) => points.map(point => point[0]))
     )].sort((a, b) => b - a);
@@ -1681,7 +2036,7 @@ function renderChartTable() {
                 ...lookups.map(values => el(
                     "td",
                     { class: "align-end numeric" },
-                    formatFill(values.has(time) ? values.get(time) : null)
+                    metric.format(values.has(time) ? values.get(time) : null)
                 ))
             ))
         )
