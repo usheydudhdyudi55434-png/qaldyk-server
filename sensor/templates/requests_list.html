@@ -1,0 +1,65 @@
+{% extends "layout.html" %}
+
+{% block title %}Qaldyq — Тұрғындардың өтініштері{% endblock %}
+
+{% block brand_href %}{% url 'dashboard' %}{% endblock %}
+
+{% block nav %}
+    <a class="header-link" href="{% url 'dashboard' %}">Панель</a>
+{% endblock %}
+
+{% block account %}
+    {% include "account_menu.html" %}
+{% endblock %}
+
+{% block content %}
+
+<section aria-labelledby="requestsTitle">
+
+    <div class="section-header">
+        <h1 id="requestsTitle">Тұрғындардың өтініштері</h1>
+        <a class="section-meta" href="{% url 'resident_home' %}" target="_blank" rel="noopener">Тұрғындар бетін ашу</a>
+    </div>
+
+    <nav class="segmented filter-row-links" aria-label="Мәртебе бойынша сүзу">
+        {% for filter in filters %}
+        <a href="?status={{ filter.value }}" {% if filter.value == status %}aria-current="page"{% endif %}>
+            {{ filter.label }} <span class="numeric">{{ filter.count }}</span>
+        </a>
+        {% endfor %}
+    </nav>
+
+    <div class="panel table-scroll">
+        <table class="data-table requests-table">
+            <thead>
+                <tr>
+                    <th scope="col">Код</th>
+                    <th scope="col">Мәселе</th>
+                    <th scope="col">Мекенжай</th>
+                    <th scope="col">Датчик</th>
+                    <th scope="col">Мәртебесі</th>
+                    <th scope="col">Жауапты</th>
+                    <th scope="col">Жіберілді</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in rows %}
+                <tr>
+                    <td><a class="row-name" href="{% url 'request_detail' row.item.pk %}">{{ row.item.code }}</a></td>
+                    <td>{{ row.item.get_category_display }}</td>
+                    <td class="cell-secondary">{{ row.item.address }}</td>
+                    <td><span class="verdict verdict-{{ row.verdict.0 }}" title="{{ row.verdict.1 }}">{{ row.verdict.1 }}</span></td>
+                    <td><span class="status-pill status-{{ row.item.status }}">{{ row.item.get_status_display }}</span></td>
+                    <td class="cell-secondary">{{ row.item.assignee.username|default:"—" }}</td>
+                    <td class="cell-secondary numeric">{{ row.item.created_at|date:"d.m H:i" }}</td>
+                </tr>
+                {% empty %}
+                <tr><td class="table-empty" colspan="7">Бұл сүзгі бойынша өтініш жоқ</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</section>
+
+{% endblock %}

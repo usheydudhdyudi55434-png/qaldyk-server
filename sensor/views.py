@@ -2,7 +2,6 @@
 import os
 from datetime import timedelta
 
-from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.views import LoginView
 from django.contrib.staticfiles import finders
@@ -11,11 +10,11 @@ from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from . import fire
-from .models import SensorReading, Container
+from .roles import IsDispatcher, dispatcher_required, home_for, is_dispatcher
+from .models import ResidentRequest, SensorReading, Container
 
 
 HISTORY_HOURS = (1, 6, 24, 168)
@@ -33,8 +32,8 @@ HISTORY_METRICS = {
 @api_view(['GET', 'POST'])
 def sensor_data(request, container_id):
 
-    # Devices POST without a session; reading the data needs a login
-    if request.method == 'GET' and not request.user.is_authenticated:
+    # Devices POST without a session; reading the data is for dispatchers
+    if request.method == 'GET' and not is_dispatcher(request.user):
         return Response({
             "error": "Authentication required"
         }, status=403)
@@ -172,7 +171,7 @@ def sensor_data(request, container_id):
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsDispatcher])
 def containers_overview(request):
 
     containers = []
@@ -211,7 +210,7 @@ def containers_overview(request):
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsDispatcher])
 def containers_history(request):
 
     try:
@@ -292,8 +291,21 @@ class DispatcherLoginView(LoginView):
             **kwargs
         )
 
+    def get_success_url(self):
+        # Workers land on their tasks, dispatchers on the panel
+        return self.get_redirect_url() or home_for(self.request.user) or '/dashboard/'
 
-@login_required
+
+def csrf_failure(request, reason=""):
+    """A plain-language page for a form sent from a stale tab."""
+
+    return render(request, 'csrf_failure.html', {
+        'css_version': asset_version('sensor/css/dashboard.css'),
+        'home': home_for(request.user) or '/'
+    }, status=403)
+
+
+@dispatcher_required
 def dashboard(request):
 
     reading = SensorReading.objects.order_by('-created_at').first()
@@ -301,5 +313,8 @@ def dashboard(request):
     return render(request, 'dashboard.html', {
         'reading': reading,
         'css_version': asset_version('sensor/css/dashboard.css'),
-        'js_version': asset_version('sensor/js/dashboard.js')
+        'js_version': asset_version('sensor/js/dashboard.js'),
+        'new_requests': ResidentRequest.objects.filter(
+            status=ResidentRequest.Status.NEW
+        ).count()
     })

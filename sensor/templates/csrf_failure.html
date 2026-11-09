@@ -1,0 +1,25 @@
+{% extends "layout.html" %}
+
+{% block title %}Qaldyq — Бет ескірді{% endblock %}
+
+{% block main_class %}resident-page{% endblock %}
+
+{% block content %}
+
+<div class="notice notice-error" role="alert">
+    <svg class="icon" aria-hidden="true"><use href="#i-full"></use></svg>
+    <div>
+        <strong>Бет ескіріп қалды, әрекет орындалмады.</strong>
+        Бұл бет ашық тұрғанда осы браузерде жүйеден шыққансыз немесе басқа аккаунтпен кіргенсіз.
+        Бетті жаңартып, әрекетті қайталаңыз.
+    </div>
+</div>
+
+<p class="cell-secondary">
+    Екі аккаунтпен қатар жұмыс істеу үшін (мысалы, диспетчер мен жұмысшы)
+    екінші аккаунтқа басқа браузерді немесе жасырын терезені пайдаланыңыз.
+</p>
+
+<p><a class="button-primary" href="{{ home }}">Жалғастыру</a></p>
+
+{% endblock %}

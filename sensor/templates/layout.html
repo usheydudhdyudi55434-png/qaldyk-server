@@ -1,0 +1,144 @@
+{% load static %}
+
+<!DOCTYPE html>
+
+<html lang="kk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>{% block title %}Qaldyq{% endblock %}</title>
+
+    <link rel="icon" type="image/svg+xml" href="{% static 'sensor/img/qaldyq-icon.svg' %}">
+    <link rel="apple-touch-icon" href="{% static 'sensor/img/qaldyq-apple-touch-icon.png' %}">
+
+    <!-- Apply the saved theme before first paint -->
+    <script>
+        try {
+            if (localStorage.getItem("qaldyk-theme") === "light") {
+                document.documentElement.dataset.theme = "light";
+            }
+        } catch (error) {}
+    </script>
+
+    {% block head %}{% endblock %}
+
+    <link
+        rel="stylesheet"
+        href="{% static 'sensor/css/dashboard.css' %}?v={{ css_version }}"
+    >
+
+</head>
+
+<body class="{% block body_class %}{% endblock %}">
+
+<svg class="icon-sprite" aria-hidden="true" focusable="false">
+    <symbol id="i-sun" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="4"/>
+        <path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5 19 19M5 19l1.5-1.5M17.5 6.5 19 5"/>
+    </symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24">
+        <path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/>
+    </symbol>
+    <symbol id="i-logout" viewBox="0 0 24 24">
+        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+        <path d="m16 17 5-5-5-5M21 12H9"/>
+    </symbol>
+    <symbol id="i-pin" viewBox="0 0 24 24">
+        <path d="M12 21s-7-6.2-7-12a7 7 0 0 1 14 0c0 5.8-7 12-7 12z"/>
+        <circle cx="12" cy="9" r="2.5"/>
+    </symbol>
+    <symbol id="i-normal" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="9"/>
+        <path d="m8 12 3 3 5-6"/>
+    </symbol>
+    <symbol id="i-full" viewBox="0 0 24 24">
+        <path d="M8 3h8l5 5v8l-5 5H8l-5-5V8z"/>
+        <path d="M12 8v5M12 16.5v.01"/>
+    </symbol>
+    <symbol id="i-none" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="9"/>
+        <path d="M8 12h8"/>
+    </symbol>
+</svg>
+
+<header class="topbar">
+
+    <div class="topbar-inner">
+
+        <a class="brand" href="{% block brand_href %}/{% endblock %}">
+
+            <img
+                class="brand-wordmark wordmark-white"
+                src="{% static 'sensor/img/qaldyq-wordmark-white.png' %}"
+                alt="Qaldyq"
+                width="74"
+                height="26"
+            >
+
+            <img
+                class="brand-wordmark wordmark-navy"
+                src="{% static 'sensor/img/qaldyq-wordmark-navy.png' %}"
+                alt="Qaldyq"
+                width="74"
+                height="26"
+            >
+
+            <span class="brand-note">{% block brand_note %}Қалдықтарды бақылау жүйесі{% endblock %}</span>
+
+        </a>
+
+        <div class="topbar-actions">
+
+            {% block nav %}{% endblock %}
+
+            <button
+                id="themeToggle"
+                class="icon-button"
+                type="button"
+                aria-label="Тақырыпты өзгерту"
+            >
+                <svg class="icon"><use id="themeIcon" href="#i-sun"></use></svg>
+            </button>
+
+            {% block account %}{% endblock %}
+
+        </div>
+
+    </div>
+
+</header>
+
+<main class="page {% block main_class %}{% endblock %}">
+
+    {% block content %}{% endblock %}
+
+</main>
+
+<footer class="footer">
+    <span>Qaldyq</span>
+    <span>Қалдықтарды бақылау жүйесі</span>
+</footer>
+
+<script>
+    (function () {
+        const root = document.documentElement;
+        const icon = document.getElementById("themeIcon");
+        const sync = () => icon.setAttribute("href", root.dataset.theme === "light" ? "#i-moon" : "#i-sun");
+
+        sync();
+
+        document.getElementById("themeToggle").addEventListener("click", () => {
+            root.dataset.theme = root.dataset.theme === "light" ? "dark" : "light";
+            try {
+                localStorage.setItem("qaldyk-theme", root.dataset.theme);
+            } catch (error) {}
+            sync();
+        });
+    })();
+</script>
+
+{% block scripts %}{% endblock %}
+
+</body>
+</html>

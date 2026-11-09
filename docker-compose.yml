@@ -22,6 +22,9 @@ services:
     container_name: qaldyk-django
     ports:
       - "8000:8000"
+    volumes:
+      # Resident photos survive a rebuild of the image
+      - media_data:/app/media
     depends_on:
       postgres:
         condition: service_healthy
@@ -76,6 +79,7 @@ services:
     restart: unless-stopped
 
 volumes:
+  media_data:
   postgres_data:
   prometheus_data:
   grafana_data:

@@ -1,4 +1,10 @@
+import os
+import secrets
+import uuid
+
+from django.conf import settings
 from django.db import models
+from django.utils import timezone
 
 
 class Container(models.Model):
@@ -36,3 +42,111 @@ class SensorReading(models.Model):
 
     def __str__(self):
         return f"{self.container} - {self.fill_level}% - {self.status}"
+
+
+# Codes skip look-alike characters (0/O, 1/I/L) so residents can read them out
+REQUEST_CODE_ALPHABET = "ABCDEFGHJKMNPQRSTUVWXYZ23456789"
+
+
+def new_request_code():
+    return "Q-" + "".join(secrets.choice(REQUEST_CODE_ALPHABET) for _ in range(6))
+
+
+def request_photo_path(instance, filename):
+    # The original name can hold personal details, so only the extension is kept
+    extension = os.path.splitext(filename)[1].lower()
+    return f"requests/{timezone.now():%Y/%m}/{uuid.uuid4().hex}{extension}"
+
+
+class ResidentRequest(models.Model):
+
+    class Category(models.TextChoices):
+        NOT_COLLECTED = "not_collected", "Қоқыс шығарылмаған"
+        OVERFLOW = "overflow", "Контейнер толып кеткен"
+        LITTERED = "littered", "Аумақ ластанған"
+        OTHER = "other", "Басқа мәселе"
+
+    class Status(models.TextChoices):
+        NEW = "new", "Жаңа"
+        ACCEPTED = "accepted", "Қабылданды"
+        IN_PROGRESS = "in_progress", "Орындалуда"
+        DONE = "done", "Орындалды"
+        REJECTED = "rejected", "Қабылданбады"
+
+    code = models.CharField(
+        max_length=12,
+        unique=True,
+        default=new_request_code,
+        editable=False
+    )
+    category = models.CharField(max_length=20, choices=Category.choices)
+    address = models.CharField(max_length=255)
+    description = models.TextField(max_length=2000, blank=True)
+    photo = models.FileField(upload_to=request_photo_path, blank=True)
+
+    latitude = models.FloatField(null=True, blank=True)
+    longitude = models.FloatField(null=True, blank=True)
+
+    # The nearest container and what its sensor showed when the request came in
+    container = models.ForeignKey(
+        Container,
+        on_delete=models.SET_NULL,
+        related_name="requests",
+        null=True,
+        blank=True
+    )
+    container_distance = models.FloatField(null=True, blank=True)
+    sensor_fill_level = models.FloatField(null=True, blank=True)
+    sensor_reading_at = models.DateTimeField(null=True, blank=True)
+
+    status = models.CharField(
+        max_length=20,
+        choices=Status.choices,
+        default=Status.NEW
+    )
+    assignee = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        related_name="assigned_requests",
+        null=True,
+        blank=True
+    )
+    resolution_note = models.TextField(max_length=1000, blank=True)
+
+    # The worker's photo of the finished job
+    result_photo = models.FileField(upload_to=request_photo_path, blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.code} — {self.get_category_display()}"
+
+
+class RequestEvent(models.Model):
+    """One step in a request's history: who changed what, and when."""
+
+    request = models.ForeignKey(
+        ResidentRequest,
+        on_delete=models.CASCADE,
+        related_name="events"
+    )
+    status = models.CharField(max_length=20, choices=ResidentRequest.Status.choices)
+    actor = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        related_name="request_events",
+        null=True,
+        blank=True
+    )
+    note = models.CharField(max_length=300, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["created_at", "id"]
+
+    def __str__(self):
+        return f"{self.request.code}: {self.get_status_display()}"

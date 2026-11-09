@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure--xj=^fae)@uri2nlrfa7*kzfh_5hwu4h9&px6bi1%v1=hl8vjm
 DEBUG = True
 
 # The Cloudflare tunnel address changes when cloudflared restarts
-TUNNEL_HOST = "names-simply-coffee-vanilla.trycloudflare.com"
+TUNNEL_HOST = "according-mines-dated-returned.trycloudflare.com"
 
 ALLOWED_HOSTS = [
     "127.0.0.1",
@@ -36,6 +36,9 @@ ALLOWED_HOSTS = [
 CSRF_TRUSTED_ORIGINS = [
     f"https://{TUNNEL_HOST}",
 ]
+
+# A form from a stale tab (after logging in or out elsewhere) gets a page in Kazakh
+CSRF_FAILURE_VIEW = 'sensor.views.csrf_failure'
 
 LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = '/dashboard/'
@@ -134,6 +137,10 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.1/howto/static-files/
 
 STATIC_URL = 'static/'
+
+# Photos attached to resident requests
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
 
 
 # Email

@@ -131,6 +131,10 @@
                 <span id="connectionText">Қосылуда…</span>
             </div>
 
+            <a class="header-link" href="{% url 'requests_list' %}">
+                Өтініштер{% if new_requests %}<span class="count-badge">{{ new_requests }}</span>{% endif %}
+            </a>
+
             <button
                 id="themeToggle"
                 class="icon-button"

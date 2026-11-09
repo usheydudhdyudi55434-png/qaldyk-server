@@ -1,0 +1,97 @@
+{% extends "layout.html" %}
+
+{% block title %}Qaldyq — Өтініш мәртебесі{% endblock %}
+
+{% block brand_note %}Тұрғындарға арналған{% endblock %}
+
+{% block nav %}
+    <a class="header-link" href="{% url 'resident_home' %}">Жаңа өтініш</a>
+{% endblock %}
+
+{% block main_class %}resident-page{% endblock %}
+
+{% block content %}
+
+{% if is_new and resident_request %}
+<div class="notice notice-success" role="status">
+    <svg class="icon" aria-hidden="true"><use href="#i-normal"></use></svg>
+    <div>
+        <strong>Өтініш қабылданды.</strong>
+        Кодыңыз: <span class="request-code">{{ resident_request.code }}</span>.
+        Оны сақтап қойыңыз, мәртебені осы код арқылы тексересіз.
+    </div>
+</div>
+{% endif %}
+
+<form class="panel status-lookup" method="get" action="{% url 'resident_status' %}">
+    <label for="code">Өтініш коды</label>
+    <div class="status-lookup-row">
+        <input id="code" name="code" type="text" value="{{ code }}" placeholder="Q-XXXXXX" autocomplete="off" spellcheck="false">
+        <button class="button-primary" type="submit">Тексеру</button>
+    </div>
+</form>
+
+{% if code and not resident_request %}
+<div class="notice notice-error" role="alert">
+    <svg class="icon" aria-hidden="true"><use href="#i-full"></use></svg>
+    «{{ code }}» кодымен өтініш табылмады. Кодты қайта тексеріңіз.
+</div>
+{% endif %}
+
+{% if resident_request %}
+<article class="panel request-card">
+
+    <div class="request-card-head">
+        <div>
+            <span class="request-code">{{ resident_request.code }}</span>
+            <h1>{{ resident_request.get_category_display }}</h1>
+            <p class="cell-secondary">{{ resident_request.address }}</p>
+        </div>
+        <span class="status-pill status-{{ resident_request.status }}">{{ resident_request.get_status_display }}</span>
+    </div>
+
+    <ol class="status-steps">
+        {% for step in steps %}
+        <li class="step-{{ step.state }}">
+            {{ step.label }}
+            {% if step.at %}<span class="step-time numeric">{{ step.at|date:"d.m H:i" }}</span>{% endif %}
+        </li>
+        {% endfor %}
+    </ol>
+
+    {% if resident_request.resolution_note %}
+    <div class="resolution">
+        <span class="field-label">Жауап</span>
+        <p>{{ resident_request.resolution_note }}</p>
+    </div>
+    {% endif %}
+
+    <dl class="request-facts">
+        <div><dt>Жіберілді</dt><dd>{{ resident_request.created_at|date:"d.m.Y H:i" }}</dd></div>
+        <div><dt>Соңғы өзгеріс</dt><dd>{{ resident_request.updated_at|date:"d.m.Y H:i" }}</dd></div>
+        {% if resident_request.description %}
+        <div class="request-facts-wide"><dt>Сипаттама</dt><dd>{{ resident_request.description|linebreaksbr }}</dd></div>
+        {% endif %}
+    </dl>
+
+    {% if resident_request.photo or resident_request.result_photo %}
+    <div class="photo-pair">
+        {% if resident_request.photo %}
+        <figure>
+            <img class="request-photo" src="{{ resident_request.photo.url }}" alt="Өтінішке тіркелген фото" loading="lazy">
+            <figcaption>Сіздің фотоңыз</figcaption>
+        </figure>
+        {% endif %}
+        {% if resident_request.result_photo %}
+        <figure>
+            <img class="request-photo" src="{{ resident_request.result_photo.url }}" alt="Жұмыс аяқталғаннан кейінгі фото" loading="lazy">
+            <figcaption>Жұмыстан кейін</figcaption>
+        </figure>
+        {% endif %}
+    </div>
+    {% endif %}
+
+</article>
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,21 @@
+{% extends "layout.html" %}
+
+{% block title %}Qaldyq — Рөл берілмеген{% endblock %}
+
+{% block account %}
+    {% include "account_menu.html" %}
+{% endblock %}
+
+{% block main_class %}resident-page{% endblock %}
+
+{% block content %}
+
+<div class="notice notice-error" role="alert">
+    <svg class="icon" aria-hidden="true"><use href="#i-full"></use></svg>
+    <div>
+        <strong>Аккаунтыңызға рөл берілмеген.</strong>
+        Әкімшіден сізді «Диспетчерлер» немесе «Жұмысшылар» тобына қосуын сұраңыз.
+    </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,146 @@
+{% extends "layout.html" %}
+
+{% block title %}Qaldyq — {{ item.code }}{% endblock %}
+
+{% block brand_href %}{% url 'dashboard' %}{% endblock %}
+
+{% block nav %}
+    <a class="header-link" href="{% url 'requests_list' %}">Өтініштер</a>
+    <a class="header-link" href="{% url 'dashboard' %}">Панель</a>
+{% endblock %}
+
+{% block account %}
+    {% include "account_menu.html" %}
+{% endblock %}
+
+{% block content %}
+
+<div class="section-header">
+    <div>
+        <span class="request-code">{{ item.code }}</span>
+        <h1>{{ item.get_category_display }}</h1>
+    </div>
+    <span class="status-pill status-{{ item.status }}">{{ item.get_status_display }}</span>
+</div>
+
+{% if saved %}
+<div class="notice notice-success" role="status">
+    <svg class="icon" aria-hidden="true"><use href="#i-normal"></use></svg>
+    Өзгеріс сақталды. Тұрғын жаңа мәртебені өтініш бетінен көреді.
+</div>
+{% endif %}
+
+<div class="detail-grid">
+
+    <article class="panel detail-main">
+
+        <dl class="request-facts">
+            <div class="request-facts-wide"><dt>Мекенжай</dt><dd>{{ item.address }}</dd></div>
+            {% if item.description %}
+            <div class="request-facts-wide"><dt>Сипаттама</dt><dd>{{ item.description|linebreaksbr }}</dd></div>
+            {% endif %}
+            <div><dt>Жіберілді</dt><dd>{{ item.created_at|date:"d.m.Y H:i" }}</dd></div>
+            <div>
+                <dt>Картадағы орны</dt>
+                <dd>
+                    {% if item.latitude is not None %}
+                    <a href="https://2gis.kz/almaty/geo/{{ item.longitude|stringformat:'.6f' }}%2C{{ item.latitude|stringformat:'.6f' }}" target="_blank" rel="noopener">2GIS-те ашу</a>
+                    {% else %}
+                    Белгіленбеген
+                    {% endif %}
+                </dd>
+            </div>
+        </dl>
+
+        {% if item.photo or item.result_photo %}
+        <div class="photo-pair">
+            {% if item.photo %}
+            <figure>
+                <a href="{{ item.photo.url }}" target="_blank" rel="noopener">
+                    <img class="request-photo" src="{{ item.photo.url }}" alt="Тұрғын тіркеген фото">
+                </a>
+                <figcaption>Дейін: тұрғынның фотосы</figcaption>
+            </figure>
+            {% endif %}
+            {% if item.result_photo %}
+            <figure>
+                <a href="{{ item.result_photo.url }}" target="_blank" rel="noopener">
+                    <img class="request-photo" src="{{ item.result_photo.url }}" alt="Орындалғаннан кейінгі фото">
+                </a>
+                <figcaption>Кейін: қызметкердің фотосы</figcaption>
+            </figure>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <section class="sensor-check" aria-labelledby="sensorTitle">
+            <h2 id="sensorTitle">Датчикпен салыстыру</h2>
+            <p class="verdict verdict-{{ verdict.0 }}">{{ verdict.1 }}</p>
+            {% if clearance %}
+            <p class="verdict verdict-confirmed">
+                Датчик контейнердің босатылғанын көрді: {{ clearance.0 }}% → {{ clearance.1 }}%, {{ clearance.2|date:"d.m H:i" }}
+            </p>
+            {% endif %}
+            {% if item.container %}
+            <dl class="request-facts">
+                <div><dt>Жақын контейнер</dt><dd>{{ item.container.name }} · {{ item.container_distance|floatformat:0 }} м</dd></div>
+                <div>
+                    <dt>Өтініш түскендегі дерек</dt>
+                    <dd>
+                        {% if item.sensor_fill_level is not None %}
+                        {{ item.sensor_fill_level|floatformat:0 }}% · {{ item.sensor_reading_at|date:"d.m H:i" }}
+                        {% else %}—{% endif %}
+                    </dd>
+                </div>
+                <div>
+                    <dt>Қазіргі дерек</dt>
+                    <dd>
+                        {% if latest %}{{ latest.fill_level|floatformat:0 }}% · {{ latest.created_at|date:"d.m H:i" }}{% else %}—{% endif %}
+                    </dd>
+                </div>
+            </dl>
+            {% endif %}
+        </section>
+
+        <section class="history" aria-labelledby="historyTitle">
+            <h2 id="historyTitle">Тарихы</h2>
+            <ol class="timeline">
+                {% for event in events %}
+                <li>
+                    <span class="numeric cell-secondary">{{ event.created_at|date:"d.m H:i" }}</span>
+                    <span>
+                        <span class="status-pill status-{{ event.status }}">{{ event.get_status_display }}</span>
+                        {% if event.note %}{{ event.note }}{% endif %}
+                    </span>
+                    <span class="cell-secondary">{{ event.actor.username|default:"тұрғын" }}</span>
+                </li>
+                {% empty %}
+                <li><span class="cell-secondary">Тарих жазылмаған</span></li>
+                {% endfor %}
+            </ol>
+        </section>
+
+    </article>
+
+    <form class="panel detail-form" method="post">
+
+        {% csrf_token %}
+
+        <h2>Өңдеу</h2>
+
+        {% for field in form %}
+        <div class="field">
+            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+            {{ field }}
+            {% if field.help_text %}<p class="field-hint">{{ field.help_text }}</p>{% endif %}
+            {% for error in field.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+        </div>
+        {% endfor %}
+
+        <button class="button-primary" type="submit">Сақтау</button>
+
+    </form>
+
+</div>
+
+{% endblock %}

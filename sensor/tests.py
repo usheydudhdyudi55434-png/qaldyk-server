@@ -1,13 +1,18 @@
+import tempfile
 from datetime import UTC, datetime, timedelta
 from io import StringIO
 
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Group
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.management import call_command
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.utils import timezone
 
 from . import fire
-from .models import Container, SensorReading
+from .models import Container, ResidentRequest, SensorReading
+from .residents import sensor_clearance, sensor_verdict
+from .roles import DISPATCHERS, WORKERS
 
 
 def add_reading(container, fill_level, age=timedelta(0)):
@@ -24,10 +29,21 @@ def add_reading(container, fill_level, age=timedelta(0)):
 
 
 def create_user():
-    return get_user_model().objects.create_user(
+    user = get_user_model().objects.create_user(
         username="dispatcher",
         password="correct-horse-battery"
     )
+    user.groups.add(Group.objects.get(name=DISPATCHERS))
+    return user
+
+
+def create_worker(username="worker"):
+    user = get_user_model().objects.create_user(
+        username=username,
+        password="pass-12345-x"
+    )
+    user.groups.add(Group.objects.get(name=WORKERS))
+    return user
 
 
 class AccessTests(TestCase):
@@ -401,3 +417,384 @@ class FireApiTests(TestCase):
         ).json()["series"][str(self.container.id)]
 
         self.assertEqual(max(point[1] for point in points), 90)
+
+
+PNG_BYTES = (
+    b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01"
+    b"\x08\x06\x00\x00\x00\x1f\x15\xc4\x89\x00\x00\x00\rIDATx\x9cc\xf8\x0f"
+    b"\x00\x00\x01\x01\x00\x05\x18\xd8N\x00\x00\x00\x00IEND\xaeB`\x82"
+)
+
+
+@override_settings(MEDIA_ROOT=tempfile.mkdtemp())
+class ResidentRequestTests(TestCase):
+
+    def setUp(self):
+        self.container = Container.objects.create(
+            name="Container #1",
+            location="Almaty",
+            latitude=43.2389,
+            longitude=76.8897
+        )
+        add_reading(self.container, 92)
+
+    def submit(self, **fields):
+        data = {
+            "category": ResidentRequest.Category.OVERFLOW,
+            "address": "Розыбакиев көшесі",
+            "description": "Контейнер толып кеткен",
+            **fields
+        }
+        return self.client.post('/', data)
+
+    def test_resident_page_is_public(self):
+        response = self.client.get('/')
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Өтінішті жіберу")
+        self.assertContains(response, 'name="category"', count=4)
+        self.assertNotContains(response, "Select an option")
+
+    def test_request_gets_a_code_and_the_resident_sees_its_status(self):
+        response = self.submit()
+
+        item = ResidentRequest.objects.get()
+        self.assertRegex(item.code, r"^Q-[A-HJ-NP-Z2-9]{6}$")
+        self.assertRedirects(response, f"/otinish/?code={item.code}&new=1")
+
+        page = self.client.get('/otinish/', {"code": item.code.lower()})
+        self.assertContains(page, item.code)
+        self.assertContains(page, "Жаңа")
+
+    def test_request_near_a_container_keeps_its_sensor_reading(self):
+        self.submit(latitude="43.2391", longitude="76.8899")
+
+        item = ResidentRequest.objects.get()
+        self.assertEqual(item.container, self.container)
+        self.assertLess(item.container_distance, 50)
+        self.assertEqual(item.sensor_fill_level, 92)
+        self.assertEqual(sensor_verdict(item)[0], "confirmed")
+
+    def test_request_far_from_containers_is_not_linked(self):
+        self.submit(latitude="43.35", longitude="77.05")
+
+        item = ResidentRequest.objects.get()
+        self.assertIsNone(item.container)
+        self.assertEqual(sensor_verdict(item)[0], "none")
+
+    def test_low_sensor_reading_does_not_confirm(self):
+        add_reading(self.container, 20)
+
+        self.submit(latitude="43.2389", longitude="76.8897")
+
+        self.assertEqual(sensor_verdict(ResidentRequest.objects.get())[0], "unconfirmed")
+
+    def test_invalid_requests_are_not_saved(self):
+        for fields in (
+            {"category": ""},
+            {"address": ""},
+            {"website": "http://spam.example"},
+            {"latitude": "43.2"},
+        ):
+            response = self.submit(**fields)
+            self.assertEqual(response.status_code, 200, fields)
+
+        self.assertEqual(ResidentRequest.objects.count(), 0)
+
+    def test_photo_is_saved_under_a_random_name(self):
+        photo = SimpleUploadedFile("Ivanov_phone_87011234567.png", PNG_BYTES, "image/png")
+
+        self.submit(photo=photo)
+
+        name = ResidentRequest.objects.get().photo.name
+        self.assertTrue(name.startswith("requests/"))
+        self.assertNotIn("Ivanov", name)
+        self.assertTrue(name.endswith(".png"))
+
+    def test_non_image_and_large_photos_are_rejected(self):
+        fake = SimpleUploadedFile("photo.jpg", b"not really an image", "image/jpeg")
+        large = SimpleUploadedFile(
+            "big.png",
+            PNG_BYTES + b"\x00" * (5 * 1024 * 1024),
+            "image/png"
+        )
+
+        for photo in (fake, large):
+            response = self.submit(photo=photo)
+            self.assertEqual(response.status_code, 200)
+
+        self.assertEqual(ResidentRequest.objects.count(), 0)
+
+    def test_unknown_code_says_so(self):
+        response = self.client.get('/otinish/', {"code": "Q-NOPE22"})
+
+        self.assertContains(response, "табылмады")
+
+
+class DispatcherRequestTests(TestCase):
+
+    def setUp(self):
+        self.item = ResidentRequest.objects.create(
+            category=ResidentRequest.Category.LITTERED,
+            address="Абай даңғылы"
+        )
+
+    def test_dispatcher_pages_need_a_login(self):
+        for url in ('/dashboard/requests/', f'/dashboard/requests/{self.item.pk}/'):
+            self.assertEqual(self.client.get(url).status_code, 302, url)
+
+    def test_list_filters_by_status(self):
+        self.client.force_login(create_user())
+        done = ResidentRequest.objects.create(
+            category=ResidentRequest.Category.OTHER,
+            address="Сайран",
+            status=ResidentRequest.Status.DONE
+        )
+
+        response = self.client.get('/dashboard/requests/', {"status": "done"})
+
+        self.assertContains(response, done.code)
+        self.assertNotContains(response, self.item.code)
+
+    def test_update_reaches_the_resident(self):
+        worker = create_worker()
+        self.client.force_login(create_user())
+
+        response = self.client.post(f'/dashboard/requests/{self.item.pk}/', {
+            "status": ResidentRequest.Status.DONE,
+            "assignee": worker.pk,
+            "resolution_note": "Аумақ тазартылды"
+        })
+
+        self.assertRedirects(response, f'/dashboard/requests/{self.item.pk}/?saved=1')
+        self.item.refresh_from_db()
+        self.assertEqual(self.item.assignee, worker)
+
+        self.client.logout()
+        page = self.client.get('/otinish/', {"code": self.item.code})
+        self.assertContains(page, "Орындалды")
+        self.assertContains(page, "Аумақ тазартылды")
+
+    def test_dashboard_links_to_new_requests(self):
+        self.client.force_login(create_user())
+
+        response = self.client.get('/dashboard/')
+
+        self.assertContains(response, '/dashboard/requests/')
+        self.assertContains(response, 'count-badge">1<')
+
+
+@override_settings(MEDIA_ROOT=tempfile.mkdtemp())
+class WorkerTaskTests(TestCase):
+
+    def setUp(self):
+        self.worker = create_worker("worker")
+        self.other = create_worker("other")
+        self.item = ResidentRequest.objects.create(
+            category=ResidentRequest.Category.OVERFLOW,
+            address="Абай даңғылы",
+            status=ResidentRequest.Status.ACCEPTED,
+            assignee=self.worker
+        )
+
+    def complete(self, **fields):
+        return self.client.post(f'/tasks/{self.item.pk}/complete/', {
+            f"task{self.item.pk}-resolution_note": "Контейнер босатылды",
+            **fields
+        })
+
+    def test_worker_sees_only_own_active_tasks(self):
+        foreign = ResidentRequest.objects.create(
+            category=ResidentRequest.Category.OTHER,
+            address="Сайран",
+            status=ResidentRequest.Status.ACCEPTED,
+            assignee=self.other
+        )
+        self.client.force_login(self.worker)
+
+        response = self.client.get('/tasks/')
+
+        self.assertContains(response, self.item.code)
+        self.assertNotContains(response, foreign.code)
+
+    def test_worker_cannot_touch_someone_elses_task(self):
+        self.client.force_login(self.other)
+
+        self.assertEqual(self.client.post(f'/tasks/{self.item.pk}/start/').status_code, 404)
+        self.assertEqual(self.complete().status_code, 404)
+
+    def test_start_moves_the_task_on_and_logs_it(self):
+        self.client.force_login(self.worker)
+
+        self.client.post(f'/tasks/{self.item.pk}/start/')
+
+        self.item.refresh_from_db()
+        self.assertEqual(self.item.status, ResidentRequest.Status.IN_PROGRESS)
+        event = self.item.events.get()
+        self.assertEqual(event.actor, self.worker)
+
+    def test_completion_needs_a_photo(self):
+        self.client.force_login(self.worker)
+
+        response = self.complete()
+
+        self.assertEqual(response.status_code, 400)
+        self.assertContains(response, "фото қажет", status_code=400)
+        self.item.refresh_from_db()
+        self.assertEqual(self.item.status, ResidentRequest.Status.ACCEPTED)
+
+    def test_completion_with_photo_reaches_the_resident(self):
+        self.client.force_login(self.worker)
+
+        response = self.complete(**{
+            f"task{self.item.pk}-result_photo": SimpleUploadedFile("after.png", PNG_BYTES, "image/png")
+        })
+
+        self.assertRedirects(response, f'/tasks/?done={self.item.code}')
+        self.item.refresh_from_db()
+        self.assertEqual(self.item.status, ResidentRequest.Status.DONE)
+        self.assertTrue(self.item.result_photo.name.startswith("requests/"))
+
+        self.client.logout()
+        page = self.client.get('/otinish/', {"code": self.item.code})
+        self.assertContains(page, "Жұмыстан кейін")
+        self.assertContains(page, "Контейнер босатылды")
+
+    def test_tasks_need_a_login(self):
+        self.assertEqual(self.client.get('/tasks/').status_code, 302)
+        self.assertEqual(self.client.get(f'/tasks/{self.item.pk}/start/').status_code, 302)
+
+
+class RequestHistoryTests(TestCase):
+
+    def test_creation_and_dispatcher_changes_are_logged(self):
+        self.client.post('/', {
+            "category": ResidentRequest.Category.LITTERED,
+            "address": "Сайран"
+        })
+        item = ResidentRequest.objects.get()
+        dispatcher = create_user()
+        worker = create_worker()
+        self.client.force_login(dispatcher)
+
+        self.client.post(f'/dashboard/requests/{item.pk}/', {
+            "status": ResidentRequest.Status.ACCEPTED,
+            "assignee": worker.pk,
+            "resolution_note": ""
+        })
+
+        notes = [(event.status, event.actor, event.note) for event in item.events.all()]
+        self.assertEqual(notes[0][:2], (ResidentRequest.Status.NEW, None))
+        self.assertEqual(notes[1:], [
+            (ResidentRequest.Status.ACCEPTED, dispatcher, f"Жауапты: {worker.username}")
+        ])
+
+        detail = self.client.get(f'/dashboard/requests/{item.pk}/')
+        self.assertContains(detail, "Тұрғын өтініш жіберді")
+
+    def test_sensor_clearance_after_the_request(self):
+        container = Container.objects.create(
+            name="A", location="Almaty", latitude=43.2389, longitude=76.8897
+        )
+        add_reading(container, 92, age=timedelta(minutes=5))
+        item = ResidentRequest.objects.create(
+            category=ResidentRequest.Category.OVERFLOW,
+            address="Абай",
+            container=container,
+            sensor_fill_level=92
+        )
+
+        self.assertIsNone(sensor_clearance(item))
+
+        add_reading(container, 94)
+        add_reading(container, 4)
+        SensorReading.objects.filter(container=container).update(
+            created_at=timezone.now() + timedelta(minutes=1)
+        )
+
+        before, after, _ = sensor_clearance(item)
+        self.assertEqual((before, after), (94, 4))
+
+
+class RoleTests(TestCase):
+
+    def setUp(self):
+        self.dispatcher = create_user()
+        self.worker = create_worker()
+        self.item = ResidentRequest.objects.create(
+            category=ResidentRequest.Category.OVERFLOW,
+            address="Абай"
+        )
+
+    def login(self, username, password):
+        return self.client.post('/login/', {"username": username, "password": password})
+
+    def test_each_role_lands_on_its_own_page(self):
+        self.assertRedirects(self.login("worker", "pass-12345-x"), '/tasks/')
+        self.client.logout()
+        self.assertRedirects(self.login("dispatcher", "correct-horse-battery"), '/dashboard/')
+
+    def test_worker_cannot_open_dispatcher_pages_or_data(self):
+        self.client.force_login(self.worker)
+
+        for url in ('/dashboard/', '/dashboard/requests/', f'/dashboard/requests/{self.item.pk}/'):
+            self.assertRedirects(self.client.get(url), '/tasks/', fetch_redirect_response=False)
+
+        for url in ('/api/containers/', '/api/containers/history/'):
+            self.assertEqual(self.client.get(url).status_code, 403, url)
+
+    def test_dispatcher_is_sent_from_tasks_to_the_panel(self):
+        self.client.force_login(self.dispatcher)
+
+        self.assertRedirects(self.client.get('/tasks/'), '/dashboard/', fetch_redirect_response=False)
+
+    def test_account_without_a_role_sees_an_explanation(self):
+        get_user_model().objects.create_user(username="nobody", password="pass-12345-x")
+        self.client.login(username="nobody", password="pass-12345-x")
+
+        response = self.client.get('/dashboard/')
+
+        self.assertContains(response, "рөл берілмеген", status_code=403)
+
+    def test_only_workers_can_be_assigned(self):
+        self.client.force_login(self.dispatcher)
+
+        page = self.client.get(f'/dashboard/requests/{self.item.pk}/')
+        self.assertContains(page, f'<option value="{self.worker.pk}">worker</option>', html=True)
+        self.assertNotContains(page, f'<option value="{self.dispatcher.pk}">')
+
+        response = self.client.post(f'/dashboard/requests/{self.item.pk}/', {
+            "status": ResidentRequest.Status.ACCEPTED,
+            "assignee": self.dispatcher.pk,
+            "resolution_note": ""
+        })
+        self.assertEqual(response.status_code, 200)
+        self.item.refresh_from_db()
+        self.assertIsNone(self.item.assignee)
+
+    def test_accepting_needs_a_worker(self):
+        self.client.force_login(self.dispatcher)
+
+        response = self.client.post(f'/dashboard/requests/{self.item.pk}/', {
+            "status": ResidentRequest.Status.ACCEPTED,
+            "assignee": "",
+            "resolution_note": ""
+        })
+
+        self.assertContains(response, "орындаушы жұмысшыны таңдаңыз")
+        self.item.refresh_from_db()
+        self.assertEqual(self.item.status, ResidentRequest.Status.NEW)
+
+
+class StaleFormTests(TestCase):
+
+    def test_form_from_a_stale_tab_explains_what_happened(self):
+        client = self.client_class(enforce_csrf_checks=True)
+        worker = create_worker()
+        client.force_login(worker)
+        client.get('/tasks/')
+
+        response = client.post('/tasks/1/start/', {"csrfmiddlewaretoken": "stale"})
+
+        self.assertContains(response, "Бет ескіріп қалды", status_code=403)
+        self.assertContains(response, 'href="/tasks/"', status_code=403)

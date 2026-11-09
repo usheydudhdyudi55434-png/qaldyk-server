@@ -1,0 +1,109 @@
+{% extends "layout.html" %}
+
+{% block title %}Qaldyq — Менің тапсырмаларым{% endblock %}
+
+{% block brand_href %}{% url 'my_tasks' %}{% endblock %}
+
+{% block brand_note %}Қызметкерге арналған{% endblock %}
+
+{% block account %}
+    {% include "account_menu.html" %}
+{% endblock %}
+
+{% block main_class %}tasks-page{% endblock %}
+
+{% block content %}
+
+<div class="section-header">
+    <h1>Менің тапсырмаларым</h1>
+    <span class="section-meta">{{ active|length }} белсенді</span>
+</div>
+
+{% if done_code %}
+<div class="notice notice-success" role="status">
+    <svg class="icon" aria-hidden="true"><use href="#i-normal"></use></svg>
+    <span><span class="request-code">{{ done_code }}</span> орындалды деп белгіленді. Тұрғын нәтижені өз бетінен көреді.</span>
+</div>
+{% endif %}
+
+{% for task in active %}
+<article class="panel task-card">
+
+    <div class="request-card-head">
+        <div>
+            <span class="request-code">{{ task.item.code }}</span>
+            <h2>{{ task.item.get_category_display }}</h2>
+            <p class="cell-secondary">{{ task.item.address }}</p>
+        </div>
+        <span class="status-pill status-{{ task.item.status }}">{{ task.item.get_status_display }}</span>
+    </div>
+
+    {% if task.item.description %}
+    <p class="task-description">{{ task.item.description|linebreaksbr }}</p>
+    {% endif %}
+
+    <div class="task-links">
+        {% if task.item.latitude is not None %}
+        <a class="button-secondary" href="https://2gis.kz/almaty/geo/{{ task.item.longitude|stringformat:'.6f' }}%2C{{ task.item.latitude|stringformat:'.6f' }}" target="_blank" rel="noopener">
+            <svg class="icon" aria-hidden="true"><use href="#i-pin"></use></svg>
+            Картада ашу
+        </a>
+        {% endif %}
+        {% if task.item.photo %}
+        <a class="button-secondary" href="{{ task.item.photo.url }}" target="_blank" rel="noopener">Тұрғынның фотосы</a>
+        {% endif %}
+    </div>
+
+    {% if task.item.container %}
+    <p class="verdict verdict-{{ task.verdict.0 }}">{{ task.verdict.1 }}</p>
+    {% endif %}
+
+    {% if task.clearance %}
+    <p class="verdict verdict-confirmed">
+        Датчик контейнердің босатылғанын көрді: {{ task.clearance.0 }}% → {{ task.clearance.1 }}%, {{ task.clearance.2|date:"H:i" }}
+    </p>
+    {% endif %}
+
+    {% if task.item.status == "accepted" %}
+    <form method="post" action="{% url 'task_start' task.item.pk %}">
+        {% csrf_token %}
+        <button class="button-primary" type="submit">Жұмысқа кірістім</button>
+    </form>
+    {% endif %}
+
+    <form class="task-complete" method="post" action="{% url 'task_complete' task.item.pk %}" enctype="multipart/form-data" novalidate>
+        {% csrf_token %}
+        {% for field in task.form %}
+        <div class="field">
+            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+            {{ field }}
+            {% for error in field.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+        </div>
+        {% endfor %}
+        <button class="button-primary" type="submit">Орындадым</button>
+    </form>
+
+</article>
+{% empty %}
+<div class="panel queue-empty level-normal">
+    <svg class="icon" aria-hidden="true"><use href="#i-normal"></use></svg>
+    Қазір сізге тағайындалған белсенді тапсырма жоқ
+</div>
+{% endfor %}
+
+{% if finished %}
+<section class="task-history" aria-labelledby="finishedTitle">
+    <h2 id="finishedTitle">Жақында орындалғандар</h2>
+    <ul>
+        {% for item in finished %}
+        <li>
+            <span class="request-code">{{ item.code }}</span>
+            <span>{{ item.get_category_display }} · {{ item.address }}</span>
+            <span class="cell-secondary numeric">{{ item.updated_at|date:"d.m H:i" }}</span>
+        </li>
+        {% endfor %}
+    </ul>
+</section>
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,13 @@
+<span class="user-name">{{ user.get_username }}</span>
+
+<form method="post" action="{% url 'logout' %}" class="logout-form">
+    {% csrf_token %}
+    <button
+        class="icon-button"
+        type="submit"
+        aria-label="Жүйеден шығу"
+        title="Жүйеден шығу"
+    >
+        <svg class="icon"><use href="#i-logout"></use></svg>
+    </button>
+</form>
