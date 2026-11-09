@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.1/ref/settings/
 """
 
+import os
 from pathlib import Path
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -141,6 +142,23 @@ STATIC_URL = 'static/'
 # Photos attached to resident requests
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
+# AI photo analysis: a Gemini key wins over a Claude key; with neither it is
+# skipped. Set keys in .env, never in code
+GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY', '')
+ANTHROPIC_API_KEY = os.environ.get('ANTHROPIC_API_KEY', '')
+
+# Tried in order; the next one is used when a model is busy or rate-limited
+GEMINI_MODELS = [
+    model.strip()
+    for model in os.environ.get(
+        'GEMINI_MODELS', 'gemini-flash-lite-latest,gemini-flash-latest'
+    ).split(',')
+    if model.strip()
+]
+
+# Tests run the analysis inline instead of in a background thread
+AI_ANALYSIS_SYNC = False
 
 
 # Email

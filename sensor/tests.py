@@ -1,6 +1,10 @@
+import base64
+import json
+import urllib.error
 import tempfile
 from datetime import UTC, datetime, timedelta
-from io import StringIO
+from io import BytesIO, StringIO
+from unittest import mock
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
@@ -8,9 +12,10 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.management import call_command
 from django.test import TestCase, override_settings
 from django.utils import timezone
+from PIL import Image
 
-from . import fire
-from .models import Container, ResidentRequest, SensorReading
+from . import ai, fire
+from .models import Container, RequestAnalysis, ResidentRequest, SensorReading
 from .residents import sensor_clearance, sensor_verdict
 from .roles import DISPATCHERS, WORKERS
 
@@ -798,3 +803,209 @@ class StaleFormTests(TestCase):
 
         self.assertContains(response, "Бет ескіріп қалды", status_code=403)
         self.assertContains(response, 'href="/tasks/"', status_code=403)
+
+
+def model_answer(**overrides):
+    answer = {
+        "is_waste_photo": True,
+        "waste_type": "household",
+        "volume": "medium",
+        "hazard": "none",
+        "hazard_reason": "",
+        "suggested_category": "overflow",
+        "confidence": 0.92,
+        "summary": "Контейнер толы, айналасында тұрмыстық қоқыс қаптары жатыр.",
+    }
+    answer.update(overrides)
+    return answer, "claude-opus-5-5"
+
+
+def photo_upload(name="photo.png", size=(2400, 1200)):
+    buffer = BytesIO()
+    Image.new("RGB", size, (120, 140, 90)).save(buffer, format="PNG")
+    return SimpleUploadedFile(name, buffer.getvalue(), "image/png")
+
+
+@override_settings(
+    MEDIA_ROOT=tempfile.mkdtemp(),
+    ANTHROPIC_API_KEY="test-key",
+    GEMINI_API_KEY="",
+    AI_ANALYSIS_SYNC=True
+)
+class AiAnalysisTests(TestCase):
+
+    def submit(self, **fields):
+        with self.captureOnCommitCallbacks(execute=True):
+            self.client.post('/', {
+                "category": ResidentRequest.Category.OVERFLOW,
+                "address": "Абай даңғылы",
+                "photo": photo_upload(),
+                **fields
+            })
+        return ResidentRequest.objects.get()
+
+    def test_photo_is_shrunk_to_what_claude_reads_in_full(self):
+        item = ResidentRequest.objects.create(
+            category=ResidentRequest.Category.OVERFLOW,
+            address="Абай",
+            photo=photo_upload()
+        )
+
+        data = base64.standard_b64decode(ai.prepare_image(item.photo))
+        image = Image.open(BytesIO(data))
+
+        self.assertEqual(image.format, "JPEG")
+        self.assertEqual(max(image.size), ai.MAX_IMAGE_SIDE)
+
+    def test_a_new_request_with_a_photo_is_analysed(self):
+        with mock.patch("sensor.ai.ask_model", return_value=model_answer()) as ask:
+            item = self.submit()
+
+        ask.assert_called_once()
+        analysis = item.analysis
+        self.assertEqual(analysis.state, RequestAnalysis.State.DONE)
+        self.assertEqual(analysis.waste_type, "household")
+        self.assertFalse(analysis.needs_review)
+
+    def test_danger_and_disagreement_are_flagged_for_review(self):
+        answer = model_answer(hazard="high", hazard_reason="Шприцтер көрінеді", suggested_category="littered")
+
+        with mock.patch("sensor.ai.ask_model", return_value=answer):
+            item = self.submit()
+
+        analysis = item.analysis
+        self.assertTrue(analysis.needs_review)
+        self.assertIn("қауіпті", analysis.review_reason)
+        self.assertIn("санат", analysis.review_reason)
+
+        self.client.force_login(create_user())
+        self.assertContains(self.client.get('/dashboard/requests/'), "Қауіпті")
+        detail = self.client.get(f'/dashboard/requests/{item.pk}/')
+        self.assertContains(detail, "Шприцтер көрінеді")
+        self.assertContains(detail, "арнайы бригада")
+
+    def test_dispatcher_can_accept_the_suggested_category(self):
+        with mock.patch("sensor.ai.ask_model", return_value=model_answer(suggested_category="littered")):
+            item = self.submit()
+
+        self.client.force_login(create_user())
+        self.client.post(f'/dashboard/requests/{item.pk}/accept-category/')
+
+        item.refresh_from_db()
+        self.assertEqual(item.category, ResidentRequest.Category.LITTERED)
+        self.assertFalse(item.analysis.needs_review)
+        self.assertIn("AI ұсынысымен", item.events.last().note)
+
+    def test_a_failure_never_blocks_the_resident(self):
+        with mock.patch("sensor.ai.ask_model", side_effect=ai.AnalysisError("timeout")):
+            item = self.submit()
+
+        self.assertEqual(item.status, ResidentRequest.Status.NEW)
+        self.assertEqual(item.analysis.state, RequestAnalysis.State.FAILED)
+        self.assertEqual(item.analysis.error, "timeout")
+
+    @override_settings(ANTHROPIC_API_KEY="")
+    def test_without_a_key_the_analysis_is_skipped(self):
+        with mock.patch("sensor.ai.ask_model") as ask:
+            item = self.submit()
+
+        ask.assert_not_called()
+        self.assertEqual(item.analysis.state, RequestAnalysis.State.SKIPPED)
+
+    def test_request_without_a_photo_is_not_sent_to_the_model(self):
+        with mock.patch("sensor.ai.ask_model") as ask, self.captureOnCommitCallbacks(execute=True):
+            self.client.post('/', {
+                "category": ResidentRequest.Category.LITTERED,
+                "address": "Сайран"
+            })
+
+        ask.assert_not_called()
+
+    def test_only_dispatchers_can_rerun_the_analysis(self):
+        item = ResidentRequest.objects.create(
+            category=ResidentRequest.Category.OVERFLOW,
+            address="Абай",
+            photo=photo_upload()
+        )
+        self.client.force_login(create_worker())
+
+        with mock.patch("sensor.ai.ask_model") as ask:
+            response = self.client.post(f'/dashboard/requests/{item.pk}/analyze/')
+
+        self.assertRedirects(response, '/tasks/', fetch_redirect_response=False)
+        ask.assert_not_called()
+
+
+class FakeHttpResponse:
+
+    def __init__(self, payload):
+        self.payload = json.dumps(payload).encode()
+
+    def read(self, *args):
+        return self.payload
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *args):
+        return False
+
+
+def gemini_reply(answer, model="gemini-3.5-flash-lite"):
+    return FakeHttpResponse({
+        "candidates": [{
+            "finishReason": "STOP",
+            "content": {"parts": [{"text": json.dumps(answer)}]},
+        }],
+        "modelVersion": model,
+    })
+
+
+@override_settings(
+    GEMINI_API_KEY="gemini-test",
+    ANTHROPIC_API_KEY="claude-test",
+    GEMINI_MODELS=["busy-model", "spare-model"]
+)
+class GeminiProviderTests(TestCase):
+
+    def setUp(self):
+        self.item = ResidentRequest.objects.create(
+            category=ResidentRequest.Category.OVERFLOW,
+            address="Абай"
+        )
+
+    def test_a_gemini_key_selects_gemini(self):
+        self.assertEqual(ai.provider(), "gemini")
+
+        with override_settings(GEMINI_API_KEY=""):
+            self.assertEqual(ai.provider(), "anthropic")
+
+        with override_settings(GEMINI_API_KEY="", ANTHROPIC_API_KEY=""):
+            self.assertIsNone(ai.provider())
+
+    def test_a_busy_model_falls_back_to_the_next_one(self):
+        busy = urllib.error.HTTPError("url", 503, "busy", {}, None)
+        answer = model_answer()[0]
+
+        with mock.patch("sensor.ai.urllib.request.urlopen", side_effect=[busy, gemini_reply(answer)]) as urlopen:
+            parsed, model = ai.ask_model("aW1n", self.item)
+
+        self.assertEqual(parsed["waste_type"], "household")
+        self.assertEqual(model, "gemini-3.5-flash-lite")
+        second = urlopen.call_args_list[1].args[0]
+        self.assertIn("spare-model", second.full_url)
+        self.assertEqual(second.get_header("X-goog-api-key"), "gemini-test")
+
+    def test_all_models_busy_is_reported(self):
+        busy = urllib.error.HTTPError("url", 429, "quota", {}, None)
+
+        with mock.patch("sensor.ai.urllib.request.urlopen", side_effect=[busy, busy]):
+            with self.assertRaisesRegex(ai.AnalysisError, "кейінірек"):
+                ai.ask_model("aW1n", self.item)
+
+    def test_a_blocked_answer_is_an_error(self):
+        blocked = FakeHttpResponse({"candidates": [{"finishReason": "SAFETY", "content": {"parts": []}}]})
+
+        with mock.patch("sensor.ai.urllib.request.urlopen", return_value=blocked):
+            with self.assertRaisesRegex(ai.AnalysisError, "SAFETY"):
+                ai.ask_model("aW1n", self.item)

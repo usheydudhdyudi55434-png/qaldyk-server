@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Container, RequestEvent, ResidentRequest, SensorReading
+from .models import Container, RequestAnalysis, RequestEvent, ResidentRequest, SensorReading
 
 
 class RequestEventInline(admin.TabularInline):
@@ -30,3 +30,9 @@ class ResidentRequestAdmin(admin.ModelAdmin):
     search_fields = ("code", "address")
     readonly_fields = ("code", "container", "container_distance", "sensor_fill_level", "sensor_reading_at")
     inlines = (RequestEventInline,)
+
+
+@admin.register(RequestAnalysis)
+class RequestAnalysisAdmin(admin.ModelAdmin):
+    list_display = ("request", "state", "waste_type", "hazard", "confidence", "needs_review", "created_at")
+    list_filter = ("state", "hazard", "needs_review")

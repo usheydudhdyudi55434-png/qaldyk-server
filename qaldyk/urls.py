@@ -5,6 +5,8 @@ from django.contrib.auth.views import LogoutView
 from django.urls import path, include
 from sensor.resident_views import (
     my_tasks,
+    request_accept_category,
+    request_analyze,
     request_detail,
     requests_list,
     resident_home,
@@ -28,6 +30,8 @@ urlpatterns = [
     path('dashboard/', dashboard, name='dashboard'),
     path('dashboard/requests/', requests_list, name='requests_list'),
     path('dashboard/requests/<int:pk>/', request_detail, name='request_detail'),
+    path('dashboard/requests/<int:pk>/analyze/', request_analyze, name='request_analyze'),
+    path('dashboard/requests/<int:pk>/accept-category/', request_accept_category, name='request_accept_category'),
     path('tasks/', my_tasks, name='my_tasks'),
     path('tasks/<int:pk>/start/', task_start, name='task_start'),
     path('tasks/<int:pk>/complete/', task_complete, name='task_complete'),

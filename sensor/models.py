@@ -150,3 +150,67 @@ class RequestEvent(models.Model):
 
     def __str__(self):
         return f"{self.request.code}: {self.get_status_display()}"
+
+
+class RequestAnalysis(models.Model):
+    """What the AI saw in the resident's photo. A suggestion; a dispatcher decides."""
+
+    class State(models.TextChoices):
+        PENDING = "pending", "Талдануда"
+        DONE = "done", "Талданды"
+        FAILED = "failed", "Қате"
+        SKIPPED = "skipped", "Өткізілді"
+
+    class WasteType(models.TextChoices):
+        HOUSEHOLD = "household", "Тұрмыстық қоқыс"
+        RECYCLABLES = "recyclables", "Қайта өңделетін (пластик, қағаз, шыны)"
+        CONSTRUCTION = "construction", "Құрылыс қалдығы"
+        BULKY = "bulky", "Ірі габаритті (жиһаз, техника)"
+        GREEN = "green", "Бақ қалдығы (жапырақ, бұтақ)"
+        HAZARDOUS = "hazardous", "Қауіпті қалдық"
+        MIXED = "mixed", "Аралас"
+        UNCLEAR = "unclear", "Анықталмады"
+
+    class Volume(models.TextChoices):
+        SMALL = "small", "Аз (бірнеше қап)"
+        MEDIUM = "medium", "Орташа (бір контейнерге дейін)"
+        LARGE = "large", "Көп (техника керек)"
+
+    class Hazard(models.TextChoices):
+        NONE = "none", "Қауіп белгісі жоқ"
+        POSSIBLE = "possible", "Қауіп болуы мүмкін"
+        HIGH = "high", "Қауіпті"
+
+    request = models.OneToOneField(
+        ResidentRequest,
+        on_delete=models.CASCADE,
+        related_name="analysis"
+    )
+    state = models.CharField(max_length=10, choices=State.choices, default=State.PENDING)
+
+    is_waste_photo = models.BooleanField(null=True, blank=True)
+    waste_type = models.CharField(max_length=20, choices=WasteType.choices, blank=True)
+    volume = models.CharField(max_length=10, choices=Volume.choices, blank=True)
+    hazard = models.CharField(max_length=10, choices=Hazard.choices, blank=True)
+    hazard_reason = models.CharField(max_length=300, blank=True)
+    suggested_category = models.CharField(
+        max_length=20,
+        choices=ResidentRequest.Category.choices,
+        blank=True
+    )
+    confidence = models.FloatField(null=True, blank=True)
+    summary = models.TextField(max_length=1000, blank=True)
+
+    # Set when a person should look before acting on the suggestion
+    needs_review = models.BooleanField(default=False)
+    review_reason = models.CharField(max_length=300, blank=True)
+
+    model = models.CharField(max_length=50, blank=True)
+    error = models.CharField(max_length=300, blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.request.code}: {self.get_state_display()}"
+

@@ -22,6 +22,11 @@ services:
     container_name: qaldyk-django
     ports:
       - "8000:8000"
+    environment:
+      # Read from .env next to this file (kept out of git)
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      GEMINI_MODELS: ${GEMINI_MODELS:-gemini-flash-lite-latest,gemini-flash-latest}
     volumes:
       # Resident photos survive a rebuild of the image
       - media_data:/app/media

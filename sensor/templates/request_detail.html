@@ -73,6 +73,55 @@
         </div>
         {% endif %}
 
+        <section class="ai-check" aria-labelledby="aiTitle">
+            <div class="ai-head">
+                <h2 id="aiTitle">AI талдауы</h2>
+                {% if analysis.state == "done" and analysis.confidence is not None %}
+                <span class="cell-secondary">сенімділік {% widthratio analysis.confidence 1 100 %}%</span>
+                {% endif %}
+            </div>
+
+            {% if not analysis %}
+            <p class="cell-secondary">Талдау жүргізілмеген.</p>
+            {% elif analysis.state == "pending" %}
+            <p class="cell-secondary">Фото талдануда. Бірнеше секундтан кейін бетті жаңартыңыз.</p>
+            {% elif analysis.state == "done" %}
+                {% if analysis.hazard == "high" %}
+                <p class="verdict verdict-danger">
+                    Қауіпті қалдық белгісі{% if analysis.hazard_reason %}: {{ analysis.hazard_reason }}{% endif %}.
+                    Қарапайым жұмысшыға бермеңіз, арнайы бригада керек.
+                </p>
+                {% endif %}
+                {% if analysis.needs_review %}
+                <p class="verdict verdict-unconfirmed">Тексеру керек: {{ analysis.review_reason }}</p>
+                {% endif %}
+                <p class="ai-summary">{{ analysis.summary }}</p>
+                <dl class="request-facts">
+                    <div><dt>Қалдық түрі</dt><dd>{{ analysis.get_waste_type_display }}</dd></div>
+                    <div><dt>Көлемі</dt><dd>{{ analysis.get_volume_display }}</dd></div>
+                    <div><dt>Қауіп</dt><dd>{{ analysis.get_hazard_display }}{% if analysis.hazard_reason and analysis.hazard != "high" %}: {{ analysis.hazard_reason }}{% endif %}</dd></div>
+                    <div><dt>Ұсынылған санат</dt><dd>{{ analysis.get_suggested_category_display }}</dd></div>
+                </dl>
+                {% if analysis.suggested_category and analysis.suggested_category != item.category %}
+                <form method="post" action="{% url 'request_accept_category' item.pk %}">
+                    {% csrf_token %}
+                    <button class="button-secondary" type="submit">AI ұсынған санатты қабылдау</button>
+                </form>
+                {% endif %}
+            {% else %}
+            <p class="cell-secondary">{{ analysis.get_state_display }}{% if analysis.error %}: {{ analysis.error }}{% endif %}</p>
+            {% endif %}
+
+            {% if item.photo %}
+            <form method="post" action="{% url 'request_analyze' item.pk %}">
+                {% csrf_token %}
+                <button class="button-secondary" type="submit">Қайта талдау</button>
+            </form>
+            {% endif %}
+
+            <p class="field-hint">AI тек ұсыныс береді. Шешімді диспетчер қабылдайды.</p>
+        </section>
+
         <section class="sensor-check" aria-labelledby="sensorTitle">
             <h2 id="sensorTitle">Датчикпен салыстыру</h2>
             <p class="verdict verdict-{{ verdict.0 }}">{{ verdict.1 }}</p>

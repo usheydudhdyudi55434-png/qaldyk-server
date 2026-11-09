@@ -1,10 +1,12 @@
+from django.db import transaction
 from django.db.models import Count
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.views.decorators.http import require_POST
 
+from .ai import analyze_request, review_reason, start_analysis
 from .forms import RequestUpdateForm, ResidentRequestForm, TaskCompleteForm
-from .models import ResidentRequest
+from .models import RequestAnalysis, ResidentRequest
 from .roles import dispatcher_required, worker_required
 from .residents import (
     attach_sensor_snapshot,
@@ -42,6 +44,9 @@ def resident_home(request):
         resident_request.save()
 
         log_event(resident_request, Status.NEW, note="Тұрғын өтініш жіберді")
+
+        if resident_request.photo:
+            transaction.on_commit(lambda: start_analysis(resident_request))
 
         return redirect(
             f"{reverse('resident_status')}?code={resident_request.code}&new=1"
@@ -119,7 +124,7 @@ def requests_list(request):
 
     status = request.GET.get('status', '')
 
-    requests = ResidentRequest.objects.select_related('container', 'assignee')
+    requests = ResidentRequest.objects.select_related('container', 'assignee', 'analysis')
 
     if status in Status.values:
         requests = requests.filter(status=status)
@@ -152,7 +157,7 @@ def requests_list(request):
 def request_detail(request, pk):
 
     resident_request = get_object_or_404(
-        ResidentRequest.objects.select_related('container', 'assignee'),
+        ResidentRequest.objects.select_related('container', 'assignee', 'analysis'),
         pk=pk
     )
 
@@ -191,10 +196,49 @@ def request_detail(request, pk):
         'verdict': sensor_verdict(resident_request),
         'clearance': sensor_clearance(resident_request),
         'events': resident_request.events.select_related('actor'),
+        'analysis': RequestAnalysis.objects.filter(request=resident_request).first(),
         'latest': latest,
         'saved': request.GET.get('saved') == '1',
         **assets()
     })
+
+
+@dispatcher_required
+@require_POST
+def request_analyze(request, pk):
+    """Runs the photo analysis again; the dispatcher waits a few seconds for it."""
+
+    item = get_object_or_404(ResidentRequest, pk=pk)
+
+    analyze_request(item.pk)
+
+    return redirect('request_detail', pk=pk)
+
+
+@dispatcher_required
+@require_POST
+def request_accept_category(request, pk):
+
+    item = get_object_or_404(ResidentRequest, pk=pk)
+    analysis = get_object_or_404(RequestAnalysis, request=item, state=RequestAnalysis.State.DONE)
+
+    if analysis.suggested_category and analysis.suggested_category != item.category:
+        old = item.get_category_display()
+        item.category = analysis.suggested_category
+        item.save(update_fields=['category', 'updated_at'])
+
+        log_event(
+            item,
+            item.status,
+            actor=request.user,
+            note=f"Санат AI ұсынысымен өзгертілді: {old} → {item.get_category_display()}"
+        )
+
+        analysis.review_reason = review_reason(analysis, item)
+        analysis.needs_review = bool(analysis.review_reason)
+        analysis.save(update_fields=['review_reason', 'needs_review', 'updated_at'])
+
+    return redirect('request_detail', pk=pk)
 
 
 # ============================================================

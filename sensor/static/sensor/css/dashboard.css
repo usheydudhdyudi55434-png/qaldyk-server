@@ -2084,3 +2084,38 @@ a.brand {
         gap: 2px;
     }
 }
+
+/* =========================================================
+   AI ANALYSIS
+========================================================= */
+
+.ai-check {
+    display: grid;
+    gap: 12px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+}
+
+.ai-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.ai-head h2 {
+    font-size: 15px;
+}
+
+.ai-summary {
+    margin: 0;
+}
+
+.ai-check form .button-secondary {
+    justify-self: start;
+}
+
+.verdict-danger {
+    --verdict: var(--status-full);
+    font-weight: 600;
+}

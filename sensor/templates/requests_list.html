@@ -36,6 +36,7 @@
                     <th scope="col">Код</th>
                     <th scope="col">Мәселе</th>
                     <th scope="col">Мекенжай</th>
+                    <th scope="col">AI</th>
                     <th scope="col">Датчик</th>
                     <th scope="col">Мәртебесі</th>
                     <th scope="col">Жауапты</th>
@@ -48,13 +49,23 @@
                     <td><a class="row-name" href="{% url 'request_detail' row.item.pk %}">{{ row.item.code }}</a></td>
                     <td>{{ row.item.get_category_display }}</td>
                     <td class="cell-secondary">{{ row.item.address }}</td>
+                    <td>
+                        {% with analysis=row.item.analysis %}
+                        {% if not analysis %}<span class="cell-secondary">—</span>
+                        {% elif analysis.state == "done" and analysis.hazard == "high" %}<span class="verdict verdict-danger">Қауіпті</span>
+                        {% elif analysis.state == "done" and analysis.needs_review %}<span class="verdict verdict-unconfirmed" title="{{ analysis.review_reason }}">Тексеру керек</span>
+                        {% elif analysis.state == "done" %}<span class="verdict verdict-confirmed">{{ analysis.get_waste_type_display }}</span>
+                        {% else %}<span class="cell-secondary">{{ analysis.get_state_display }}</span>
+                        {% endif %}
+                        {% endwith %}
+                    </td>
                     <td><span class="verdict verdict-{{ row.verdict.0 }}" title="{{ row.verdict.1 }}">{{ row.verdict.1 }}</span></td>
                     <td><span class="status-pill status-{{ row.item.status }}">{{ row.item.get_status_display }}</span></td>
                     <td class="cell-secondary">{{ row.item.assignee.username|default:"—" }}</td>
                     <td class="cell-secondary numeric">{{ row.item.created_at|date:"d.m H:i" }}</td>
                 </tr>
                 {% empty %}
-                <tr><td class="table-empty" colspan="7">Бұл сүзгі бойынша өтініш жоқ</td></tr>
+                <tr><td class="table-empty" colspan="8">Бұл сүзгі бойынша өтініш жоқ</td></tr>
                 {% endfor %}
             </tbody>
         </table>
