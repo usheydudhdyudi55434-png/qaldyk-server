@@ -7,9 +7,56 @@ from django.db import models
 from django.utils import timezone
 
 
+class District(models.Model):
+    """An Almaty district with its OpenStreetMap boundary (GeoJSON geometry)."""
+
+    slug = models.SlugField(unique=True)
+    name = models.CharField(max_length=100)
+    boundary = models.JSONField()
+
+    class Meta:
+        ordering = ["name"]
+
+    def __str__(self):
+        return self.name
+
+
+class StaffProfile(models.Model):
+    """A dispatcher with a district manages only that district; without one, the whole city."""
+
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="staff_profile"
+    )
+    district = models.ForeignKey(
+        District,
+        on_delete=models.SET_NULL,
+        related_name="staff",
+        null=True,
+        blank=True,
+        verbose_name="Аудан"
+    )
+
+    # A worker's last position, sent from the tasks page while it is open
+    latitude = models.FloatField(null=True, blank=True)
+    longitude = models.FloatField(null=True, blank=True)
+    located_at = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.user} — {self.district or 'бүкіл қала'}"
+
+
 class Container(models.Model):
     name = models.CharField(max_length=100)
     location = models.CharField(max_length=200)
+    district = models.ForeignKey(
+        District,
+        on_delete=models.SET_NULL,
+        related_name="containers",
+        null=True,
+        blank=True
+    )
 
     latitude = models.FloatField(null=True, blank=True)
     longitude = models.FloatField(null=True, blank=True)
@@ -86,6 +133,13 @@ class ResidentRequest(models.Model):
 
     latitude = models.FloatField(null=True, blank=True)
     longitude = models.FloatField(null=True, blank=True)
+    district = models.ForeignKey(
+        District,
+        on_delete=models.SET_NULL,
+        related_name="requests",
+        null=True,
+        blank=True
+    )
 
     # The nearest container and what its sensor showed when the request came in
     container = models.ForeignKey(
@@ -115,6 +169,15 @@ class ResidentRequest(models.Model):
 
     # The worker's photo of the finished job
     result_photo = models.FileField(upload_to=request_photo_path, blank=True)
+
+    # A later report of the same problem points at the first one and follows it
+    parent = models.ForeignKey(
+        "self",
+        on_delete=models.SET_NULL,
+        related_name="duplicates",
+        null=True,
+        blank=True
+    )
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -214,3 +277,27 @@ class RequestAnalysis(models.Model):
     def __str__(self):
         return f"{self.request.code}: {self.get_state_display()}"
 
+
+
+class WorkerPosition(models.Model):
+    """One point of a worker's path, so dispatchers can see where they have been."""
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="positions"
+    )
+    latitude = models.FloatField()
+    longitude = models.FloatField()
+
+    # GPS accuracy in meters, as reported by the phone
+    accuracy = models.FloatField(null=True, blank=True)
+
+    created_at = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        ordering = ["created_at"]
+        indexes = [models.Index(fields=["user", "created_at"])]
+
+    def __str__(self):
+        return f"{self.user} @ {self.created_at:%H:%M}"

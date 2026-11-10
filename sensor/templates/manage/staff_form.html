@@ -1,0 +1,93 @@
+{% extends "manage/base.html" %}
+
+{% block title %}Qaldyq — {% if creating %}Жаңа қызметкер{% else %}{{ target.username }}{% endif %}{% endblock %}
+
+{% block manage %}
+
+<section aria-labelledby="staffFormTitle" class="manage-narrow">
+
+    <div class="section-header">
+        <h1 id="staffFormTitle">{% if creating %}Жаңа қызметкер{% else %}{{ target.username }}{% endif %}</h1>
+        <a class="header-link" href="{% url 'manage_staff' %}">← Тізімге оралу</a>
+    </div>
+
+    {% if locked %}
+
+    <div class="panel detail-form">
+        <p>Бұл — әкімші аккаунты. Ол барлық бөлімге кіре алады, сондықтан рөлі мен ауданы өзгертілмейді.</p>
+        <div><a class="button-secondary" href="{% url 'manage_staff_password' target.pk %}">Құпия сөзді ауыстыру</a></div>
+    </div>
+
+    {% else %}
+
+    <form class="panel detail-form" method="post" novalidate>
+
+        {% csrf_token %}
+
+        {% if form.username %}{% include "manage/field.html" with field=form.username %}{% endif %}
+
+        <div class="field-pair">
+            {% include "manage/field.html" with field=form.first_name %}
+            {% include "manage/field.html" with field=form.last_name %}
+        </div>
+
+        <fieldset class="field">
+            <legend>Рөлі</legend>
+            <div class="choice-list">
+                {% for radio in form.role %}
+                <label class="choice">
+                    {{ radio.tag }}
+                    <span>{{ radio.choice_label }}</span>
+                </label>
+                {% endfor %}
+            </div>
+            {% for error in form.role.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+        </fieldset>
+
+        <div id="districtField">
+            {% include "manage/field.html" with field=form.district %}
+            <p class="field-hint">Бас диспетчерге аудан керек емес, ол бүкіл қаланы көреді.</p>
+        </div>
+
+        {% if form.password1 %}
+        <div class="field-pair">
+            {% include "manage/field.html" with field=form.password1 %}
+            {% include "manage/field.html" with field=form.password2 %}
+        </div>
+        <p class="field-hint">Кемінде 8 таңба, тек сандардан тұрмасын және логинге ұқсамасын.</p>
+        {% endif %}
+
+        <label class="check-row">
+            {{ form.is_active }}
+            <span>{{ form.is_active.label }}</span>
+        </label>
+
+        <div class="form-actions">
+            <button class="button-primary" type="submit">{% if creating %}Қызметкерді қосу{% else %}Сақтау{% endif %}</button>
+            {% if target %}<a class="button-secondary" href="{% url 'manage_staff_password' target.pk %}">Құпия сөзді ауыстыру</a>{% endif %}
+        </div>
+
+    </form>
+
+    {% endif %}
+
+</section>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // The district is only asked for roles that work in one district
+    (function () {
+        const field = document.getElementById("districtField");
+        const radios = document.querySelectorAll('input[name="role"]');
+        if (!field) return;
+        const sync = () => {
+            const checked = document.querySelector('input[name="role"]:checked');
+            field.hidden = checked && checked.value === "head";
+        };
+        radios.forEach(radio => radio.addEventListener("change", sync));
+        sync();
+    })();
+</script>
+{% endblock %}

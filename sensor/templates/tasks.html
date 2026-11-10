@@ -1,4 +1,5 @@
 {% extends "layout.html" %}
+{% load static %}
 
 {% block title %}Qaldyq — Менің тапсырмаларым{% endblock %}
 
@@ -18,6 +19,12 @@
     <h1>Менің тапсырмаларым</h1>
     <span class="section-meta">{{ active|length }} белсенді</span>
 </div>
+
+<p class="worker-location">
+    <svg class="icon" aria-hidden="true"><use href="#i-pin"></use></svg>
+    <span id="locationStatus" aria-live="polite">Орныңыз анықталуда…</span>
+</p>
+<span hidden>{% csrf_token %}</span>
 
 {% if done_code %}
 <div class="notice notice-success" role="status">
@@ -106,4 +113,8 @@
 </section>
 {% endif %}
 
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'sensor/js/worker.js' %}?v={{ worker_js_version }}"></script>
 {% endblock %}

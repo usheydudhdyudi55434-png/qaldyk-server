@@ -30,12 +30,28 @@
 </div>
 {% endif %}
 
+{% if item.parent %}
+<div class="notice notice-merged" role="status">
+    <svg class="icon" aria-hidden="true"><use href="#i-pin"></use></svg>
+    <div>
+        Бұл өтініш осы жердегі
+        <a href="{% url 'request_detail' item.parent.pk %}"><span class="request-code">{{ item.parent.code }}</span></a>
+        өтінішімен біріктірілген. Мәртебесі мен нәтижесі сол өтініштен алынады.
+        <form method="post" action="{% url 'request_unmerge' item.pk %}" class="inline-form">
+            {% csrf_token %}
+            <button class="button-secondary" type="submit">Бөлек өтініш ету</button>
+        </form>
+    </div>
+</div>
+{% endif %}
+
 <div class="detail-grid">
 
     <article class="panel detail-main">
 
         <dl class="request-facts">
             <div class="request-facts-wide"><dt>Мекенжай</dt><dd>{{ item.address }}</dd></div>
+            <div><dt>Аудан</dt><dd>{{ item.district.name|default:"Анықталмады (картада нүкте жоқ)" }}</dd></div>
             {% if item.description %}
             <div class="request-facts-wide"><dt>Сипаттама</dt><dd>{{ item.description|linebreaksbr }}</dd></div>
             {% endif %}
@@ -71,6 +87,25 @@
             </figure>
             {% endif %}
         </div>
+        {% endif %}
+
+        {% if duplicates %}
+        <section class="duplicates" aria-labelledby="duplicatesTitle">
+            <h2 id="duplicatesTitle">Осы мәселе туралы тағы {{ duplicates|length }} тұрғын хабарлады</h2>
+            <ul>
+                {% for duplicate in duplicates %}
+                <li>
+                    <a href="{% url 'request_detail' duplicate.pk %}"><span class="request-code">{{ duplicate.code }}</span></a>
+                    <span class="cell-secondary">{{ duplicate.get_category_display }} · {{ duplicate.created_at|date:"d.m H:i" }}</span>
+                    <form method="post" action="{% url 'request_unmerge' duplicate.pk %}" class="inline-form">
+                        {% csrf_token %}
+                        <button class="button-secondary" type="submit">Бөлу</button>
+                    </form>
+                </li>
+                {% endfor %}
+            </ul>
+            <p class="field-hint">Мәртебе, жауап және нәтиже фотосы оларға автоматты түрде беріледі.</p>
+        </section>
         {% endif %}
 
         <section class="ai-check" aria-labelledby="aiTitle">
@@ -171,6 +206,55 @@
 
     </article>
 
+    <div class="detail-side">
+
+    {% if suggestions is not None %}
+    <section class="panel suggest-panel" aria-labelledby="suggestTitle">
+        <h2 id="suggestTitle">Ұсынылатын жұмысшылар</h2>
+        <p class="field-hint">
+            {{ item.district.name|default:"Бүкіл қала" }} жұмысшылары, жақыннан алысқа қарай.
+            {% if item.latitude is None %}Өтініште картадағы нүкте жоқ, сондықтан қашықтық есептелмейді.{% endif %}
+        </p>
+        {% for suggestion in suggestions %}
+        <div class="suggest-row{% if forloop.first %} is-best{% endif %}">
+            <div class="suggest-text">
+                <strong>{{ suggestion.user.username }}</strong>
+                {% if forloop.first and suggestion.fresh %}<span class="status-pill status-done">Ең жақын</span>{% endif %}
+                <span class="cell-secondary">
+                    {% if suggestion.distance is not None %}{{ suggestion.distance_label }}{% elif suggestion.seen %}орны белгілі{% else %}орны белгісіз{% endif %}
+                    · {{ suggestion.active }} белсенді тапсырма
+                    {% if suggestion.seen %}· {{ suggestion.seen }}{% if not suggestion.fresh %} (ескі){% endif %}{% endif %}
+                </span>
+            </div>
+            {% if item.assignee_id == suggestion.user.pk %}
+            <span class="status-pill status-accepted">Тағайындалған</span>
+            {% else %}
+            <form method="post" action="{% url 'request_assign' item.pk %}">
+                {% csrf_token %}
+                <input type="hidden" name="worker" value="{{ suggestion.user.pk }}">
+                <button class="button-secondary" type="submit">Тағайындау</button>
+            </form>
+            {% endif %}
+        </div>
+        {% empty %}
+        <p class="cell-secondary">
+            Бұл ауданға бекітілген жұмысшы жоқ. Әкімші /admin/ бетінде жұмысшыны
+            «Жұмысшылар» тобына қосып, оған аудан тағайындайды.
+        </p>
+        {% endfor %}
+    </section>
+    {% endif %}
+
+    {% if item.parent %}
+    <div class="panel detail-form">
+        <h2>Өңдеу</h2>
+        <p class="cell-secondary">
+            Біріктірілген өтінішті негізгі
+            <a href="{% url 'request_detail' item.parent.pk %}">{{ item.parent.code }}</a>
+            өтініші арқылы басқарыңыз.
+        </p>
+    </div>
+    {% else %}
     <form class="panel detail-form" method="post">
 
         {% csrf_token %}
@@ -189,6 +273,9 @@
         <button class="button-primary" type="submit">Сақтау</button>
 
     </form>
+    {% endif %}
+
+    </div>
 
 </div>
 

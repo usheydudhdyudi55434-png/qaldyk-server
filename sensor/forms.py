@@ -113,18 +113,19 @@ class RequestUpdateForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Only workers carry out requests; dispatchers route them
-        workers = get_user_model().objects.filter(
-            is_active=True,
-            groups__name=WORKERS
-        ).order_by("username")
+
+        from .residents import eligible_workers
+
+        # Only workers attached to the request's district carry it out
+        workers = eligible_workers(self.instance)
 
         self.fields["assignee"].queryset = workers
         self.fields["assignee"].empty_label = "Тағайындалмаған"
 
         if not workers.exists():
             self.fields["assignee"].help_text = (
-                "Жұмысшылар жоқ. Әкімші оларды /admin/ бетінде «Жұмысшылар» тобына қосады."
+                "Бұл ауданға бекітілген жұмысшы жоқ. Әкімші /admin/ бетінде "
+                "жұмысшыны «Жұмысшылар» тобына қосып, оған аудан тағайындайды."
             )
 
     def clean(self):

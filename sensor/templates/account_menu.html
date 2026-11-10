@@ -1,3 +1,7 @@
+{% if staff_district %}<span class="scope-chip" title="Тек осы аудан көрсетіледі">{{ staff_district.name }}</span>{% elif is_head_dispatcher %}<span class="scope-chip" title="Барлық аудан">Бас диспетчер</span>{% endif %}
+
+{% if user.is_superuser %}<a class="header-link" href="{% url 'manage_staff' %}">Әкімші</a>{% endif %}
+
 <span class="user-name">{{ user.get_username }}</span>
 
 <form method="post" action="{% url 'logout' %}" class="logout-form">

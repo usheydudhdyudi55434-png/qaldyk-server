@@ -2119,3 +2119,681 @@ a.brand {
     --verdict: var(--status-full);
     font-weight: 600;
 }
+
+/* =========================================================
+   MERGED REQUESTS
+========================================================= */
+
+.notice-merged {
+    --level: var(--accent);
+}
+
+.notice-merged a {
+    color: var(--accent);
+}
+
+.inline-form {
+    display: inline-block;
+    margin: 0 0 0 8px;
+}
+
+.inline-form .button-secondary {
+    height: 28px;
+    padding: 0 10px;
+    font-size: 12px;
+}
+
+.duplicates {
+    display: grid;
+    gap: 10px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+}
+
+.duplicates h2 {
+    font-size: 15px;
+}
+
+.duplicates ul {
+    display: grid;
+    gap: 6px;
+}
+
+.duplicates li {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 12px;
+    font-size: 13px;
+}
+
+.duplicates a,
+.detail-form a {
+    color: var(--accent);
+}
+
+.requests-table .count-badge {
+    margin-left: 6px;
+    background: var(--accent-wash);
+}
+
+/* =========================================================
+   DISTRICTS
+========================================================= */
+
+.scope-chip {
+    padding: 3px 10px;
+    border-radius: 999px;
+    background: var(--accent-wash);
+    color: var(--ink);
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.district-filter select {
+    height: 34px;
+    padding: 0 10px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface);
+    color: var(--ink);
+    font: inherit;
+    font-size: 13px;
+}
+
+.filter-row .filter-row-links {
+    margin-bottom: 0;
+}
+
+@media (max-width: 640px) {
+    .scope-chip {
+        display: none;
+    }
+}
+
+/* =========================================================
+   DISTRICT MAP, SUGGESTIONS, SUPERVISION
+========================================================= */
+
+.leaflet-overlay-pane .district-area {
+    stroke: var(--accent);
+    stroke-width: 1.5;
+    stroke-opacity: .55;
+    fill: var(--accent);
+    fill-opacity: .03;
+}
+
+.leaflet-overlay-pane .district-area.is-mine {
+    stroke-width: 3;
+    stroke-opacity: .95;
+    fill-opacity: .08;
+}
+
+.leaflet-tooltip.district-tooltip {
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--ink);
+    box-shadow: none;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.detail-side {
+    display: grid;
+    gap: 12px;
+    align-content: start;
+}
+
+.suggest-panel {
+    display: grid;
+    gap: 10px;
+    padding: 18px 20px;
+}
+
+.suggest-panel h2 {
+    font-size: 15px;
+}
+
+.suggest-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+}
+
+.suggest-row.is-best {
+    border-color: var(--status-normal);
+}
+
+.suggest-text {
+    display: grid;
+    gap: 2px;
+    min-width: 0;
+}
+
+.suggest-text .status-pill {
+    justify-self: start;
+}
+
+.suggest-text .cell-secondary {
+    font-size: 12px;
+}
+
+.worker-location {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    color: var(--ink-secondary);
+    font-size: 13px;
+}
+
+.worker-location .icon {
+    color: var(--accent);
+}
+
+.supervision-table {
+    min-width: 980px;
+}
+
+.supervision-table tr.is-late td:first-child {
+    box-shadow: inset 3px 0 0 var(--status-full);
+}
+
+.supervision-table a.row-name {
+    color: var(--ink);
+    text-decoration: none;
+}
+
+.supervision-table a.row-name:hover {
+    color: var(--accent);
+    text-decoration: underline;
+}
+
+/* ============================================================
+   ADMIN PANEL
+   ============================================================ */
+
+.manage-tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+    overflow-x: auto;
+}
+
+.manage-tabs a,
+a.button-primary,
+a.button-secondary {
+    text-decoration: none;
+}
+
+.manage-tabs a {
+    padding: 10px 14px;
+    border-bottom: 2px solid transparent;
+    color: var(--ink-secondary);
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.manage-tabs a:hover {
+    color: var(--ink);
+}
+
+.manage-tabs a[aria-current="page"] {
+    border-bottom-color: var(--accent);
+    color: var(--ink);
+}
+
+.manage-tabs + .notice,
+.manage-stats {
+    margin-bottom: 16px;
+}
+
+.manage-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 12px;
+}
+
+.manage-stat {
+    display: grid;
+    gap: 4px;
+    padding: 14px 16px;
+}
+
+.manage-stat span {
+    color: var(--muted);
+    font-size: 13px;
+}
+
+.manage-stat strong {
+    font-size: 24px;
+    font-variant-numeric: tabular-nums;
+}
+
+.manage-stat.is-warning strong {
+    color: var(--status-half);
+}
+
+.manage-narrow {
+    max-width: 720px;
+}
+
+.manage-narrow .panel + .panel {
+    margin-top: 16px;
+}
+
+.manage-footnote {
+    margin-top: 12px;
+}
+
+.manage-footnote a,
+.detail-form .header-link {
+    color: var(--accent);
+}
+
+.role-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--role) 16%, transparent);
+    color: var(--ink);
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+    --role: var(--status-none);
+}
+
+.role-admin { --role: var(--series-5); }
+.role-head { --role: var(--series-7); }
+.role-district { --role: var(--accent); }
+.role-worker { --role: var(--series-3); }
+.role-none { --role: var(--status-half); }
+
+.staff-table tr.is-inactive td {
+    opacity: .55;
+}
+
+.field-pair {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.choice-list {
+    display: grid;
+    gap: 8px;
+}
+
+.field input[type="password"] {
+    width: 100%;
+    padding: 9px 10px;
+    border: 1px solid var(--axis);
+    border-radius: 8px;
+    background: var(--page);
+    color: var(--ink);
+    font: inherit;
+    font-size: 14px;
+}
+
+.check-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.check-row input {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--accent);
+}
+
+.form-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.device-url {
+    padding: 9px 10px;
+    border: 1px dashed var(--axis);
+    border-radius: 8px;
+    overflow-wrap: anywhere;
+}
+
+.system-list {
+    display: grid;
+    grid-template-columns: minmax(160px, 220px) 1fr;
+    gap: 14px 20px;
+    margin: 0;
+}
+
+.system-list dt {
+    color: var(--muted);
+    font-size: 13px;
+}
+
+.system-list dd {
+    margin: 0;
+}
+
+.system-list code,
+.manage-footnote code {
+    overflow-wrap: anywhere;
+}
+
+@media (max-width: 640px) {
+
+    .field-pair,
+    .system-list {
+        grid-template-columns: 1fr;
+    }
+
+    .system-list dd {
+        margin-bottom: 6px;
+    }
+
+}
+
+/* ============================================================
+   LIVE WORKERS ON THE MAP
+   ============================================================ */
+
+.worker-icon {
+    --worker: var(--status-none);
+    background: transparent;
+    border: 0;
+}
+
+.worker-marker {
+    position: relative;
+    width: 38px;
+    height: 38px;
+}
+
+.worker-marker.state-live,
+.worker-marker.state-recent {
+    --worker: var(--series-3);
+}
+
+.worker-marker.task-accepted {
+    --worker: var(--series-7);
+}
+
+.worker-marker.task-in_progress {
+    --worker: var(--status-half);
+}
+
+.worker-marker.state-offline {
+    --worker: var(--status-none);
+}
+
+.worker-avatar {
+    position: absolute;
+    inset: 3px;
+    display: grid;
+    place-items: center;
+    border: 3px solid var(--worker);
+    border-radius: 50%;
+    background: var(--surface);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, .45);
+    color: var(--ink);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .02em;
+}
+
+.worker-marker.state-offline .worker-avatar {
+    border-style: dashed;
+    opacity: .75;
+}
+
+/* A live worker sends out a soft ring, like a radar ping */
+.worker-pulse {
+    position: absolute;
+    inset: 3px;
+    border-radius: 50%;
+    background: var(--worker);
+    opacity: 0;
+}
+
+.worker-marker.state-live .worker-pulse {
+    animation: worker-ping 2.2s ease-out infinite;
+}
+
+@keyframes worker-ping {
+    0% { transform: scale(1); opacity: .55; }
+    100% { transform: scale(2.4); opacity: 0; }
+}
+
+.worker-badge {
+    position: absolute;
+    top: -3px;
+    right: -3px;
+    display: grid;
+    place-items: center;
+    min-width: 17px;
+    height: 17px;
+    padding: 0 4px;
+    border: 2px solid var(--surface);
+    border-radius: 999px;
+    background: var(--worker);
+    color: #0b0b0b;
+    font-size: 10px;
+    font-weight: 800;
+}
+
+.worker-label {
+    position: absolute;
+    top: 40px;
+    left: 50%;
+    padding: 1px 7px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--surface) 88%, transparent);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, .3);
+    color: var(--ink);
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+    transform: translateX(-50%);
+    pointer-events: none;
+}
+
+.worker-trail {
+    fill: none;
+    stroke: var(--series-3);
+    stroke-width: 4;
+    stroke-opacity: .28;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.worker-trail-recent {
+    fill: none;
+    stroke: var(--series-3);
+    stroke-width: 4;
+    stroke-opacity: .85;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+/* Where the worker is heading: a moving dashed line to the job */
+.worker-route {
+    fill: none;
+    stroke: var(--status-half);
+    stroke-width: 2.5;
+    stroke-dasharray: 2 8;
+    stroke-linecap: round;
+    animation: worker-route 1s linear infinite;
+}
+
+@keyframes worker-route {
+    to { stroke-dashoffset: -10; }
+}
+
+.worker-target {
+    fill: var(--status-half);
+    fill-opacity: .25;
+    stroke: var(--status-half);
+    stroke-width: 2;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .worker-marker.state-live .worker-pulse,
+    .worker-route {
+        animation: none;
+    }
+}
+
+/* Roster in the map corner */
+
+.worker-roster {
+    width: 236px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: color-mix(in srgb, var(--surface) 94%, transparent);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, .35);
+    color: var(--ink);
+    font: inherit;
+    font-size: 13px;
+    overflow: hidden;
+    backdrop-filter: blur(6px);
+}
+
+.worker-roster-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 9px 12px;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    font-weight: 600;
+    text-align: left;
+    cursor: pointer;
+}
+
+.worker-roster-toggle:hover {
+    background: var(--hover);
+}
+
+.worker-roster-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--series-3);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--series-3) 25%, transparent);
+}
+
+.worker-roster-toggle[aria-pressed="false"] .worker-roster-dot {
+    background: var(--status-none);
+    box-shadow: none;
+}
+
+.worker-roster-count {
+    margin-left: auto;
+    white-space: nowrap;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 400;
+}
+
+.worker-roster-list {
+    max-height: 260px;
+    margin: 0;
+    padding: 4px;
+    border-top: 1px solid var(--border);
+    list-style: none;
+    overflow-y: auto;
+}
+
+.worker-roster-empty {
+    padding: 8px;
+    color: var(--muted);
+}
+
+.worker-roster-item {
+    --worker: var(--status-none);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 6px 8px;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.worker-roster-item:hover:not(:disabled) {
+    background: var(--hover);
+}
+
+.worker-roster-item:disabled {
+    cursor: default;
+    opacity: .6;
+}
+
+.worker-roster-item.state-live,
+.worker-roster-item.state-recent {
+    --worker: var(--series-3);
+}
+
+.worker-roster-avatar {
+    display: grid;
+    flex: 0 0 28px;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    border: 2px solid var(--worker);
+    border-radius: 50%;
+    font-size: 10px;
+    font-weight: 700;
+}
+
+.worker-roster-item.state-live .worker-roster-avatar {
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--worker) 22%, transparent);
+}
+
+.worker-roster-text {
+    display: grid;
+    min-width: 0;
+}
+
+.worker-roster-name {
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.worker-roster-detail {
+    color: var(--muted);
+    font-size: 11px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+    .worker-roster {
+        width: 190px;
+    }
+
+    .worker-roster-list {
+        max-height: 150px;
+    }
+}

@@ -1,0 +1,52 @@
+{% extends "manage/base.html" %}
+
+{% block title %}Qaldyq — Жүйе{% endblock %}
+
+{% block manage %}
+
+<section aria-labelledby="systemTitle">
+
+    <div class="section-header">
+        <h1 id="systemTitle">Жүйе</h1>
+    </div>
+
+    <div class="manage-stats">
+        {% for label, value in counts.items %}
+        <div class="panel manage-stat"><span>{{ label }}</span><strong>{{ value }}</strong></div>
+        {% endfor %}
+    </div>
+
+    <div class="panel detail-form">
+        <dl class="system-list">
+            <dt>Фото талдайтын AI</dt>
+            <dd>
+                {% if ai_provider %}
+                <span class="verdict verdict-confirmed">Қосулы</span> {{ ai_provider }}
+                <div class="cell-secondary">{{ ai_models|join:", " }}</div>
+                {% else %}
+                <span class="verdict verdict-unconfirmed">Өшірулі</span>
+                <div class="cell-secondary">.env файлына GEMINI_API_KEY немесе ANTHROPIC_API_KEY жазыңыз</div>
+                {% endif %}
+            </dd>
+
+            <dt>Сыртқы адрес (туннель)</dt>
+            <dd>{% if tunnel_host %}<code>https://{{ tunnel_host }}/</code>{% else %}<span class="cell-secondary">Бапталмаған</span>{% endif %}</dd>
+
+            <dt>Жұмыс режимі</dt>
+            <dd>
+                {% if debug %}
+                <span class="verdict verdict-unconfirmed">Әзірлеу (DEBUG)</span>
+                <div class="cell-secondary">Нақты қалаға қоспас бұрын DEBUG өшіріліп, құпия кілттер ауыстырылуы керек.</div>
+                {% else %}
+                <span class="verdict verdict-confirmed">Өндірістік</span>
+                {% endif %}
+            </dd>
+
+            <dt>Мониторинг</dt>
+            <dd>Grafana: <code>http://localhost:3000/</code> · Prometheus: <code>http://localhost:9090/</code></dd>
+        </dl>
+    </div>
+
+</section>
+
+{% endblock %}

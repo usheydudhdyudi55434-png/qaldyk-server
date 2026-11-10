@@ -50,6 +50,13 @@
         <span class="status-pill status-{{ resident_request.status }}">{{ resident_request.get_status_display }}</span>
     </div>
 
+    {% if resident_request.parent %}
+    <p class="notice notice-merged">
+        Бұл жердегі мәселе туралы басқа тұрғын да хабарлаған. Өтініштер біріктірілді,
+        жұмыс бір рет орындалады, ал нәтижесін осы жерден көресіз.
+    </p>
+    {% endif %}
+
     <ol class="status-steps">
         {% for step in steps %}
         <li class="step-{{ step.state }}">

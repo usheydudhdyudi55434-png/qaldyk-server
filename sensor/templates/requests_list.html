@@ -5,6 +5,7 @@
 {% block brand_href %}{% url 'dashboard' %}{% endblock %}
 
 {% block nav %}
+    {% if is_head_dispatcher %}<a class="header-link" href="{% url 'supervision' %}">Бақылау</a>{% endif %}
     <a class="header-link" href="{% url 'dashboard' %}">Панель</a>
 {% endblock %}
 
@@ -21,13 +22,31 @@
         <a class="section-meta" href="{% url 'resident_home' %}" target="_blank" rel="noopener">Тұрғындар бетін ашу</a>
     </div>
 
+    <div class="filter-row">
+
+    {% if districts %}
+    <form method="get" class="district-filter">
+        <input type="hidden" name="status" value="{{ status }}">
+        <label class="visually-hidden" for="districtSelect">Аудан</label>
+        <select id="districtSelect" name="district" onchange="this.form.submit()">
+            <option value="">Барлық аудан</option>
+            {% for option in districts %}
+            <option value="{{ option.slug }}" {% if district and option.pk == district.pk %}selected{% endif %}>{{ option.name }}</option>
+            {% endfor %}
+        </select>
+        <noscript><button class="button-secondary" type="submit">Көрсету</button></noscript>
+    </form>
+    {% endif %}
+
     <nav class="segmented filter-row-links" aria-label="Мәртебе бойынша сүзу">
         {% for filter in filters %}
-        <a href="?status={{ filter.value }}" {% if filter.value == status %}aria-current="page"{% endif %}>
+        <a href="?status={{ filter.value }}{% if district %}&amp;district={{ district.slug }}{% endif %}" {% if filter.value == status %}aria-current="page"{% endif %}>
             {{ filter.label }} <span class="numeric">{{ filter.count }}</span>
         </a>
         {% endfor %}
     </nav>
+
+    </div>
 
     <div class="panel table-scroll">
         <table class="data-table requests-table">
@@ -36,6 +55,7 @@
                     <th scope="col">Код</th>
                     <th scope="col">Мәселе</th>
                     <th scope="col">Мекенжай</th>
+                    <th scope="col">Аудан</th>
                     <th scope="col">AI</th>
                     <th scope="col">Датчик</th>
                     <th scope="col">Мәртебесі</th>
@@ -46,9 +66,13 @@
             <tbody>
                 {% for row in rows %}
                 <tr>
-                    <td><a class="row-name" href="{% url 'request_detail' row.item.pk %}">{{ row.item.code }}</a></td>
+                    <td>
+                        <a class="row-name" href="{% url 'request_detail' row.item.pk %}">{{ row.item.code }}</a>
+                        {% if row.item.duplicate_count %}<span class="count-badge" title="Тағы {{ row.item.duplicate_count }} тұрғын хабарлады">+{{ row.item.duplicate_count }}</span>{% endif %}
+                    </td>
                     <td>{{ row.item.get_category_display }}</td>
                     <td class="cell-secondary">{{ row.item.address }}</td>
+                    <td class="cell-secondary">{{ row.item.district.name|default:"—" }}</td>
                     <td>
                         {% with analysis=row.item.analysis %}
                         {% if not analysis %}<span class="cell-secondary">—</span>
@@ -65,7 +89,7 @@
                     <td class="cell-secondary numeric">{{ row.item.created_at|date:"d.m H:i" }}</td>
                 </tr>
                 {% empty %}
-                <tr><td class="table-empty" colspan="8">Бұл сүзгі бойынша өтініш жоқ</td></tr>
+                <tr><td class="table-empty" colspan="9">Бұл сүзгі бойынша өтініш жоқ</td></tr>
                 {% endfor %}
             </tbody>
         </table>

@@ -4,6 +4,8 @@ const HISTORY_URL = "/api/containers/history/";
 
 const LOGIN_URL = "/login/";
 
+const DISTRICTS_URL = "/api/districts/";
+
 const REFRESH_INTERVAL = 5000;
 
 const HISTORY_REFRESH_INTERVAL = 60000;
@@ -1157,6 +1159,47 @@ function initMap() {
     new ResizeObserver(() => map.invalidateSize())
         .observe(document.getElementById("map"));
 
+    loadDistricts();
+
+    initWorkers();
+
+}
+
+
+// District boundaries under the bins; a district manager's own district stands out
+async function loadDistricts() {
+
+    try {
+
+        const data = await fetchJson(DISTRICTS_URL);
+
+        const layer = L.geoJSON(data, {
+            style: feature => ({
+                className: feature.properties.mine ? "district-area is-mine" : "district-area"
+            }),
+            onEachFeature: (feature, shape) => shape.bindTooltip(
+                feature.properties.name,
+                { sticky: true, className: "district-tooltip" }
+            )
+        }).addTo(map);
+
+        layer.bringToBack();
+
+        const mine = data.features.filter(feature => feature.properties.mine);
+
+        if (mine.length > 0) {
+            map.fitBounds(L.geoJSON({ type: "FeatureCollection", features: mine }).getBounds(), {
+                padding: [24, 24]
+            });
+            mapFitted = true;
+        }
+
+    } catch (error) {
+
+        console.error("Districts error:", error);
+
+    }
+
 }
 
 
@@ -2041,5 +2084,410 @@ function renderChartTable() {
             ))
         )
     ));
+
+}
+
+
+// ============================================================
+// LIVE WORKERS
+// ============================================================
+
+const WORKERS_URL = "/api/workers/";
+
+const WORKER_REFRESH_INTERVAL = 15000;
+
+const WORKER_TOGGLE_KEY = "qaldyk-workers";
+
+// Points walked in the last few minutes are drawn brighter than the rest
+const RECENT_TRAIL_POINTS = 12;
+
+const WORKER_STATES = {
+    live: "Желіде",
+    recent: "Жақында белгі берді",
+    offline: "Желіден тыс",
+    unknown: "Орны белгісіз"
+};
+
+const workerMarks = {};
+
+const workerView = {
+    layer: null,
+    workers: [],
+    trailMinutes: 60,
+    visible: readWorkerToggle()
+};
+
+
+function readWorkerToggle() {
+
+    try {
+        return localStorage.getItem(WORKER_TOGGLE_KEY) !== "off";
+    } catch (error) {
+        return true;
+    }
+
+}
+
+
+function initWorkers() {
+
+    workerView.layer = L.layerGroup();
+
+    if (workerView.visible) {
+        workerView.layer.addTo(map);
+    }
+
+    const Roster = L.Control.extend({
+        options: { position: "topright" },
+        onAdd() {
+            const box = el("div", { class: "worker-roster", id: "workerRoster" });
+            L.DomEvent.disableClickPropagation(box);
+            L.DomEvent.disableScrollPropagation(box);
+            return box;
+        }
+    });
+
+    new Roster().addTo(map);
+
+    refreshWorkers();
+
+}
+
+
+async function refreshWorkers() {
+
+    if (!document.hidden) {
+
+        try {
+
+            const data = await fetchJson(WORKERS_URL);
+
+            workerView.workers = data.workers;
+            workerView.trailMinutes = data.trailMinutes;
+
+            renderWorkers();
+
+        } catch (error) {
+
+            console.error("Workers error:", error);
+
+        }
+
+    }
+
+    setTimeout(refreshWorkers, WORKER_REFRESH_INTERVAL);
+
+}
+
+
+function workerAge(worker) {
+
+    return worker.age === null ? "" : formatAge(worker.age * 1000);
+
+}
+
+
+function renderWorkers() {
+
+    const located = workerView.workers.filter(worker => worker.latitude !== null);
+
+    for (const worker of located) {
+        updateWorkerMark(worker);
+    }
+
+    const ids = new Set(located.map(worker => worker.id));
+
+    for (const id of Object.keys(workerMarks)) {
+        if (!ids.has(Number(id))) {
+            removeWorkerMark(id);
+        }
+    }
+
+    renderRoster();
+
+}
+
+
+function removeWorkerMark(id) {
+
+    const mark = workerMarks[id];
+
+    for (const layer of [mark.marker, mark.trail, mark.recent, mark.route, mark.target]) {
+        layer.remove();
+    }
+
+    delete workerMarks[id];
+
+}
+
+
+function updateWorkerMark(worker) {
+
+    const position = [worker.latitude, worker.longitude];
+
+    let mark = workerMarks[worker.id];
+
+    if (!mark) {
+
+        mark = {
+            trail: L.polyline([], { className: "worker-trail", interactive: false }),
+            recent: L.polyline([], { className: "worker-trail-recent", interactive: false }),
+            route: L.polyline([], { className: "worker-route", interactive: false }),
+            target: L.circleMarker(position, { radius: 7, className: "worker-target", interactive: false }),
+            marker: L.marker(position, { zIndexOffset: 4000, title: worker.name, keyboard: true })
+        };
+
+        for (const layer of [mark.trail, mark.recent, mark.route, mark.marker]) {
+            layer.addTo(workerView.layer);
+        }
+
+        mark.marker.bindPopup("", { minWidth: 220 });
+
+        workerMarks[worker.id] = mark;
+
+    } else {
+
+        glideMarker(mark.marker, position);
+
+    }
+
+    const iconKey = `${worker.state}|${worker.initials}|${worker.taskCount}|${worker.task ? worker.task.status : ""}`;
+
+    if (mark.iconKey !== iconKey) {
+        mark.marker.setIcon(createWorkerIcon(worker));
+        mark.iconKey = iconKey;
+    }
+
+    // The path ends where the worker is now
+    const path = [...worker.trail, position];
+
+    mark.trail.setLatLngs(path);
+    mark.recent.setLatLngs(path.slice(-RECENT_TRAIL_POINTS));
+
+    const task = worker.task;
+
+    if (task && task.latitude !== null) {
+
+        mark.route.setLatLngs([position, [task.latitude, task.longitude]]);
+        mark.target.setLatLng([task.latitude, task.longitude]);
+
+        if (!workerView.layer.hasLayer(mark.target)) {
+            mark.target.addTo(workerView.layer);
+        }
+
+    } else {
+
+        mark.route.setLatLngs([]);
+        mark.target.remove();
+
+    }
+
+    mark.marker.setPopupContent(createWorkerPopup(worker));
+
+}
+
+
+// Moves a marker smoothly to its new position instead of jumping
+function glideMarker(marker, to) {
+
+    const from = marker.getLatLng();
+
+    if (from.lat === to[0] && from.lng === to[1]) {
+        return;
+    }
+
+    const started = performance.now();
+
+    const step = now => {
+
+        const t = Math.min((now - started) / 900, 1);
+        const ease = t * (2 - t);
+
+        marker.setLatLng([
+            from.lat + (to[0] - from.lat) * ease,
+            from.lng + (to[1] - from.lng) * ease
+        ]);
+
+        if (t < 1) {
+            requestAnimationFrame(step);
+        }
+
+    };
+
+    requestAnimationFrame(step);
+
+}
+
+
+function createWorkerIcon(worker) {
+
+    const classes = ["worker-marker", `state-${worker.state}`];
+
+    if (worker.task) {
+        classes.push(`task-${worker.task.status}`);
+    }
+
+    const node = el(
+        "div",
+        { class: classes.join(" ") },
+        el("span", { class: "worker-pulse" }),
+        el("span", { class: "worker-avatar" }, worker.initials),
+        worker.taskCount ? el("span", { class: "worker-badge" }, String(worker.taskCount)) : "",
+        el("span", { class: "worker-label" }, worker.name)
+    );
+
+    return L.divIcon({
+        className: "worker-icon",
+        html: node,
+        iconSize: [38, 38],
+        iconAnchor: [19, 19],
+        popupAnchor: [0, -22]
+    });
+
+}
+
+
+function formatMeters(meters) {
+
+    return meters < 1000
+        ? `${meters} м`
+        : `${(meters / 1000).toFixed(1).replace(".", ",")} км`;
+
+}
+
+
+function createWorkerPopup(worker) {
+
+    const row = (label, value) =>
+        el("div", {}, el("dt", {}, label), el("dd", {}, value));
+
+    const task = worker.task;
+
+    const taskValue = task
+        ? el("span", {}, el("a", { href: task.url }, task.code), ` · ${task.statusLabel}`)
+        : "Бос";
+
+    return el(
+        "div",
+        {},
+        el("div", { class: "popup-title" }, worker.name),
+        el("div", { class: "popup-location" }, worker.district || "Ауданы берілмеген"),
+        el(
+            "dl",
+            { class: "popup-rows" },
+            row("Күйі", `${WORKER_STATES[worker.state]} · ${workerAge(worker)}`),
+            row("Тапсырма", taskValue),
+            task ? row("Мекенжай", task.address) : "",
+            task && task.distance !== null ? row("Тапсырмаға дейін", formatMeters(task.distance)) : "",
+            row(`${workerView.trailMinutes} минутта жүрді`, formatMeters(worker.walked)),
+            worker.taskCount > 1 ? row("Барлық тапсырма", String(worker.taskCount)) : ""
+        )
+    );
+
+}
+
+
+function renderRoster() {
+
+    const box = document.getElementById("workerRoster");
+
+    if (!box) {
+        return;
+    }
+
+    const workers = workerView.workers;
+
+    const live = workers.filter(worker => worker.state === "live").length;
+
+    const toggle = el(
+        "button",
+        {
+            type: "button",
+            class: "worker-roster-toggle",
+            "data-focus-id": "workers-toggle",
+            "aria-pressed": String(workerView.visible),
+            title: workerView.visible ? "Жұмысшыларды картадан жасыру" : "Жұмысшыларды картада көрсету"
+        },
+        el("span", { class: "worker-roster-dot" }),
+        el("span", {}, "Жұмысшылар"),
+        el("span", { class: "worker-roster-count" }, `${live}/${workers.length} желіде`)
+    );
+
+    toggle.addEventListener("click", () => {
+
+        workerView.visible = !workerView.visible;
+
+        try {
+            localStorage.setItem(WORKER_TOGGLE_KEY, workerView.visible ? "on" : "off");
+        } catch (error) {}
+
+        if (workerView.visible) {
+            workerView.layer.addTo(map);
+        } else {
+            workerView.layer.remove();
+        }
+
+        renderRoster();
+
+    });
+
+    const children = [toggle];
+
+    if (workerView.visible) {
+
+        const list = el("ul", { class: "worker-roster-list" });
+
+        if (workers.length === 0) {
+            list.append(el("li", { class: "worker-roster-empty" }, "Ауданға жұмысшы бекітілмеген"));
+        }
+
+        for (const worker of workers) {
+
+            const detail = worker.task
+                ? `${worker.task.code} · ${worker.task.statusLabel}`
+                : worker.state === "unknown" ? "Орнын әлі бөліспеген" : `Бос · ${workerAge(worker)}`;
+
+            const button = el(
+                "button",
+                { type: "button", class: `worker-roster-item state-${worker.state}`, "data-focus-id": `worker-${worker.id}` },
+                el("span", { class: "worker-roster-avatar" }, worker.initials),
+                el(
+                    "span",
+                    { class: "worker-roster-text" },
+                    el("span", { class: "worker-roster-name" }, worker.name),
+                    el("span", { class: "worker-roster-detail" }, detail)
+                )
+            );
+
+            if (worker.latitude === null) {
+                button.disabled = true;
+            } else {
+                button.addEventListener("click", () => focusWorker(worker.id));
+            }
+
+            list.append(el("li", {}, button));
+
+        }
+
+        children.push(list);
+
+    }
+
+    renderKeepingFocus(box, () => box.replaceChildren(...children));
+
+}
+
+
+function focusWorker(id) {
+
+    const mark = workerMarks[id];
+
+    if (!mark) {
+        return;
+    }
+
+    map.flyTo(mark.marker.getLatLng(), Math.max(map.getZoom(), 16), { duration: 0.8 });
+
+    map.once("moveend", () => mark.marker.openPopup());
 
 }

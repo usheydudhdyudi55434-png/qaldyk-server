@@ -26,6 +26,31 @@ def is_worker(user):
     return in_group(user, WORKERS)
 
 
+def staff_district(user):
+    """The district a dispatcher or worker is limited to, or None for the whole city."""
+
+    if not user.is_authenticated:
+        return None
+
+    profile = getattr(user, "staff_profile", None)
+
+    return profile.district if profile else None
+
+
+def is_head_dispatcher(user):
+    """A dispatcher without a district oversees every district."""
+
+    return is_dispatcher(user) and staff_district(user) is None
+
+
+def scope_by_district(queryset, user):
+    """Limits requests or containers to the user's district, when they have one."""
+
+    district = staff_district(user)
+
+    return queryset.filter(district=district) if district else queryset.all()
+
+
 def home_for(user):
     """The page a user lands on, or None when the account has no role yet."""
 
@@ -64,6 +89,73 @@ def role_required(check):
         return wrapped
 
     return decorator
+
+
+ROLE_ADMIN = "admin"
+ROLE_HEAD = "head"
+ROLE_DISTRICT = "district"
+ROLE_WORKER = "worker"
+ROLE_NONE = "none"
+
+ROLE_LABELS = {
+    ROLE_ADMIN: "Әкімші",
+    ROLE_HEAD: "Бас диспетчер",
+    ROLE_DISTRICT: "Аудан диспетчері",
+    ROLE_WORKER: "Жұмысшы",
+    ROLE_NONE: "Рөлі жоқ",
+}
+
+
+def role_of(user):
+    """One role per account, as the admin panel shows and sets it."""
+
+    if user.is_superuser:
+        return ROLE_ADMIN
+
+    # Reads prefetched groups when the caller loaded them
+    names = {group.name for group in user.groups.all()}
+
+    if DISPATCHERS in names:
+        return ROLE_DISTRICT if staff_district(user) else ROLE_HEAD
+
+    if WORKERS in names:
+        return ROLE_WORKER
+
+    return ROLE_NONE
+
+
+def apply_role(user, role, district=None):
+    """Puts the account in exactly one role group and stores its district."""
+
+    from django.contrib.auth.models import Group
+
+    from .models import StaffProfile
+
+    dispatchers, _ = Group.objects.get_or_create(name=DISPATCHERS)
+    workers, _ = Group.objects.get_or_create(name=WORKERS)
+
+    user.groups.remove(dispatchers, workers)
+
+    if role in (ROLE_HEAD, ROLE_DISTRICT):
+        user.groups.add(dispatchers)
+    elif role == ROLE_WORKER:
+        user.groups.add(workers)
+
+    if role == ROLE_HEAD:
+        district = None
+
+    profile, _ = StaffProfile.objects.get_or_create(user=user)
+
+    if profile.district != district:
+        profile.district = district
+        profile.save(update_fields=["district"])
+
+    # The cached profile would otherwise keep the old district
+    user.staff_profile = profile
+
+
+def is_admin(user):
+    return user.is_authenticated and user.is_superuser
 
 
 dispatcher_required = role_required(is_dispatcher)

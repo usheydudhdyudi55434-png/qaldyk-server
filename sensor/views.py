@@ -13,7 +13,16 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 
 from . import fire
-from .roles import IsDispatcher, dispatcher_required, home_for, is_dispatcher
+from .districts import district_for
+from .models import District
+from .roles import (
+    IsDispatcher,
+    dispatcher_required,
+    home_for,
+    is_dispatcher,
+    scope_by_district,
+    staff_district,
+)
 from .models import ResidentRequest, SensorReading, Container
 
 
@@ -38,8 +47,13 @@ def sensor_data(request, container_id):
             "error": "Authentication required"
         }, status=403)
 
+    containers = Container.objects
+
+    if request.method == 'GET':
+        containers = scope_by_district(containers, request.user)
+
     try:
-        container = Container.objects.get(id=container_id)
+        container = containers.get(id=container_id)
     except Container.DoesNotExist:
         return Response({
             "error": "Container not found"
@@ -122,7 +136,8 @@ def sensor_data(request, container_id):
             if (latitude, longitude) != (container.latitude, container.longitude):
                 container.latitude = latitude
                 container.longitude = longitude
-                container.save(update_fields=['latitude', 'longitude'])
+                container.district = district_for(latitude, longitude)
+                container.save(update_fields=['latitude', 'longitude', 'district'])
 
         if fill_level >= 80:
             status = "FULL"
@@ -176,7 +191,7 @@ def containers_overview(request):
 
     containers = []
 
-    for container in Container.objects.order_by('id'):
+    for container in scope_by_district(Container.objects, request.user).order_by('id'):
         reading = container.readings.order_by('-created_at').first()
 
         latest = None
@@ -237,7 +252,7 @@ def containers_history(request):
 
     readings = SensorReading.objects.filter(
         created_at__gte=since,
-        container__isnull=False,
+        container__in=scope_by_district(Container.objects, request.user),
         **{f"{field}__isnull": False}
     ).values_list('container_id', 'created_at', field)
 
@@ -262,6 +277,30 @@ def containers_history(request):
         "bucket_seconds": bucket_seconds,
         "server_time": timezone.now(),
         "series": series
+    })
+
+
+@api_view(['GET'])
+@permission_classes([IsDispatcher])
+def districts_geojson(request):
+    """District boundaries for the map; a manager's own district is marked."""
+
+    mine = staff_district(request.user)
+
+    return Response({
+        "type": "FeatureCollection",
+        "features": [
+            {
+                "type": "Feature",
+                "properties": {
+                    "slug": district.slug,
+                    "name": district.name,
+                    "mine": mine is not None and district.pk == mine.pk,
+                },
+                "geometry": district.boundary,
+            }
+            for district in District.objects.all()
+        ],
     })
 
 
@@ -314,7 +353,8 @@ def dashboard(request):
         'reading': reading,
         'css_version': asset_version('sensor/css/dashboard.css'),
         'js_version': asset_version('sensor/js/dashboard.js'),
-        'new_requests': ResidentRequest.objects.filter(
-            status=ResidentRequest.Status.NEW
+        'new_requests': scope_by_district(ResidentRequest.objects, request.user).filter(
+            status=ResidentRequest.Status.NEW,
+            parent__isnull=True
         ).count()
     })

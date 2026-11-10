@@ -131,6 +131,14 @@
                 <span id="connectionText">Қосылуда…</span>
             </div>
 
+            {% if user.is_superuser %}
+            <a class="header-link" href="{% url 'manage_staff' %}">Әкімші</a>
+            {% endif %}
+
+            {% if is_head_dispatcher %}
+            <a class="header-link" href="{% url 'supervision' %}">Бақылау</a>
+            {% endif %}
+
             <a class="header-link" href="{% url 'requests_list' %}">
                 Өтініштер{% if new_requests %}<span class="count-badge">{{ new_requests }}</span>{% endif %}
             </a>
@@ -143,6 +151,8 @@
             >
                 <svg class="icon"><use id="themeIcon" href="#i-sun"></use></svg>
             </button>
+
+            {% if staff_district %}<span class="scope-chip" title="Тек осы аудан көрсетіледі">{{ staff_district.name }}</span>{% elif is_head_dispatcher %}<span class="scope-chip" title="Барлық аудан">Бас диспетчер</span>{% endif %}
 
             <span class="user-name">{{ user.get_username }}</span>
 

@@ -1,10 +1,11 @@
 from django.core.management.base import BaseCommand
 
+from sensor.districts import district_for
 from sensor.models import Container
 
 
-# Ten spots across all eight Almaty districts, coordinates from OpenStreetMap.
-# Container #1 and #3 keep their original spots.
+# One test container in each of the eight Almaty districts, coordinates from
+# OpenStreetMap. Container #1 and #3 keep their original spots.
 CITY_CONTAINERS = [
     ("Container #1", "Алмалы ауданы, Розыбакиев көшесі", 43.2389, 76.8897),
     ("Container #2", "Медеу ауданы, Көк базар", 43.26368, 76.9552),
@@ -14,9 +15,10 @@ CITY_CONTAINERS = [
     ("Container #6", "Жетісу ауданы, Құлагер шағын ауданы", 43.31027, 76.92049),
     ("Container #7", "Түрксіб ауданы, Алматы-1 вокзалы", 43.34145, 76.94917),
     ("Container #8", "Наурызбай ауданы, Шұғыла шағын ауданы", 43.21391, 76.78787),
-    ("Container #9", "Бостандық ауданы, Mega Alma-Ata", 43.20165, 76.89232),
-    ("Container #10", "Медеу ауданы, Dostyk Plaza", 43.23341, 76.95678),
 ]
+
+# Second containers of a district from an earlier layout; removed only while unused
+RETIRED_CONTAINERS = ("Container #9", "Container #10")
 
 
 class Command(BaseCommand):
@@ -32,7 +34,8 @@ class Command(BaseCommand):
                 defaults={
                     "location": location,
                     "latitude": latitude,
-                    "longitude": longitude
+                    "longitude": longitude,
+                    "district": district_for(latitude, longitude)
                 }
             )
 
@@ -40,3 +43,18 @@ class Command(BaseCommand):
                 f"{'created' if created else 'updated'}: "
                 f"#{container.id} {name} — {location}"
             )
+
+        for name in RETIRED_CONTAINERS:
+
+            container = Container.objects.filter(name=name).first()
+
+            if container is None:
+                continue
+
+            # Deleting a container deletes its readings, so one with data is kept
+            if container.readings.exists() or container.requests.exists():
+                self.stdout.write(f"kept: #{container.id} {name} has readings or requests")
+                continue
+
+            container.delete()
+            self.stdout.write(f"removed: {name}")

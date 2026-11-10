@@ -1,0 +1,66 @@
+{% extends "manage/base.html" %}
+
+{% block title %}Qaldyq — Қызметкерлер{% endblock %}
+
+{% block manage %}
+
+<section aria-labelledby="staffTitle">
+
+    <div class="section-header">
+        <h1 id="staffTitle">Қызметкерлер</h1>
+        <a class="button-primary" href="{% url 'manage_staff_create' %}">Қызметкер қосу</a>
+    </div>
+
+    <div class="manage-stats">
+        <div class="panel manage-stat"><span>Бас диспетчер</span><strong>{{ counts.head }}</strong></div>
+        <div class="panel manage-stat"><span>Аудан диспетчері</span><strong>{{ counts.district }}</strong></div>
+        <div class="panel manage-stat"><span>Жұмысшы</span><strong>{{ counts.worker }}</strong></div>
+        {% if counts.none %}<div class="panel manage-stat is-warning"><span>Рөлі жоқ</span><strong>{{ counts.none }}</strong></div>{% endif %}
+    </div>
+
+    <div class="panel table-scroll">
+        <table class="data-table staff-table">
+            <thead>
+                <tr>
+                    <th scope="col">Логин</th>
+                    <th scope="col">Аты-жөні</th>
+                    <th scope="col">Рөлі</th>
+                    <th scope="col">Аудан</th>
+                    <th scope="col">Соңғы кіруі</th>
+                    <th scope="col">Күйі</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in rows %}
+                <tr class="{% if not row.user.is_active %}is-inactive{% endif %}">
+                    <td><a class="row-name" href="{% url 'manage_staff_edit' row.user.pk %}">{{ row.user.username }}</a></td>
+                    <td>{{ row.user.get_full_name|default:"—" }}</td>
+                    <td><span class="role-badge role-{{ row.role }}">{{ row.role_label }}</span></td>
+                    <td>
+                        {% if row.district %}{{ row.district.name }}
+                        {% elif row.role == 'head' or row.role == 'admin' %}<span class="cell-secondary">Бүкіл қала</span>
+                        {% elif row.role == 'worker' or row.role == 'district' %}<span class="verdict verdict-unconfirmed">Аудан берілмеген</span>
+                        {% else %}<span class="cell-secondary">—</span>{% endif %}
+                    </td>
+                    <td>
+                        {% if row.user.last_login %}{{ row.user.last_login|date:"d.m.Y H:i" }}{% else %}<span class="cell-secondary">Кірмеген</span>{% endif %}
+                        {% if row.seen %}<div class="cell-secondary">Орны: {% if row.seen.fresh %}<span class="verdict verdict-confirmed">{{ row.seen.label }}</span>{% else %}{{ row.seen.label }}{% endif %}</div>{% endif %}
+                    </td>
+                    <td>
+                        {% if row.user.is_active %}<span class="verdict verdict-confirmed">Белсенді</span>
+                        {% else %}<span class="verdict verdict-none">Өшірілген</span>{% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <p class="field-hint manage-footnote">
+        Сирек қажет техникалық баптаулар:
+        <a href="{% url 'admin:index' %}">Django әкімшілігі</a>
+    </p>
+
+</section>
+
+{% endblock %}
