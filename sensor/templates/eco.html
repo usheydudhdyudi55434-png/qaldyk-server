@@ -1,0 +1,112 @@
+{% extends "layout.html" %}
+{% load i18n %}
+
+{% block title %}{% translate "Qaldyq — Эко-ұпайлар" %}{% endblock %}
+
+{% block brand_note %}{% translate "Тұрғындарға арналған" %}{% endblock %}
+
+{% block nav %}
+    <a class="header-link" href="{% url 'resident_home' %}">{% translate "Өтініш қалдыру" %}</a>
+    <a class="header-link" href="{% url 'resident_status' %}">{% translate "Өтінішті тексеру" %}</a>
+{% endblock %}
+
+{% block main_class %}resident-page eco-page{% endblock %}
+
+{% block content %}
+
+<section class="eco-hero">
+    <span class="eco-hero-badge"><svg class="icon" aria-hidden="true"><use href="#i-leaf"></use></svg></span>
+    <div>
+        <h1>{% translate "Эко-ұпайлар" %}</h1>
+        <p>
+            {% translate "Қоқыс мәселесін хабарлаңыз, ал ол шешілгенде ұпай аласыз. Ұпайды серіктестердің сыйлықтарына айырбастап, өз ОСИ-ыңыздың қаладағы рейтингін көтересіз." %}
+        </p>
+        {% if telegram_link %}
+        <a class="button-primary" href="{{ telegram_link }}" target="_blank" rel="noopener">{% translate "Telegram-ботта бастау" %}</a>
+        {% endif %}
+    </div>
+</section>
+
+<div class="manage-stats">
+    <div class="panel manage-stat"><span>{% translate "Берілген ұпай" %}</span><strong>{{ totals.awarded }}</strong></div>
+    <div class="panel manage-stat"><span>{% translate "Белсенді тұрғын" %}</span><strong>{{ totals.residents }}</strong></div>
+    <div class="panel manage-stat"><span>{% translate "Алынған сыйлық" %}</span><strong>{{ totals.vouchers }}</strong></div>
+</div>
+
+<div class="eco-grid">
+
+    <section class="panel eco-card" aria-labelledby="rulesTitle">
+        <h2 id="rulesTitle">{% translate "Ұпай қалай беріледі" %}</h2>
+        <ul class="eco-rules">
+            {% for points, text in rules %}
+            <li><span class="eco-points{% if points == '0' %} is-zero{% endif %}">{{ points }}</span>{{ text }}</li>
+            {% endfor %}
+        </ul>
+        <p class="field-hint">
+            {% blocktranslate trimmed %}
+            Ұпай өтініш жіберілгенде емес, қызметкер жұмысты фотомен растағанда беріледі.
+            Сондықтан жалған өтінішке ұпай берілмейді. Бір күнде {{ daily_cap }} ұпайдан артық жинауға болмайды.
+            {% endblocktranslate %}
+        </p>
+    </section>
+
+    <section class="panel eco-card" aria-labelledby="rewardsTitle">
+        <h2 id="rewardsTitle">{% translate "Сыйлықтар" %}</h2>
+        {% if rewards %}
+        <ul class="eco-rewards">
+            {% for reward in rewards %}
+            <li>
+                <span class="eco-reward-text">
+                    <strong>{{ reward.title }}</strong>
+                    <span class="cell-secondary">{{ reward.partner }}{% if reward.description %} · {{ reward.description }}{% endif %}</span>
+                </span>
+                <span class="eco-cost">{% blocktranslate with cost=reward.cost %}{{ cost }} ұпай{% endblocktranslate %}</span>
+            </li>
+            {% endfor %}
+        </ul>
+        <p class="field-hint">{% translate "Сыйлықты Telegram-боттағы «Эко-ұпайлар» бөлімінен аласыз." %}</p>
+        {% else %}
+        <p class="cell-secondary">{% translate "Серіктестердің сыйлықтары жақында қосылады." %}</p>
+        {% endif %}
+    </section>
+
+    <section class="panel eco-card" aria-labelledby="osiTitle">
+        <h2 id="osiTitle">{% translate "ОСИ рейтингі" %}</h2>
+        {% if osis %}
+        <ol class="eco-ranking">
+            {% for osi in osis %}
+            <li>
+                <span class="eco-place">{{ forloop.counter }}</span>
+                <span class="eco-reward-text">
+                    <strong>{{ osi.name }}</strong>
+                    <span class="cell-secondary">{% blocktranslate with count=osi.residents %}{{ count }} тұрғын{% endblocktranslate %}</span>
+                </span>
+                <span class="eco-cost">{{ osi.score }}</span>
+            </li>
+            {% endfor %}
+        </ol>
+        {% else %}
+        <p class="cell-secondary">{% translate "Әзірге ОСИ тіркелмеген." %}</p>
+        {% endif %}
+    </section>
+
+    <section class="panel eco-card" aria-labelledby="districtTitle">
+        <h2 id="districtTitle">{% translate "Аудандар" %}</h2>
+        <ol class="eco-ranking">
+            {% for district in districts %}
+            <li>
+                <span class="eco-place">{{ forloop.counter }}</span>
+                <span class="eco-reward-text">
+                    <strong>{{ district.name }}</strong>
+                    <span class="cell-secondary">{% blocktranslate with count=district.solved %}{{ count }} мәселе шешілді{% endblocktranslate %}</span>
+                </span>
+                <span class="eco-cost">{{ district.score }}</span>
+            </li>
+            {% endfor %}
+        </ol>
+    </section>
+
+</div>
+
+
+{% endblock %}

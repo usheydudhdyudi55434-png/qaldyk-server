@@ -15,7 +15,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     if (!navigator.geolocation) {
-        status.textContent = "Браузер орынды анықтай алмайды";
+        status.textContent = gettext("Браузер орынды анықтай алмайды");
         return;
     }
 
@@ -46,12 +46,12 @@ document.addEventListener("DOMContentLoaded", () => {
             const time = new Date().toTimeString().slice(0, 5);
 
             status.textContent = response.ok
-                ? `Орныңыз диспетчерге көрінеді · ${time}`
-                : "Орын жіберілмеді, бетті жаңартыңыз";
+                ? interpolate(gettext("Орныңыз диспетчерге көрінеді · %(time)s"), { time }, true)
+                : gettext("Орын жіберілмеді, бетті жаңартыңыз");
 
         } catch (error) {
 
-            status.textContent = "Орын жіберілмеді: интернет байланысын тексеріңіз";
+            status.textContent = gettext("Орын жіберілмеді: интернет байланысын тексеріңіз");
             lastSent = 0;
 
         }
@@ -67,7 +67,7 @@ document.addEventListener("DOMContentLoaded", () => {
         },
         () => {
             status.textContent =
-                "Орынға рұқсат берілмеді: диспетчер сізді жақын жұмысшы ретінде көрмейді";
+                gettext("Орынға рұқсат берілмеді: диспетчер сізді жақын жұмысшы ретінде көрмейді");
         },
         { enableHighAccuracy: true, maximumAge: 10000 }
     );

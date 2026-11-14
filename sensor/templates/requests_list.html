@@ -1,25 +1,17 @@
 {% extends "layout.html" %}
+{% load i18n %}
 
-{% block title %}Qaldyq — Тұрғындардың өтініштері{% endblock %}
+{% block title %}{% translate "Qaldyq — Тұрғындардың өтініштері" %}{% endblock %}
 
 {% block brand_href %}{% url 'dashboard' %}{% endblock %}
-
-{% block nav %}
-    {% if is_head_dispatcher %}<a class="header-link" href="{% url 'supervision' %}">Бақылау</a>{% endif %}
-    <a class="header-link" href="{% url 'dashboard' %}">Панель</a>
-{% endblock %}
-
-{% block account %}
-    {% include "account_menu.html" %}
-{% endblock %}
 
 {% block content %}
 
 <section aria-labelledby="requestsTitle">
 
     <div class="section-header">
-        <h1 id="requestsTitle">Тұрғындардың өтініштері</h1>
-        <a class="section-meta" href="{% url 'resident_home' %}" target="_blank" rel="noopener">Тұрғындар бетін ашу</a>
+        <h1 id="requestsTitle">{% translate "Тұрғындардың өтініштері" %}</h1>
+        <a class="section-meta" href="{% url 'resident_home' %}" target="_blank" rel="noopener">{% translate "Тұрғындар бетін ашу" %}</a>
     </div>
 
     <div class="filter-row">
@@ -27,18 +19,18 @@
     {% if districts %}
     <form method="get" class="district-filter">
         <input type="hidden" name="status" value="{{ status }}">
-        <label class="visually-hidden" for="districtSelect">Аудан</label>
+        <label class="visually-hidden" for="districtSelect">{% translate "Аудан" %}</label>
         <select id="districtSelect" name="district" onchange="this.form.submit()">
-            <option value="">Барлық аудан</option>
+            <option value="">{% translate "Барлық аудан" %}</option>
             {% for option in districts %}
             <option value="{{ option.slug }}" {% if district and option.pk == district.pk %}selected{% endif %}>{{ option.name }}</option>
             {% endfor %}
         </select>
-        <noscript><button class="button-secondary" type="submit">Көрсету</button></noscript>
+        <noscript><button class="button-secondary" type="submit">{% translate "Көрсету" %}</button></noscript>
     </form>
     {% endif %}
 
-    <nav class="segmented filter-row-links" aria-label="Мәртебе бойынша сүзу">
+    <nav class="segmented filter-row-links" aria-label="{% translate 'Мәртебе бойынша сүзу' %}">
         {% for filter in filters %}
         <a href="?status={{ filter.value }}{% if district %}&amp;district={{ district.slug }}{% endif %}" {% if filter.value == status %}aria-current="page"{% endif %}>
             {{ filter.label }} <span class="numeric">{{ filter.count }}</span>
@@ -49,18 +41,18 @@
     </div>
 
     <div class="panel table-scroll">
-        <table class="data-table requests-table">
+        <table class="data-table stack-table requests-table">
             <thead>
                 <tr>
-                    <th scope="col">Код</th>
-                    <th scope="col">Мәселе</th>
-                    <th scope="col">Мекенжай</th>
-                    <th scope="col">Аудан</th>
+                    <th scope="col">{% translate "Код" %}</th>
+                    <th scope="col">{% translate "Мәселе" %}</th>
+                    <th scope="col">{% translate "Мекенжай" %}</th>
+                    <th scope="col">{% translate "Аудан" %}</th>
                     <th scope="col">AI</th>
-                    <th scope="col">Датчик</th>
-                    <th scope="col">Мәртебесі</th>
-                    <th scope="col">Жауапты</th>
-                    <th scope="col">Жіберілді</th>
+                    <th scope="col">{% translate "Датчик" %}</th>
+                    <th scope="col">{% translate "Мәртебесі" %}</th>
+                    <th scope="col">{% translate "Жауапты" %}</th>
+                    <th scope="col">{% translate "Жіберілді" %}</th>
                 </tr>
             </thead>
             <tbody>
@@ -68,7 +60,7 @@
                 <tr>
                     <td>
                         <a class="row-name" href="{% url 'request_detail' row.item.pk %}">{{ row.item.code }}</a>
-                        {% if row.item.duplicate_count %}<span class="count-badge" title="Тағы {{ row.item.duplicate_count }} тұрғын хабарлады">+{{ row.item.duplicate_count }}</span>{% endif %}
+                        {% if row.item.duplicate_count %}<span class="count-badge" title="{% blocktranslate with count=row.item.duplicate_count %}Тағы {{ count }} тұрғын хабарлады{% endblocktranslate %}">+{{ row.item.duplicate_count }}</span>{% endif %}
                     </td>
                     <td>{{ row.item.get_category_display }}</td>
                     <td class="cell-secondary">{{ row.item.address }}</td>
@@ -76,8 +68,8 @@
                     <td>
                         {% with analysis=row.item.analysis %}
                         {% if not analysis %}<span class="cell-secondary">—</span>
-                        {% elif analysis.state == "done" and analysis.hazard == "high" %}<span class="verdict verdict-danger">Қауіпті</span>
-                        {% elif analysis.state == "done" and analysis.needs_review %}<span class="verdict verdict-unconfirmed" title="{{ analysis.review_reason }}">Тексеру керек</span>
+                        {% elif analysis.state == "done" and analysis.hazard == "high" %}<span class="verdict verdict-danger">{% translate "Қауіпті" %}</span>
+                        {% elif analysis.state == "done" and analysis.needs_review %}<span class="verdict verdict-unconfirmed" title="{{ analysis.review_reason }}">{% translate "Тексеру керек" %}</span>
                         {% elif analysis.state == "done" %}<span class="verdict verdict-confirmed">{{ analysis.get_waste_type_display }}</span>
                         {% else %}<span class="cell-secondary">{{ analysis.get_state_display }}</span>
                         {% endif %}
@@ -89,7 +81,7 @@
                     <td class="cell-secondary numeric">{{ row.item.created_at|date:"d.m H:i" }}</td>
                 </tr>
                 {% empty %}
-                <tr><td class="table-empty" colspan="9">Бұл сүзгі бойынша өтініш жоқ</td></tr>
+                <tr><td class="table-empty" colspan="9">{% translate "Бұл сүзгі бойынша өтініш жоқ" %}</td></tr>
                 {% endfor %}
             </tbody>
         </table>

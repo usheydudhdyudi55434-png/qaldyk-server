@@ -1,27 +1,28 @@
 {% extends "manage/base.html" %}
+{% load i18n %}
 
-{% block title %}Qaldyq — Контейнерлер{% endblock %}
+{% block title %}{% translate "Qaldyq — Контейнерлер" %}{% endblock %}
 
 {% block manage %}
 
 <section aria-labelledby="containersTitle">
 
     <div class="section-header">
-        <h1 id="containersTitle">Контейнерлер</h1>
-        <a class="button-primary" href="{% url 'manage_container_create' %}">Контейнер қосу</a>
+        <h1 id="containersTitle">{% translate "Контейнерлер" %}</h1>
+        <a class="button-primary" href="{% url 'manage_container_create' %}">{% translate "Контейнер қосу" %}</a>
     </div>
 
     <div class="panel table-scroll">
-        <table class="data-table container-admin-table">
+        <table class="data-table stack-table container-admin-table">
             <thead>
                 <tr>
                     <th scope="col" class="align-end">№</th>
-                    <th scope="col">Атауы</th>
-                    <th scope="col">Мекенжайы</th>
-                    <th scope="col">Аудан</th>
-                    <th scope="col">Соңғы дерек</th>
-                    <th scope="col" class="align-end">Көрсеткіш</th>
-                    <th scope="col" class="align-end">Өтініш</th>
+                    <th scope="col">{% translate "Атауы" %}</th>
+                    <th scope="col">{% translate "Мекенжайы" %}</th>
+                    <th scope="col">{% translate "Аудан" %}</th>
+                    <th scope="col">{% translate "Соңғы дерек" %}</th>
+                    <th scope="col" class="align-end">{% translate "Көрсеткіш" %}</th>
+                    <th scope="col" class="align-end">{% translate "Өтініш" %}</th>
                 </tr>
             </thead>
             <tbody>
@@ -30,20 +31,20 @@
                     <td class="align-end numeric">{{ container.pk }}</td>
                     <td><a class="row-name" href="{% url 'manage_container_edit' container.pk %}">{{ container.name }}</a></td>
                     <td>{{ container.location }}</td>
-                    <td>{% if container.district %}{{ container.district.name }}{% else %}<span class="verdict verdict-unconfirmed">Анықталмаған</span>{% endif %}</td>
-                    <td>{% if container.last_reading %}{{ container.last_reading|date:"d.m.Y H:i" }}{% else %}<span class="cell-secondary">Дерек келмеген</span>{% endif %}</td>
+                    <td>{% if container.district %}{{ container.district.name }}{% else %}<span class="verdict verdict-unconfirmed">{% translate "Анықталмаған" %}</span>{% endif %}</td>
+                    <td>{% if container.last_reading %}{{ container.last_reading|date:"d.m.Y H:i" }}{% else %}<span class="cell-secondary">{% translate "Дерек келмеген" %}</span>{% endif %}</td>
                     <td class="align-end numeric">{{ container.reading_count }}</td>
                     <td class="align-end numeric">{{ container.request_count }}</td>
                 </tr>
                 {% empty %}
-                <tr><td colspan="7" class="cell-secondary">Контейнер әлі жоқ.</td></tr>
+                <tr><td colspan="7" class="cell-secondary">{% translate "Контейнер әлі жоқ." %}</td></tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
 
     <p class="field-hint manage-footnote">
-        Датчик деректі <code>{{ device_base }}&lt;№&gt;/</code> адресіне жібереді. Мысалы, №1 контейнер үшін <code>{{ device_base }}1/</code>.
+        {% blocktranslate trimmed %}Датчик деректі <code>{{ device_base }}&lt;№&gt;/</code> адресіне жібереді. Мысалы, №1 контейнер үшін <code>{{ device_base }}1/</code>.{% endblocktranslate %}
     </p>
 
 </section>

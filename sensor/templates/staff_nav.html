@@ -1,0 +1,19 @@
+{% load i18n %}
+{% if nav_dispatcher %}
+<nav class="main-nav" aria-label="{% translate 'Негізгі бөлімдер' %}">
+    <a href="{% url 'dashboard' %}" {% if nav_current == 'dashboard' %}aria-current="page"{% endif %}>{% translate "Мониторинг" %}</a>
+    <a href="{% url 'requests_list' %}" {% if nav_current == 'requests_list' or nav_current == 'request_detail' %}aria-current="page"{% endif %}>
+        {% translate "Өтініштер" %}{% if nav_new_requests %}<span title="{% blocktranslate %}{{ nav_new_requests }} жаңа өтініш{% endblocktranslate %}" class="count-badge">{{ nav_new_requests }}</span>{% endif %}
+    </a>
+    {% if is_head_dispatcher %}
+    <a href="{% url 'supervision' %}" {% if nav_current == 'supervision' %}aria-current="page"{% endif %}>{% translate "Бақылау" %}</a>
+    {% endif %}
+    {% if user.is_superuser %}
+    <a href="{% url 'manage_staff' %}" {% if nav_current|slice:":7" == 'manage_' %}aria-current="page"{% endif %}>{% translate "Әкімші" %}</a>
+    {% endif %}
+</nav>
+{% elif nav_worker %}
+<nav class="main-nav" aria-label="{% translate 'Негізгі бөлімдер' %}">
+    <a href="{% url 'my_tasks' %}" {% if nav_current == 'my_tasks' %}aria-current="page"{% endif %}>{% translate "Тапсырмалар" %}</a>
+</nav>
+{% endif %}

@@ -24,23 +24,23 @@ const ALMATY_CENTER = [43.238949, 76.889709];
 const SERIES_SLOTS = 8;
 
 const LEVELS = {
-    full: { label: "Толы", icon: "i-full" },
-    half: { label: "Жартылай толы", icon: "i-half" },
-    normal: { label: "Қалыпты", icon: "i-normal" },
-    none: { label: "Дерек жоқ", icon: "i-none" }
+    full: { label: gettext("Толы"), icon: "i-full" },
+    half: { label: gettext("Жартылай толы"), icon: "i-half" },
+    normal: { label: gettext("Қалыпты"), icon: "i-normal" },
+    none: { label: gettext("Дерек жоқ"), icon: "i-none" }
 };
 
 const THRESHOLDS = [
-    { value: FULL_LEVEL, color: "var(--status-full)", name: "Толы шегі" },
-    { value: HALF_LEVEL, color: "var(--status-half)", name: "Жартылай шегі" }
+    { value: FULL_LEVEL, color: "var(--status-full)", name: gettext("Толы шегі") },
+    { value: HALF_LEVEL, color: "var(--status-half)", name: gettext("Жартылай шегі") }
 ];
 
 // Fire risk levels decided by the server (sensor/fire.py)
 const FIRE_RISKS = {
-    DANGER: { label: "Қауіпті", rank: 3 },
-    WARNING: { label: "Ескерту", rank: 2 },
-    NORMAL: { label: "Қалыпты", rank: 1 },
-    "": { label: "Датчик жоқ", rank: 0 }
+    DANGER: { label: gettext("Қауіпті"), rank: 3 },
+    WARNING: { label: gettext("Ескерту"), rank: 2 },
+    NORMAL: { label: gettext("Қалыпты"), rank: 1 },
+    "": { label: gettext("Датчик жоқ"), rank: 0 }
 };
 
 const PAGE_TITLE = document.title;
@@ -200,7 +200,7 @@ function formatFill(value) {
 
 function formatDistance(value) {
 
-    return value === null ? "–" : `${value.toFixed(1)} см`;
+    return value === null ? "–" : interpolate(gettext("%(value)s см"), { value: value.toFixed(1) }, true);
 
 }
 
@@ -240,18 +240,18 @@ function formatAge(age) {
     const seconds = Math.max(Math.floor(age / 1000), 0);
 
     if (seconds < 60) {
-        return `${seconds} сек бұрын`;
+        return interpolate(gettext("%(count)s сек бұрын"), { count: seconds }, true);
     }
 
     if (seconds < 3600) {
-        return `${Math.floor(seconds / 60)} мин бұрын`;
+        return interpolate(gettext("%(count)s мин бұрын"), { count: Math.floor(seconds / 60) }, true);
     }
 
     if (seconds < 86400) {
-        return `${Math.floor(seconds / 3600)} сағ бұрын`;
+        return interpolate(gettext("%(count)s сағ бұрын"), { count: Math.floor(seconds / 3600) }, true);
     }
 
-    return `${Math.floor(seconds / 86400)} күн бұрын`;
+    return interpolate(gettext("%(count)s күн бұрын"), { count: Math.floor(seconds / 86400) }, true);
 
 }
 
@@ -527,7 +527,7 @@ function setConnection(isOnline) {
 
     setText(
         "connectionText",
-        isOnline ? "Сервер қосулы" : "Сервермен байланыс жоқ"
+        isOnline ? gettext("Сервер қосулы") : gettext("Сервермен байланыс жоқ")
     );
 
 }
@@ -564,7 +564,7 @@ function renderFireAlert() {
 
     document.title = alerts.length === 0
         ? PAGE_TITLE
-        : `${hasDanger ? "Өрт қаупі" : "Ескерту"} (${alerts.length}) · ${PAGE_TITLE}`;
+        : `${hasDanger ? gettext("Өрт қаупі") : gettext("Ескерту")} (${alerts.length}) · ${PAGE_TITLE}`;
 
     const signature = alerts
         .map(item => `${item.id}:${item.fireRisk}:${item.fireNote}:${item.offline}:${item.id === state.selectedId}`)
@@ -586,8 +586,8 @@ function renderFireAlert() {
     setText(
         "fireAlertTitle",
         hasDanger
-            ? "Өрт қаупінің белгілері анықталды"
-            : "Өрт қаупі: ескерту белгілері"
+            ? gettext("Өрт қаупінің белгілері анықталды")
+            : gettext("Өрт қаупі: ескерту белгілері")
     );
 
     const list = document.getElementById("fireAlertList");
@@ -599,7 +599,7 @@ function renderFireAlert() {
             const details = [item.location, item.fireNote];
 
             if (item.offline) {
-                details.push("датчик үнсіз, деректер ескі болуы мүмкін");
+                details.push(gettext("датчик үнсіз, деректер ескі болуы мүмкін"));
             }
 
             const button = el(
@@ -694,7 +694,7 @@ function renderKpis() {
         "aria-label",
         parts
             .map(part => `${LEVELS[part.level].label}: ${part.amount}`)
-            .join(", ") || "Контейнер жоқ"
+            .join(", ") || gettext("Контейнер жоқ")
     );
 
 }
@@ -727,8 +727,8 @@ function renderQueue() {
                     { class: "queue-empty level-normal" },
                     icon("i-normal"),
                     state.containers.length === 0
-                        ? "Әзірге контейнер қосылмаған"
-                        : "Барлық контейнер қалыпты жұмыс істеп тұр"
+                        ? gettext("Әзірге контейнер қосылмаған")
+                        : gettext("Барлық контейнер қалыпты жұмыс істеп тұр")
                 )
             );
 
@@ -802,24 +802,24 @@ function getQueueReason(item) {
     if (isFireAlert(item)) {
         return (
             `${FIRE_RISKS[item.fireRisk].label}: `
-            + (item.fireNote || "өрт қаупінің белгісі")
-            + (item.offline ? `, соңғы дерек ${formatAge(item.age)}` : "")
+            + (item.fireNote || gettext("өрт қаупінің белгісі"))
+            + (item.offline ? ", " + interpolate(gettext("соңғы дерек %(age)s"), { age: formatAge(item.age) }, true) : "")
         );
     }
 
     if (item.lastAt === null) {
-        return "Датчик әлі дерек жібермеген";
+        return gettext("Датчик әлі дерек жібермеген");
     }
 
     if (item.level !== "full") {
-        return `Датчик үнсіз, соңғы дерек ${formatAge(item.age)}`;
+        return interpolate(gettext("Датчик үнсіз, соңғы дерек %(age)s"), { age: formatAge(item.age) }, true);
     }
 
     if (item.offline) {
-        return `Шығару қажет, соңғы дерек ${formatAge(item.age)}`;
+        return interpolate(gettext("Шығару қажет, соңғы дерек %(age)s"), { age: formatAge(item.age) }, true);
     }
 
-    return "Қоқысты шығару қажет";
+    return gettext("Қоқысты шығару қажет");
 
 }
 
@@ -961,8 +961,8 @@ function renderTable() {
                         "td",
                         { class: "table-empty", colspan: "7" },
                         state.containers.length === 0
-                            ? "Әзірге контейнер қосылмаған"
-                            : "Сүзгіге сәйкес контейнер табылмады"
+                            ? gettext("Әзірге контейнер қосылмаған")
+                            : gettext("Сүзгіге сәйкес контейнер табылмады")
                     )
                 )
             );
@@ -991,7 +991,7 @@ function createTableRow(item) {
     }
 
     lastSeen.append(
-        item.lastAt === null ? "Дерек жоқ" : formatAge(item.age)
+        item.lastAt === null ? gettext("Дерек жоқ") : formatAge(item.age)
     );
 
     if (item.lastAt !== null) {
@@ -1067,7 +1067,7 @@ function createSafetyCell(item) {
 
     const values = [
         item.temperature === null ? null : formatTemperature(item.temperature),
-        item.gas === null ? null : `газ ${formatGas(item.gas)}`
+        item.gas === null ? null : interpolate(gettext("газ %(value)s"), { value: formatGas(item.gas) }, true)
     ].filter(Boolean);
 
     const cell = el(
@@ -1231,8 +1231,8 @@ function renderMap() {
     setText(
         "mapNote",
         missing > 0
-            ? `${missing} контейнердің координаты көрсетілмеген`
-            : "Алматыдағы бақылау аймағы"
+            ? interpolate(gettext("%(count)s контейнердің координаты көрсетілмеген"), { count: missing }, true)
+            : gettext("Алматыдағы бақылау аймағы")
     );
 
     if (!mapFitted && located.length > 0) {
@@ -1391,15 +1391,15 @@ function createPopupContent(item) {
         el(
             "dl",
             { class: "popup-rows" },
-            row("Толу деңгейі", formatFill(item.fill)),
-            row("Қашықтық", formatDistance(item.distance)),
-            row("Күйі", LEVELS[item.level].label),
-            row("Температура", formatTemperature(item.temperature)),
-            row("Түтін/газ", formatGas(item.gas)),
-            row("Өрт қаупі", FIRE_RISKS[item.fireRisk].label),
+            row(gettext("Толу деңгейі"), formatFill(item.fill)),
+            row(gettext("Қашықтық"), formatDistance(item.distance)),
+            row(gettext("Күйі"), LEVELS[item.level].label),
+            row(gettext("Температура"), formatTemperature(item.temperature)),
+            row(gettext("Түтін/газ"), formatGas(item.gas)),
+            row(gettext("Өрт қаупі"), FIRE_RISKS[item.fireRisk].label),
             row(
-                "Соңғы дерек",
-                item.lastAt === null ? "Дерек жоқ" : formatAge(item.age)
+                gettext("Соңғы дерек"),
+                item.lastAt === null ? gettext("Дерек жоқ") : formatAge(item.age)
             )
         ),
         isFireAlert(item) && item.fireNote
@@ -1570,11 +1570,11 @@ function chartMetric(series) {
             ticks: evenTicks(low, high),
             axis: value => `${value}°C`,
             format: formatTemperature,
-            name: "температурасы",
-            empty: "Таңдалған кезеңде температура дерегі жоқ.",
+            name: gettext("температурасы"),
+            empty: gettext("Таңдалған кезеңде температура дерегі жоқ."),
             thresholds: limits ? [
-                { value: limits.temperature_danger, color: "var(--status-full)", name: "Қауіпті" },
-                { value: limits.temperature_warning, color: "var(--fire-warning)", name: "Ескерту" }
+                { value: limits.temperature_danger, color: "var(--status-full)", name: gettext("Қауіпті") },
+                { value: limits.temperature_warning, color: "var(--fire-warning)", name: gettext("Ескерту") }
             ] : []
         };
 
@@ -1588,11 +1588,11 @@ function chartMetric(series) {
             ticks: [0, 25, 50, 75, 100],
             axis: value => `${value}%`,
             format: value => value === null ? "–" : `${Math.round(value)}%`,
-            name: "түтін/газ деңгейі (сенсор шкаласынан)",
-            empty: "Таңдалған кезеңде түтін/газ дерегі жоқ.",
+            name: gettext("түтін/газ деңгейі (сенсор шкаласынан)"),
+            empty: gettext("Таңдалған кезеңде түтін/газ дерегі жоқ."),
             thresholds: limits ? [
-                { value: limits.gas_danger / limits.gas_max * 100, color: "var(--status-full)", name: "Қауіпті" },
-                { value: limits.gas_warning / limits.gas_max * 100, color: "var(--fire-warning)", name: "Ескерту" }
+                { value: limits.gas_danger / limits.gas_max * 100, color: "var(--status-full)", name: gettext("Қауіпті") },
+                { value: limits.gas_warning / limits.gas_max * 100, color: "var(--fire-warning)", name: gettext("Ескерту") }
             ] : []
         };
 
@@ -1604,8 +1604,8 @@ function chartMetric(series) {
         ticks: [0, 25, 50, 75, 100],
         axis: value => `${value}%`,
         format: formatFill,
-        name: "толу деңгейі",
-        empty: "Таңдалған кезеңде дерек жоқ. Ұзағырақ кезеңді таңдап көріңіз.",
+        name: gettext("толу деңгейі"),
+        empty: gettext("Таңдалған кезеңде дерек жоқ. Ұзағырақ кезеңді таңдап көріңіз."),
         thresholds: THRESHOLDS
     };
 
@@ -1659,8 +1659,7 @@ function renderChart() {
         role: "img",
         tabindex: "0",
         "aria-label":
-            `Контейнерлердің ${metric.name} графигі. Мәндерді көру үшін `
-            + "сол және оң көрсеткілерді басыңыз."
+            interpolate(gettext("Контейнерлердің %(metric)s графигі. Мәндерді көру үшін сол және оң көрсеткілерді басыңыз."), { metric: metric.name }, true)
     });
 
     drawChartGrid(svg, { x, y, margin, plotWidth, startTime, endTime, isNarrow, metric });
@@ -2041,7 +2040,7 @@ function renderChartTable() {
 
     if (series.length === 0) {
         target.replaceChildren(
-            el("div", { class: "table-empty" }, "Таңдалған кезеңде дерек жоқ")
+            el("div", { class: "table-empty" }, gettext("Таңдалған кезеңде дерек жоқ"))
         );
         return;
     }
@@ -2063,7 +2062,7 @@ function renderChartTable() {
             el(
                 "tr",
                 {},
-                el("th", { scope: "col" }, "Уақыт"),
+                el("th", { scope: "col" }, gettext("Уақыт")),
                 ...series.map(({ item }) =>
                     el("th", { scope: "col", class: "align-end" }, item.name)
                 )
@@ -2102,10 +2101,10 @@ const WORKER_TOGGLE_KEY = "qaldyk-workers";
 const RECENT_TRAIL_POINTS = 12;
 
 const WORKER_STATES = {
-    live: "Желіде",
-    recent: "Жақында белгі берді",
-    offline: "Желіден тыс",
-    unknown: "Орны белгісіз"
+    live: gettext("Желіде"),
+    recent: gettext("Жақында белгі берді"),
+    offline: gettext("Желіден тыс"),
+    unknown: gettext("Орны белгісіз")
 };
 
 const workerMarks = {};
@@ -2114,7 +2113,9 @@ const workerView = {
     layer: null,
     workers: [],
     trailMinutes: 60,
-    visible: readWorkerToggle()
+    visible: readWorkerToggle(),
+    // On a phone the list starts folded so the map stays visible
+    listOpen: !window.matchMedia("(max-width: 640px)").matches
 };
 
 
@@ -2350,8 +2351,8 @@ function createWorkerIcon(worker) {
 function formatMeters(meters) {
 
     return meters < 1000
-        ? `${meters} м`
-        : `${(meters / 1000).toFixed(1).replace(".", ",")} км`;
+        ? interpolate(gettext("%(value)s м"), { value: meters }, true)
+        : interpolate(gettext("%(value)s км"), { value: (meters / 1000).toFixed(1).replace(".", ",") }, true);
 
 }
 
@@ -2365,22 +2366,22 @@ function createWorkerPopup(worker) {
 
     const taskValue = task
         ? el("span", {}, el("a", { href: task.url }, task.code), ` · ${task.statusLabel}`)
-        : "Бос";
+        : gettext("Бос");
 
     return el(
         "div",
         {},
         el("div", { class: "popup-title" }, worker.name),
-        el("div", { class: "popup-location" }, worker.district || "Ауданы берілмеген"),
+        el("div", { class: "popup-location" }, worker.district || gettext("Ауданы берілмеген")),
         el(
             "dl",
             { class: "popup-rows" },
-            row("Күйі", `${WORKER_STATES[worker.state]} · ${workerAge(worker)}`),
-            row("Тапсырма", taskValue),
-            task ? row("Мекенжай", task.address) : "",
-            task && task.distance !== null ? row("Тапсырмаға дейін", formatMeters(task.distance)) : "",
-            row(`${workerView.trailMinutes} минутта жүрді`, formatMeters(worker.walked)),
-            worker.taskCount > 1 ? row("Барлық тапсырма", String(worker.taskCount)) : ""
+            row(gettext("Күйі"), `${WORKER_STATES[worker.state]} · ${workerAge(worker)}`),
+            row(gettext("Тапсырма"), taskValue),
+            task ? row(gettext("Мекенжай"), task.address) : "",
+            task && task.distance !== null ? row(gettext("Тапсырмаға дейін"), formatMeters(task.distance)) : "",
+            row(interpolate(gettext("%(minutes)s минутта жүрді"), { minutes: workerView.trailMinutes }, true), formatMeters(worker.walked)),
+            worker.taskCount > 1 ? row(gettext("Барлық тапсырма"), String(worker.taskCount)) : ""
         )
     );
 
@@ -2399,57 +2400,49 @@ function renderRoster() {
 
     const live = workers.filter(worker => worker.state === "live").length;
 
-    const toggle = el(
+    // The header opens the list; showing workers on the map is a separate switch
+    const header = el(
         "button",
         {
             type: "button",
             class: "worker-roster-toggle",
-            "data-focus-id": "workers-toggle",
-            "aria-pressed": String(workerView.visible),
-            title: workerView.visible ? "Жұмысшыларды картадан жасыру" : "Жұмысшыларды картада көрсету"
+            "aria-expanded": String(workerView.listOpen),
+            "data-focus-id": "workers-toggle"
         },
-        el("span", { class: "worker-roster-dot" }),
-        el("span", {}, "Жұмысшылар"),
-        el("span", { class: "worker-roster-count" }, `${live}/${workers.length} желіде`)
+        el("span", { class: `worker-roster-dot${workerView.visible ? "" : " is-off"}` }),
+        el("span", {}, gettext("Жұмысшылар")),
+        el("span", { class: "worker-roster-count" }, interpolate(gettext("%(live)s/%(total)s желіде"), { live, total: workers.length }, true)),
+        icon("i-caret")
     );
 
-    toggle.addEventListener("click", () => {
-
-        workerView.visible = !workerView.visible;
-
-        try {
-            localStorage.setItem(WORKER_TOGGLE_KEY, workerView.visible ? "on" : "off");
-        } catch (error) {}
-
-        if (workerView.visible) {
-            workerView.layer.addTo(map);
-        } else {
-            workerView.layer.remove();
-        }
-
+    header.addEventListener("click", () => {
+        workerView.listOpen = !workerView.listOpen;
         renderRoster();
-
     });
 
-    const children = [toggle];
+    const children = [header];
 
-    if (workerView.visible) {
+    if (workerView.listOpen) {
 
         const list = el("ul", { class: "worker-roster-list" });
 
         if (workers.length === 0) {
-            list.append(el("li", { class: "worker-roster-empty" }, "Ауданға жұмысшы бекітілмеген"));
+            list.append(el("li", { class: "worker-roster-empty" }, gettext("Ауданға жұмысшы бекітілмеген")));
         }
 
         for (const worker of workers) {
 
             const detail = worker.task
                 ? `${worker.task.code} · ${worker.task.statusLabel}`
-                : worker.state === "unknown" ? "Орнын әлі бөліспеген" : `Бос · ${workerAge(worker)}`;
+                : worker.state === "unknown" ? gettext("Орнын әлі бөліспеген") : `${gettext("Бос")} · ${workerAge(worker)}`;
 
             const button = el(
                 "button",
-                { type: "button", class: `worker-roster-item state-${worker.state}`, "data-focus-id": `worker-${worker.id}` },
+                {
+                    type: "button",
+                    class: `worker-roster-item state-${worker.state}`,
+                    "data-focus-id": `worker-${worker.id}`
+                },
                 el("span", { class: "worker-roster-avatar" }, worker.initials),
                 el(
                     "span",
@@ -2459,7 +2452,7 @@ function renderRoster() {
                 )
             );
 
-            if (worker.latitude === null) {
+            if (worker.latitude === null || !workerView.visible) {
                 button.disabled = true;
             } else {
                 button.addEventListener("click", () => focusWorker(worker.id));
@@ -2469,7 +2462,31 @@ function renderRoster() {
 
         }
 
-        children.push(list);
+        const layerSwitch = el(
+            "button",
+            { type: "button", class: "worker-roster-switch", "data-focus-id": "workers-layer" },
+            workerView.visible ? gettext("Картадан жасыру") : gettext("Картада көрсету")
+        );
+
+        layerSwitch.addEventListener("click", () => {
+
+            workerView.visible = !workerView.visible;
+
+            try {
+                localStorage.setItem(WORKER_TOGGLE_KEY, workerView.visible ? "on" : "off");
+            } catch (error) {}
+
+            if (workerView.visible) {
+                workerView.layer.addTo(map);
+            } else {
+                workerView.layer.remove();
+            }
+
+            renderRoster();
+
+        });
+
+        children.push(list, layerSwitch);
 
     }
 

@@ -1,16 +1,18 @@
 {% extends "layout.html" %}
+{% load i18n %}
 {% load static %}
 
-{% block title %}Qaldyq — Өтініш қалдыру{% endblock %}
+{% block title %}{% translate "Qaldyq — Өтініш қалдыру" %}{% endblock %}
 
-{% block brand_note %}Тұрғындарға арналған{% endblock %}
+{% block brand_note %}{% translate "Тұрғындарға арналған" %}{% endblock %}
 
 {% block head %}
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 {% endblock %}
 
 {% block nav %}
-    <a class="header-link" href="{% url 'resident_status' %}">Өтінішті тексеру</a>
+    <a class="header-link" href="{% url 'eco_page' %}">{% translate "Эко-ұпай" %}</a>
+    <a class="header-link" href="{% url 'resident_status' %}">{% translate "Өтінішті тексеру" %}</a>
 {% endblock %}
 
 {% block main_class %}resident-page{% endblock %}
@@ -18,16 +20,20 @@
 {% block content %}
 
 <section class="resident-intro">
-    <h1>Қоқысқа байланысты мәселе туралы хабарлаңыз</h1>
+    <h1>{% translate "Қоқысқа байланысты мәселе туралы хабарлаңыз" %}</h1>
     <p>
-        Контейнер толып кетсе, қоқыс уақытында шығарылмаса немесе аумақ ластанса,
-        өтініш қалдырыңыз. Өтінішке код беріледі, сол арқылы оның қалай шешіліп
-        жатқанын бақылайсыз.
+        {% translate "Контейнер толып кетсе, қоқыс уақытында шығарылмаса немесе аумақ ластанса, өтініш қалдырыңыз. Өтінішке код беріледі, сол арқылы оның қалай шешіліп жатқанын бақылайсыз." %}
     </p>
     <p class="resident-privacy">
         <svg class="icon" aria-hidden="true"><use href="#i-normal"></use></svg>
-        Аты-жөніңіз бен телефоныңыз сұралмайды.
+        {% translate "Аты-жөніңіз бен телефоныңыз сұралмайды." %}
     </p>
+    {% if telegram_link %}
+    <p class="resident-privacy">
+        <span class="telegram-inline"><svg class="icon" aria-hidden="true"><use href="#i-send"></use></svg></span>
+        <span>{% translate "Telegram-да ыңғайлы ма?" %} {% blocktranslate trimmed %}<a href="{{ telegram_link }}" target="_blank" rel="noopener">Ботқа жазыңыз</a>, өтінішті сол жерден де қалдыруға болады.{% endblocktranslate %}</span>
+    </p>
+    {% endif %}
 </section>
 
 <form class="panel resident-form" method="post" enctype="multipart/form-data" novalidate>
@@ -42,7 +48,7 @@
     {% endif %}
 
     <fieldset class="field">
-        <legend>Мәселенің түрі</legend>
+        <legend>{% translate "Мәселенің түрі" %}</legend>
         <div class="choice-grid">
             {% for radio in form.category %}
             <label class="choice">
@@ -55,46 +61,46 @@
     </fieldset>
 
     <div class="field">
-        <label for="{{ form.address.id_for_label }}">Мекенжай</label>
+        <label for="{{ form.address.id_for_label }}">{% translate "Мекенжай" %}</label>
         {{ form.address }}
         {% for error in form.address.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
     </div>
 
     <div class="field">
-        <span class="field-label">Картадағы орны <span class="field-optional">міндетті емес</span></span>
+        <span class="field-label">{% translate "Картадағы орны" %} <span class="field-optional">{% translate "міндетті емес" %}</span></span>
         <p class="field-hint">
-            Картадан нүктені басыңыз. Сонда өтініш жақын контейнердің датчик деректерімен салыстырылады.
+            {% translate "Картадан нүктені басыңыз. Сонда өтініш жақын контейнердің датчик деректерімен салыстырылады." %}
         </p>
-        <div id="pickMap" class="pick-map" role="region" aria-label="Мәселенің орнын белгілейтін карта"></div>
+        <div id="pickMap" class="pick-map" role="region" aria-label="{% translate 'Мәселенің орнын белгілейтін карта' %}"></div>
         <div class="pick-actions">
             <button id="locateMe" class="button-secondary" type="button">
                 <svg class="icon" aria-hidden="true"><use href="#i-pin"></use></svg>
-                Менің орным
+                {% translate "Менің орным" %}
             </button>
-            <span id="pickStatus" class="field-hint" aria-live="polite">Нүкте белгіленбеген</span>
+            <span id="pickStatus" class="field-hint" aria-live="polite">{% translate "Нүкте белгіленбеген" %}</span>
         </div>
         {{ form.latitude }}
         {{ form.longitude }}
     </div>
 
     <div class="field">
-        <label for="{{ form.description.id_for_label }}">Сипаттама <span class="field-optional">міндетті емес</span></label>
+        <label for="{{ form.description.id_for_label }}">{% translate "Сипаттама" %} <span class="field-optional">{% translate "міндетті емес" %}</span></label>
         {{ form.description }}
         {% for error in form.description.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
     </div>
 
     <div class="field">
-        <label for="{{ form.photo.id_for_label }}">Фото <span class="field-optional">міндетті емес, 5 МБ-қа дейін</span></label>
+        <label for="{{ form.photo.id_for_label }}">{% translate "Фото" %} <span class="field-optional">{% translate "міндетті емес, 5 МБ-қа дейін" %}</span></label>
         {{ form.photo }}
         {% for error in form.photo.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
     </div>
 
     <div class="hp" aria-hidden="true">
-        <label for="{{ form.website.id_for_label }}">Бұл өрісті бос қалдырыңыз</label>
+        <label for="{{ form.website.id_for_label }}">{% translate "Бұл өрісті бос қалдырыңыз" %}</label>
         {{ form.website }}
     </div>
 
-    <button class="button-primary" type="submit">Өтінішті жіберу</button>
+    <button class="button-primary" type="submit">{% translate "Өтінішті жіберу" %}</button>
 
 </form>
 

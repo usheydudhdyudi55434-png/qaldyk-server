@@ -2,18 +2,18 @@ import json
 from datetime import timedelta
 
 from django.contrib.auth import get_user_model
-from django.db import transaction
 from django.http import JsonResponse
 from django.utils import timezone
 from django.db.models import Count
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.views.decorators.http import require_POST
+from django.utils.translation import gettext as _
 
-from .ai import analyze_request, review_reason, start_analysis
+from .ai import analyze_request, review_reason
+from .telegram import bot_link
 from .forms import RequestUpdateForm, ResidentRequestForm, TaskCompleteForm
 from .models import RequestAnalysis, ResidentRequest
-from .districts import district_for
 from .models import District, StaffProfile, WorkerPosition
 from .roles import WORKERS
 from .roles import (
@@ -26,14 +26,13 @@ from .roles import (
 from .residents import (
     ACTIVE_STATUSES,
     LOCATION_FRESH_MINUTES,
-    attach_sensor_snapshot,
     eligible_workers,
-    find_primary,
     minutes_label,
     suggest_workers,
     log_event,
     sensor_clearance,
     sensor_verdict,
+    submit_request,
     sync_duplicates,
 )
 from .views import asset_version
@@ -66,45 +65,13 @@ def resident_home(request):
 
     if request.method == 'POST' and form.is_valid():
 
-        resident_request = form.save(commit=False)
-
-        attach_sensor_snapshot(resident_request)
-
-        resident_request.district = district_for(
-            resident_request.latitude, resident_request.longitude
-        )
-
-        primary = find_primary(resident_request)
-
-        if primary:
-            resident_request.parent = primary
-            resident_request.status = primary.status
-            resident_request.assignee = primary.assignee
-
-        resident_request.save()
-
-        log_event(resident_request, Status.NEW, note="Тұрғын өтініш жіберді")
-
-        if primary:
-            log_event(
-                resident_request,
-                resident_request.status,
-                note=f"Осы жердегі {primary.code} өтінішімен біріктірілді"
-            )
-            log_event(
-                primary,
-                primary.status,
-                note=f"Тағы бір тұрғын хабарлады: {resident_request.code}"
-            )
-
-        if resident_request.photo:
-            transaction.on_commit(lambda: start_analysis(resident_request))
+        resident_request = submit_request(form.save(commit=False))
 
         return redirect(
             f"{reverse('resident_status')}?code={resident_request.code}&new=1"
         )
 
-    return render(request, 'resident.html', {'form': form, **assets()})
+    return render(request, 'resident.html', {'form': form, 'telegram_link': bot_link(), **assets()})
 
 
 def resident_status(request):
@@ -121,6 +88,8 @@ def resident_status(request):
         'resident_request': resident_request,
         'is_new': request.GET.get('new') == '1',
         'steps': status_steps(resident_request),
+        'telegram_link': bot_link(resident_request.code) if resident_request else '',
+        'eco_points': resident_request.eco_points.filter(amount__gt=0).first() if resident_request else None,
         **assets()
     })
 
@@ -198,7 +167,7 @@ def requests_list(request):
 
     counts = dict(scoped.values_list('status').annotate(total=Count('id')))
 
-    filters = [{'value': '', 'label': 'Барлығы', 'count': sum(counts.values())}] + [
+    filters = [{'value': '', 'label': _('Барлығы'), 'count': sum(counts.values())}] + [
         {'value': value, 'label': label, 'count': counts.get(value, 0)}
         for value, label in Status.choices
     ]
@@ -400,7 +369,7 @@ def worker_location(request):
 
     now = timezone.now()
 
-    profile, _ = StaffProfile.objects.get_or_create(user=request.user)
+    profile, _created = StaffProfile.objects.get_or_create(user=request.user)
     profile.latitude = latitude
     profile.longitude = longitude
     profile.located_at = now
@@ -561,3 +530,20 @@ def task_complete(request, pk):
     sync_duplicates(item, actor=request.user)
 
     return redirect(f"{reverse('my_tasks')}?done={item.code}")
+
+
+def eco_page(request):
+    """Public page: how residents earn eco-points, the rewards, and the ratings."""
+
+    from . import eco
+
+    return render(request, 'eco.html', {
+        'rules': eco.RULES,
+        'daily_cap': eco.DAILY_CAP,
+        'rewards': eco.available_rewards(),
+        'osis': eco.osi_ranking(10),
+        'districts': eco.district_ranking(),
+        'totals': eco.totals(),
+        'telegram_link': bot_link(),
+        **assets()
+    })

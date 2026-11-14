@@ -1,37 +1,38 @@
 from django import forms
 from django.contrib.auth import get_user_model, password_validation
 from django.contrib.auth.validators import UnicodeUsernameValidator
+from django.utils.translation import gettext_lazy as _
 
-from .models import Container, District
+from .models import Container, District, Osi, Reward
 from .roles import ROLE_DISTRICT, ROLE_HEAD, ROLE_WORKER
 
 ROLE_CHOICES = [
-    (ROLE_HEAD, "Бас диспетчер — бүкіл қаланы және аудандарды бақылайды"),
-    (ROLE_DISTRICT, "Аудан диспетчері — өз ауданының өтініштерін өңдейді"),
-    (ROLE_WORKER, "Жұмысшы — тапсырмаларды орындайды"),
+    (ROLE_HEAD, _("Бас диспетчер — бүкіл қаланы және аудандарды бақылайды")),
+    (ROLE_DISTRICT, _("Аудан диспетчері — өз ауданының өтініштерін өңдейді")),
+    (ROLE_WORKER, _("Жұмысшы — тапсырмаларды орындайды")),
 ]
 
-REQUIRED = {"required": "Бұл өрісті толтырыңыз."}
+REQUIRED = {"required": _("Бұл өрісті толтырыңыз.")}
 
 
 class StaffForm(forms.Form):
 
-    first_name = forms.CharField(label="Аты", max_length=150, required=False)
-    last_name = forms.CharField(label="Тегі", max_length=150, required=False)
+    first_name = forms.CharField(label=_("Аты"), max_length=150, required=False)
+    last_name = forms.CharField(label=_("Тегі"), max_length=150, required=False)
     role = forms.ChoiceField(
-        label="Рөлі",
+        label=_("Рөлі"),
         choices=ROLE_CHOICES,
         widget=forms.RadioSelect,
         error_messages=REQUIRED
     )
     district = forms.ModelChoiceField(
-        label="Аудан",
+        label=_("Аудан"),
         queryset=District.objects.all(),
         required=False,
-        empty_label="Таңдалмаған"
+        empty_label=_("Таңдалмаған")
     )
     is_active = forms.BooleanField(
-        label="Белсенді: жүйеге кіре алады",
+        label=_("Белсенді: жүйеге кіре алады"),
         required=False,
         initial=True
     )
@@ -41,7 +42,7 @@ class StaffForm(forms.Form):
         cleaned = super().clean()
 
         if cleaned.get("role") in (ROLE_DISTRICT, ROLE_WORKER) and not cleaned.get("district"):
-            self.add_error("district", "Аудан диспетчері мен жұмысшыға аудан таңдаңыз.")
+            self.add_error("district", _("Аудан диспетчері мен жұмысшыға аудан таңдаңыз."))
 
         # The head dispatcher oversees the whole city, so no district is kept
         if cleaned.get("role") == ROLE_HEAD:
@@ -53,12 +54,12 @@ class StaffForm(forms.Form):
 class PasswordFields(forms.Form):
 
     password1 = forms.CharField(
-        label="Құпия сөз",
+        label=_("Құпия сөз"),
         widget=forms.PasswordInput(attrs={"autocomplete": "new-password"}),
         error_messages=REQUIRED
     )
     password2 = forms.CharField(
-        label="Құпия сөзді қайталаңыз",
+        label=_("Құпия сөзді қайталаңыз"),
         widget=forms.PasswordInput(attrs={"autocomplete": "new-password"}),
         error_messages=REQUIRED
     )
@@ -68,7 +69,7 @@ class PasswordFields(forms.Form):
         first, second = cleaned.get("password1"), cleaned.get("password2")
 
         if first and second and first != second:
-            self.add_error("password2", "Құпия сөздер сәйкес келмейді.")
+            self.add_error("password2", _("Құпия сөздер сәйкес келмейді."))
             return
 
         if first:
@@ -81,10 +82,10 @@ class PasswordFields(forms.Form):
 class StaffCreateForm(StaffForm, PasswordFields):
 
     username = forms.CharField(
-        label="Логин",
+        label=_("Логин"),
         max_length=150,
         validators=[UnicodeUsernameValidator()],
-        help_text="Латын әріптері, сандар және @ . + - _ белгілері",
+        help_text=_("Латын әріптері, сандар және @ . + - _ белгілері"),
         error_messages=REQUIRED
     )
 
@@ -98,7 +99,7 @@ class StaffCreateForm(StaffForm, PasswordFields):
         username = self.cleaned_data["username"]
 
         if get_user_model().objects.filter(username__iexact=username).exists():
-            raise forms.ValidationError("Бұл логин бос емес, басқасын таңдаңыз.")
+            raise forms.ValidationError(_("Бұл логин бос емес, басқасын таңдаңыз."))
 
         return username
 
@@ -136,12 +137,12 @@ class ContainerForm(forms.ModelForm):
         model = Container
         fields = ["name", "location", "latitude", "longitude"]
         labels = {
-            "name": "Атауы",
-            "location": "Мекенжайы",
+            "name": _("Атауы"),
+            "location": _("Мекенжайы"),
         }
         widgets = {
-            "name": forms.TextInput(attrs={"placeholder": "Мысалы: Container #9"}),
-            "location": forms.TextInput(attrs={"placeholder": "Мысалы: Медеу ауданы, Достық даңғылы 85"}),
+            "name": forms.TextInput(attrs={"placeholder": _("Мысалы: Container #9")}),
+            "location": forms.TextInput(attrs={"placeholder": _("Мысалы: Медеу ауданы, Достық даңғылы 85")}),
             "latitude": forms.HiddenInput,
             "longitude": forms.HiddenInput,
         }
@@ -155,6 +156,47 @@ class ContainerForm(forms.ModelForm):
         cleaned = super().clean()
 
         if cleaned.get("latitude") is None or cleaned.get("longitude") is None:
-            raise forms.ValidationError("Картадан контейнердің орнын белгілеңіз.")
+            raise forms.ValidationError(_("Картадан контейнердің орнын белгілеңіз."))
 
         return cleaned
+
+
+class RewardForm(forms.ModelForm):
+
+    class Meta:
+        model = Reward
+        fields = ["title", "partner", "description", "cost", "stock", "is_active"]
+        labels = {
+            "title": _("Сыйлық"),
+            "partner": _("Серіктес"),
+            "description": _("Шарты"),
+            "cost": _("Бағасы (ұпай)"),
+            "stock": _("Саны"),
+            "is_active": _("Тұрғындарға көрсетілсін"),
+        }
+        help_texts = {"stock": _("Бос қалдырсаңыз, шексіз")}
+        widgets = {
+            "title": forms.TextInput(attrs={"placeholder": _("Мысалы: 20% жеңілдік")}),
+            "partner": forms.TextInput(attrs={"placeholder": _("Мысалы: «Жасыл» кофеханасы")}),
+            "description": forms.TextInput(attrs={"placeholder": _("Мысалы: Кез келген сусынға, 1 ай жарамды")}),
+            "cost": forms.NumberInput(attrs={"min": 1}),
+            "stock": forms.NumberInput(attrs={"min": 0}),
+        }
+        error_messages = {"title": REQUIRED, "partner": REQUIRED, "cost": REQUIRED}
+
+
+class OsiForm(forms.ModelForm):
+
+    class Meta:
+        model = Osi
+        fields = ["name", "address", "district", "is_active"]
+        labels = {
+            "name": _("Атауы"),
+            "address": _("Мекенжайы"),
+            "district": _("Аудан"),
+            "is_active": _("Тұрғындар таңдай алады"),
+        }
+        widgets = {
+            "name": forms.TextInput(attrs={"placeholder": _("Мысалы: ОСИ «Самал-2, 15»")}),
+        }
+        error_messages = {"name": REQUIRED}

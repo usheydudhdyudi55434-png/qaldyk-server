@@ -1,17 +1,30 @@
-{% if staff_district %}<span class="scope-chip" title="Тек осы аудан көрсетіледі">{{ staff_district.name }}</span>{% elif is_head_dispatcher %}<span class="scope-chip" title="Барлық аудан">Бас диспетчер</span>{% endif %}
+{% load i18n %}
+{% if user.is_authenticated %}
+<details class="account-menu">
 
-{% if user.is_superuser %}<a class="header-link" href="{% url 'manage_staff' %}">Әкімші</a>{% endif %}
+    <summary aria-label="{% translate 'Аккаунт мәзірі' %}">
+        <span class="account-avatar" aria-hidden="true">{{ nav_initials }}</span>
+        <span class="account-name">{{ user.get_full_name|default:user.get_username }}</span>
+        <svg class="icon account-caret" aria-hidden="true"><use href="#i-caret"></use></svg>
+    </summary>
 
-<span class="user-name">{{ user.get_username }}</span>
+    <div class="account-panel">
 
-<form method="post" action="{% url 'logout' %}" class="logout-form">
-    {% csrf_token %}
-    <button
-        class="icon-button"
-        type="submit"
-        aria-label="Жүйеден шығу"
-        title="Жүйеден шығу"
-    >
-        <svg class="icon"><use href="#i-logout"></use></svg>
-    </button>
-</form>
+        <div class="account-who">
+            <strong>{{ user.get_full_name|default:user.get_username }}</strong>
+            <span>{{ nav_role }}{% if staff_district %} · {{ staff_district.name }}{% elif nav_dispatcher %} {% translate "· Бүкіл қала" %}{% endif %}</span>
+        </div>
+
+        <form method="post" action="{% url 'logout' %}">
+            {% csrf_token %}
+            <button class="account-item" type="submit">
+                <svg class="icon" aria-hidden="true"><use href="#i-logout"></use></svg>
+                {% translate "Жүйеден шығу" %}
+            </button>
+        </form>
+
+    </div>
+
+</details>
+
+{% endif %}

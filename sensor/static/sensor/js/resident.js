@@ -38,7 +38,7 @@ document.addEventListener("DOMContentLoaded", () => {
             marker = L.marker([lat, lng]).addTo(map);
         }
 
-        status.textContent = "Нүкте белгіленді";
+        status.textContent = gettext("Нүкте белгіленді");
 
     };
 
@@ -53,11 +53,11 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("locateMe").addEventListener("click", () => {
 
         if (!navigator.geolocation) {
-            status.textContent = "Браузер орынды анықтай алмайды, картадан белгілеңіз";
+            status.textContent = gettext("Браузер орынды анықтай алмайды, картадан белгілеңіз");
             return;
         }
 
-        status.textContent = "Орын анықталуда…";
+        status.textContent = gettext("Орын анықталуда…");
 
         navigator.geolocation.getCurrentPosition(
             position => {
@@ -65,7 +65,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 map.setView([position.coords.latitude, position.coords.longitude], 17);
             },
             () => {
-                status.textContent = "Орын анықталмады, картадан белгілеңіз";
+                status.textContent = gettext("Орын анықталмады, картадан белгілеңіз");
             },
             { enableHighAccuracy: true, timeout: 10000 }
         );

@@ -1,13 +1,14 @@
 {% extends "manage/base.html" %}
+{% load i18n %}
 
-{% block title %}Qaldyq — Жүйе{% endblock %}
+{% block title %}{% translate "Qaldyq — Жүйе" %}{% endblock %}
 
 {% block manage %}
 
 <section aria-labelledby="systemTitle">
 
     <div class="section-header">
-        <h1 id="systemTitle">Жүйе</h1>
+        <h1 id="systemTitle">{% translate "Жүйе" %}</h1>
     </div>
 
     <div class="manage-stats">
@@ -18,31 +19,43 @@
 
     <div class="panel detail-form">
         <dl class="system-list">
-            <dt>Фото талдайтын AI</dt>
+            <dt>{% translate "Фото талдайтын AI" %}</dt>
             <dd>
                 {% if ai_provider %}
-                <span class="verdict verdict-confirmed">Қосулы</span> {{ ai_provider }}
+                <span class="verdict verdict-confirmed">{% translate "Қосулы" %}</span> {{ ai_provider }}
                 <div class="cell-secondary">{{ ai_models|join:", " }}</div>
                 {% else %}
-                <span class="verdict verdict-unconfirmed">Өшірулі</span>
-                <div class="cell-secondary">.env файлына GEMINI_API_KEY немесе ANTHROPIC_API_KEY жазыңыз</div>
+                <span class="verdict verdict-unconfirmed">{% translate "Өшірулі" %}</span>
+                <div class="cell-secondary">{% translate ".env файлына GEMINI_API_KEY немесе ANTHROPIC_API_KEY жазыңыз" %}</div>
                 {% endif %}
             </dd>
 
-            <dt>Сыртқы адрес (туннель)</dt>
-            <dd>{% if tunnel_host %}<code>https://{{ tunnel_host }}/</code>{% else %}<span class="cell-secondary">Бапталмаған</span>{% endif %}</dd>
+            <dt>{% translate "Telegram-бот" %}</dt>
+            <dd>
+                {% if telegram_on %}
+                <span class="verdict verdict-confirmed">{% translate "Қосулы" %}</span>
+                {% if telegram_link %}<a href="{{ telegram_link }}" target="_blank" rel="noopener">{{ telegram_link }}</a>{% endif %}
+                <div class="cell-secondary">{% blocktranslate %}{{ telegram_chats }} тұрғын жазды · {{ telegram_requests }} өтініш боттан келді{% endblocktranslate %}</div>
+                {% else %}
+                <span class="verdict verdict-unconfirmed">{% translate "Өшірулі" %}</span>
+                <div class="cell-secondary">{% translate ".env файлына TELEGRAM_BOT_TOKEN жазыңыз (@BotFather береді)" %}</div>
+                {% endif %}
+            </dd>
 
-            <dt>Жұмыс режимі</dt>
+            <dt>{% translate "Сыртқы адрес (туннель)" %}</dt>
+            <dd>{% if tunnel_host %}<code>https://{{ tunnel_host }}/</code>{% else %}<span class="cell-secondary">{% translate "Бапталмаған" %}</span>{% endif %}</dd>
+
+            <dt>{% translate "Жұмыс режимі" %}</dt>
             <dd>
                 {% if debug %}
-                <span class="verdict verdict-unconfirmed">Әзірлеу (DEBUG)</span>
-                <div class="cell-secondary">Нақты қалаға қоспас бұрын DEBUG өшіріліп, құпия кілттер ауыстырылуы керек.</div>
+                <span class="verdict verdict-unconfirmed">{% translate "Әзірлеу (DEBUG)" %}</span>
+                <div class="cell-secondary">{% translate "Нақты қалаға қоспас бұрын DEBUG өшіріліп, құпия кілттер ауыстырылуы керек." %}</div>
                 {% else %}
-                <span class="verdict verdict-confirmed">Өндірістік</span>
+                <span class="verdict verdict-confirmed">{% translate "Өндірістік" %}</span>
                 {% endif %}
             </dd>
 
-            <dt>Мониторинг</dt>
+            <dt>{% translate "Мониторинг" %}</dt>
             <dd>Grafana: <code>http://localhost:3000/</code> · Prometheus: <code>http://localhost:9090/</code></dd>
         </dl>
     </div>

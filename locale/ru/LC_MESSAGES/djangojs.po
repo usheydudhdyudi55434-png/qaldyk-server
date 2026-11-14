@@ -1,0 +1,332 @@
+# Qaldyq: Russian and English translations of the Kazakh interface.
+# Kazakh is the source language; regenerate with makemessages, then fill msgstr.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-11-14 10:13+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: ru\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=4; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
+"n%10<=4 && (n%100<12 || n%100>14) ? 1 : n%10==0 || (n%10>=5 && n%10<=9) || "
+"(n%100>=11 && n%100<=14)? 2 : 3);\n"
+
+#: sensor/static/sensor/js/dashboard.js:27
+msgid "Толы"
+msgstr "Заполнен"
+
+#: sensor/static/sensor/js/dashboard.js:28
+msgid "Жартылай толы"
+msgstr "Наполовину заполнен"
+
+#: sensor/static/sensor/js/dashboard.js:29
+#: sensor/static/sensor/js/dashboard.js:42
+msgid "Қалыпты"
+msgstr "Норма"
+
+#: sensor/static/sensor/js/dashboard.js:30
+#: sensor/static/sensor/js/dashboard.js:994
+#: sensor/static/sensor/js/dashboard.js:1402
+msgid "Дерек жоқ"
+msgstr "Нет данных"
+
+#: sensor/static/sensor/js/dashboard.js:34
+msgid "Толы шегі"
+msgstr "Порог «заполнен»"
+
+#: sensor/static/sensor/js/dashboard.js:35
+msgid "Жартылай шегі"
+msgstr "Порог «наполовину»"
+
+#: sensor/static/sensor/js/dashboard.js:40
+#: sensor/static/sensor/js/dashboard.js:1576
+#: sensor/static/sensor/js/dashboard.js:1594
+msgid "Қауіпті"
+msgstr "Опасно"
+
+#: sensor/static/sensor/js/dashboard.js:41
+#: sensor/static/sensor/js/dashboard.js:567
+#: sensor/static/sensor/js/dashboard.js:1577
+#: sensor/static/sensor/js/dashboard.js:1595
+msgid "Ескерту"
+msgstr "Предупреждение"
+
+#: sensor/static/sensor/js/dashboard.js:43
+msgid "Датчик жоқ"
+msgstr "Нет датчика"
+
+#: sensor/static/sensor/js/dashboard.js:203
+msgid "%(value)s см"
+msgstr "%(value)s см"
+
+#: sensor/static/sensor/js/dashboard.js:243
+msgid "%(count)s сек бұрын"
+msgstr "%(count)s сек назад"
+
+#: sensor/static/sensor/js/dashboard.js:247
+msgid "%(count)s мин бұрын"
+msgstr "%(count)s мин назад"
+
+#: sensor/static/sensor/js/dashboard.js:251
+msgid "%(count)s сағ бұрын"
+msgstr "%(count)s ч назад"
+
+#: sensor/static/sensor/js/dashboard.js:254
+msgid "%(count)s күн бұрын"
+msgstr "%(count)s дн назад"
+
+#: sensor/static/sensor/js/dashboard.js:530
+msgid "Сервер қосулы"
+msgstr "Сервер на связи"
+
+#: sensor/static/sensor/js/dashboard.js:530
+msgid "Сервермен байланыс жоқ"
+msgstr "Нет связи с сервером"
+
+#: sensor/static/sensor/js/dashboard.js:567
+#: sensor/static/sensor/js/dashboard.js:1399
+msgid "Өрт қаупі"
+msgstr "Пожарная опасность"
+
+#: sensor/static/sensor/js/dashboard.js:589
+msgid "Өрт қаупінің белгілері анықталды"
+msgstr "Обнаружены признаки пожарной опасности"
+
+#: sensor/static/sensor/js/dashboard.js:590
+msgid "Өрт қаупі: ескерту белгілері"
+msgstr "Пожарная опасность: предупреждающие признаки"
+
+#: sensor/static/sensor/js/dashboard.js:602
+msgid "датчик үнсіз, деректер ескі болуы мүмкін"
+msgstr "датчик молчит, данные могут быть устаревшими"
+
+#: sensor/static/sensor/js/dashboard.js:730
+#: sensor/static/sensor/js/dashboard.js:964
+msgid "Әзірге контейнер қосылмаған"
+msgstr "Контейнеры пока не добавлены"
+
+#: sensor/static/sensor/js/dashboard.js:731
+msgid "Барлық контейнер қалыпты жұмыс істеп тұр"
+msgstr "Все контейнеры работают нормально"
+
+#: sensor/static/sensor/js/dashboard.js:805
+msgid "өрт қаупінің белгісі"
+msgstr "признак пожарной опасности"
+
+#: sensor/static/sensor/js/dashboard.js:806
+msgid "соңғы дерек %(age)s"
+msgstr "последние данные %(age)s"
+
+#: sensor/static/sensor/js/dashboard.js:811
+msgid "Датчик әлі дерек жібермеген"
+msgstr "Датчик ещё не присылал данные"
+
+#: sensor/static/sensor/js/dashboard.js:815
+msgid "Датчик үнсіз, соңғы дерек %(age)s"
+msgstr "Датчик молчит, последние данные %(age)s"
+
+#: sensor/static/sensor/js/dashboard.js:819
+msgid "Шығару қажет, соңғы дерек %(age)s"
+msgstr "Нужен вывоз, последние данные %(age)s"
+
+#: sensor/static/sensor/js/dashboard.js:822
+msgid "Қоқысты шығару қажет"
+msgstr "Нужно вывезти мусор"
+
+#: sensor/static/sensor/js/dashboard.js:965
+msgid "Сүзгіге сәйкес контейнер табылмады"
+msgstr "Нет контейнеров по этому фильтру"
+
+#: sensor/static/sensor/js/dashboard.js:1070
+msgid "газ %(value)s"
+msgstr "газ %(value)s"
+
+#: sensor/static/sensor/js/dashboard.js:1234
+msgid "%(count)s контейнердің координаты көрсетілмеген"
+msgstr "У %(count)s контейнеров не указаны координаты"
+
+#: sensor/static/sensor/js/dashboard.js:1235
+msgid "Алматыдағы бақылау аймағы"
+msgstr "Зона мониторинга в Алматы"
+
+#: sensor/static/sensor/js/dashboard.js:1394
+msgid "Толу деңгейі"
+msgstr "Заполненность"
+
+#: sensor/static/sensor/js/dashboard.js:1395
+msgid "Қашықтық"
+msgstr "Расстояние"
+
+#: sensor/static/sensor/js/dashboard.js:1396
+#: sensor/static/sensor/js/dashboard.js:2379
+msgid "Күйі"
+msgstr "Состояние"
+
+#: sensor/static/sensor/js/dashboard.js:1397
+msgid "Температура"
+msgstr "Температура"
+
+#: sensor/static/sensor/js/dashboard.js:1398
+msgid "Түтін/газ"
+msgstr "Дым/газ"
+
+#: sensor/static/sensor/js/dashboard.js:1401
+msgid "Соңғы дерек"
+msgstr "Последние данные"
+
+#: sensor/static/sensor/js/dashboard.js:1573
+msgid "температурасы"
+msgstr "температуры"
+
+#: sensor/static/sensor/js/dashboard.js:1574
+msgid "Таңдалған кезеңде температура дерегі жоқ."
+msgstr "За выбранный период нет данных о температуре."
+
+#: sensor/static/sensor/js/dashboard.js:1591
+msgid "түтін/газ деңгейі (сенсор шкаласынан)"
+msgstr "уровня дыма/газа (по шкале датчика)"
+
+#: sensor/static/sensor/js/dashboard.js:1592
+msgid "Таңдалған кезеңде түтін/газ дерегі жоқ."
+msgstr "За выбранный период нет данных о дыме/газе."
+
+#: sensor/static/sensor/js/dashboard.js:1607
+msgid "толу деңгейі"
+msgstr "заполненности"
+
+#: sensor/static/sensor/js/dashboard.js:1608
+msgid "Таңдалған кезеңде дерек жоқ. Ұзағырақ кезеңді таңдап көріңіз."
+msgstr "За выбранный период данных нет. Попробуйте период подлиннее."
+
+#: sensor/static/sensor/js/dashboard.js:1662
+msgid ""
+"Контейнерлердің %(metric)s графигі. Мәндерді көру үшін сол және оң "
+"көрсеткілерді басыңыз."
+msgstr "График %(metric)s контейнеров. Чтобы увидеть значения, нажимайте стрелки влево и вправо."
+
+#: sensor/static/sensor/js/dashboard.js:2043
+msgid "Таңдалған кезеңде дерек жоқ"
+msgstr "За выбранный период данных нет"
+
+#: sensor/static/sensor/js/dashboard.js:2065
+msgid "Уақыт"
+msgstr "Время"
+
+#: sensor/static/sensor/js/dashboard.js:2104
+msgid "Желіде"
+msgstr "В сети"
+
+#: sensor/static/sensor/js/dashboard.js:2105
+msgid "Жақында белгі берді"
+msgstr "Был недавно"
+
+#: sensor/static/sensor/js/dashboard.js:2106
+msgid "Желіден тыс"
+msgstr "Не в сети"
+
+#: sensor/static/sensor/js/dashboard.js:2107
+msgid "Орны белгісіз"
+msgstr "Место неизвестно"
+
+#: sensor/static/sensor/js/dashboard.js:2354
+msgid "%(value)s м"
+msgstr "%(value)s м"
+
+#: sensor/static/sensor/js/dashboard.js:2355
+msgid "%(value)s км"
+msgstr "%(value)s км"
+
+#: sensor/static/sensor/js/dashboard.js:2369
+#: sensor/static/sensor/js/dashboard.js:2437
+msgid "Бос"
+msgstr "Свободен"
+
+#: sensor/static/sensor/js/dashboard.js:2375
+msgid "Ауданы берілмеген"
+msgstr "Район не назначен"
+
+#: sensor/static/sensor/js/dashboard.js:2380
+msgid "Тапсырма"
+msgstr "Задание"
+
+#: sensor/static/sensor/js/dashboard.js:2381
+msgid "Мекенжай"
+msgstr "Адрес"
+
+#: sensor/static/sensor/js/dashboard.js:2382
+msgid "Тапсырмаға дейін"
+msgstr "До задания"
+
+#: sensor/static/sensor/js/dashboard.js:2383
+msgid "%(minutes)s минутта жүрді"
+msgstr "Пройдено за %(minutes)s мин"
+
+#: sensor/static/sensor/js/dashboard.js:2384
+msgid "Барлық тапсырма"
+msgstr "Всего заданий"
+
+#: sensor/static/sensor/js/dashboard.js:2413
+msgid "Жұмысшылар"
+msgstr "Работники"
+
+#: sensor/static/sensor/js/dashboard.js:2414
+msgid "%(live)s/%(total)s желіде"
+msgstr "%(live)s/%(total)s в сети"
+
+#: sensor/static/sensor/js/dashboard.js:2430
+msgid "Ауданға жұмысшы бекітілмеген"
+msgstr "К району не прикреплены работники"
+
+#: sensor/static/sensor/js/dashboard.js:2437
+msgid "Орнын әлі бөліспеген"
+msgstr "Ещё не делился местоположением"
+
+#: sensor/static/sensor/js/dashboard.js:2468
+msgid "Картадан жасыру"
+msgstr "Скрыть с карты"
+
+#: sensor/static/sensor/js/dashboard.js:2468
+msgid "Картада көрсету"
+msgstr "Показать на карте"
+
+#: sensor/static/sensor/js/resident.js:41
+msgid "Нүкте белгіленді"
+msgstr "Точка отмечена"
+
+#: sensor/static/sensor/js/resident.js:56
+msgid "Браузер орынды анықтай алмайды, картадан белгілеңіз"
+msgstr "Браузер не может определить местоположение, отметьте его на карте"
+
+#: sensor/static/sensor/js/resident.js:60
+msgid "Орын анықталуда…"
+msgstr "Определяем местоположение…"
+
+#: sensor/static/sensor/js/resident.js:68
+msgid "Орын анықталмады, картадан белгілеңіз"
+msgstr "Местоположение не определено, отметьте его на карте"
+
+#: sensor/static/sensor/js/worker.js:18
+msgid "Браузер орынды анықтай алмайды"
+msgstr "Браузер не может определить местоположение"
+
+#: sensor/static/sensor/js/worker.js:49
+msgid "Орныңыз диспетчерге көрінеді · %(time)s"
+msgstr "Диспетчер видит ваше местоположение · %(time)s"
+
+#: sensor/static/sensor/js/worker.js:50
+msgid "Орын жіберілмеді, бетті жаңартыңыз"
+msgstr "Местоположение не отправлено, обновите страницу"
+
+#: sensor/static/sensor/js/worker.js:54
+msgid "Орын жіберілмеді: интернет байланысын тексеріңіз"
+msgstr "Местоположение не отправлено: проверьте интернет"
+
+#: sensor/static/sensor/js/worker.js:70
+msgid "Орынға рұқсат берілмеді: диспетчер сізді жақын жұмысшы ретінде көрмейді"
+msgstr "Доступ к местоположению не дан: диспетчер не увидит вас среди ближайших работников"

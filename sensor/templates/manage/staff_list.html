@@ -1,33 +1,34 @@
 {% extends "manage/base.html" %}
+{% load i18n %}
 
-{% block title %}Qaldyq — Қызметкерлер{% endblock %}
+{% block title %}{% translate "Qaldyq — Қызметкерлер" %}{% endblock %}
 
 {% block manage %}
 
 <section aria-labelledby="staffTitle">
 
     <div class="section-header">
-        <h1 id="staffTitle">Қызметкерлер</h1>
-        <a class="button-primary" href="{% url 'manage_staff_create' %}">Қызметкер қосу</a>
+        <h1 id="staffTitle">{% translate "Қызметкерлер" %}</h1>
+        <a class="button-primary" href="{% url 'manage_staff_create' %}">{% translate "Қызметкер қосу" %}</a>
     </div>
 
     <div class="manage-stats">
-        <div class="panel manage-stat"><span>Бас диспетчер</span><strong>{{ counts.head }}</strong></div>
-        <div class="panel manage-stat"><span>Аудан диспетчері</span><strong>{{ counts.district }}</strong></div>
-        <div class="panel manage-stat"><span>Жұмысшы</span><strong>{{ counts.worker }}</strong></div>
-        {% if counts.none %}<div class="panel manage-stat is-warning"><span>Рөлі жоқ</span><strong>{{ counts.none }}</strong></div>{% endif %}
+        <div class="panel manage-stat"><span>{% translate "Бас диспетчер" %}</span><strong>{{ counts.head }}</strong></div>
+        <div class="panel manage-stat"><span>{% translate "Аудан диспетчері" %}</span><strong>{{ counts.district }}</strong></div>
+        <div class="panel manage-stat"><span>{% translate "Жұмысшы" %}</span><strong>{{ counts.worker }}</strong></div>
+        {% if counts.none %}<div class="panel manage-stat is-warning"><span>{% translate "Рөлі жоқ" %}</span><strong>{{ counts.none }}</strong></div>{% endif %}
     </div>
 
     <div class="panel table-scroll">
-        <table class="data-table staff-table">
+        <table class="data-table stack-table staff-table">
             <thead>
                 <tr>
-                    <th scope="col">Логин</th>
-                    <th scope="col">Аты-жөні</th>
-                    <th scope="col">Рөлі</th>
-                    <th scope="col">Аудан</th>
-                    <th scope="col">Соңғы кіруі</th>
-                    <th scope="col">Күйі</th>
+                    <th scope="col">{% translate "Логин" %}</th>
+                    <th scope="col">{% translate "Аты-жөні" %}</th>
+                    <th scope="col">{% translate "Рөлі" %}</th>
+                    <th scope="col">{% translate "Аудан" %}</th>
+                    <th scope="col">{% translate "Соңғы кіруі" %}</th>
+                    <th scope="col">{% translate "Күйі" %}</th>
                 </tr>
             </thead>
             <tbody>
@@ -38,17 +39,17 @@
                     <td><span class="role-badge role-{{ row.role }}">{{ row.role_label }}</span></td>
                     <td>
                         {% if row.district %}{{ row.district.name }}
-                        {% elif row.role == 'head' or row.role == 'admin' %}<span class="cell-secondary">Бүкіл қала</span>
-                        {% elif row.role == 'worker' or row.role == 'district' %}<span class="verdict verdict-unconfirmed">Аудан берілмеген</span>
+                        {% elif row.role == 'head' or row.role == 'admin' %}<span class="cell-secondary">{% translate "Бүкіл қала" %}</span>
+                        {% elif row.role == 'worker' or row.role == 'district' %}<span class="verdict verdict-unconfirmed">{% translate "Аудан берілмеген" %}</span>
                         {% else %}<span class="cell-secondary">—</span>{% endif %}
                     </td>
                     <td>
-                        {% if row.user.last_login %}{{ row.user.last_login|date:"d.m.Y H:i" }}{% else %}<span class="cell-secondary">Кірмеген</span>{% endif %}
-                        {% if row.seen %}<div class="cell-secondary">Орны: {% if row.seen.fresh %}<span class="verdict verdict-confirmed">{{ row.seen.label }}</span>{% else %}{{ row.seen.label }}{% endif %}</div>{% endif %}
+                        {% if row.user.last_login %}{{ row.user.last_login|date:"d.m.Y H:i" }}{% else %}<span class="cell-secondary">{% translate "Кірмеген" %}</span>{% endif %}
+                        {% if row.seen %}<div class="cell-secondary">{% translate "Орны:" %} {% if row.seen.fresh %}<span class="verdict verdict-confirmed">{{ row.seen.label }}</span>{% else %}{{ row.seen.label }}{% endif %}</div>{% endif %}
                     </td>
                     <td>
-                        {% if row.user.is_active %}<span class="verdict verdict-confirmed">Белсенді</span>
-                        {% else %}<span class="verdict verdict-none">Өшірілген</span>{% endif %}
+                        {% if row.user.is_active %}<span class="verdict verdict-confirmed">{% translate "Белсенді" %}</span>
+                        {% else %}<span class="verdict verdict-none">{% translate "Өшірілген" %}</span>{% endif %}
                     </td>
                 </tr>
                 {% endfor %}
@@ -57,8 +58,8 @@
     </div>
 
     <p class="field-hint manage-footnote">
-        Сирек қажет техникалық баптаулар:
-        <a href="{% url 'admin:index' %}">Django әкімшілігі</a>
+        {% translate "Сирек қажет техникалық баптаулар:" %}
+        <a href="{% url 'admin:index' %}">{% translate "Django әкімшілігі" %}</a>
     </p>
 
 </section>

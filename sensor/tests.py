@@ -8,6 +8,7 @@ from unittest import mock
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
+from django.core.files.base import ContentFile
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.management import call_command
 from django.test import TestCase, override_settings
@@ -1551,3 +1552,389 @@ class LiveWorkersTests(TestCase):
         self.assertIsNone(rows[self.idle.pk]['latitude'])
         self.assertEqual(rows[self.stale.pk]['state'], "offline")
         self.assertIsNone(rows[self.stale.pk]['task'])
+
+
+def tg_message(text=None, chat_type="private", **extra):
+    message = {
+        "message_id": 7,
+        "chat": {"id": 555, "type": chat_type},
+        "from": {"id": 555, "first_name": "Айгүл", "username": "aigul"},
+        **extra,
+    }
+    if text is not None:
+        message["text"] = text
+    return {"update_id": 1, "message": message}
+
+
+def tg_callback(data):
+    return {"update_id": 2, "callback_query": {
+        "id": "cb1", "data": data, "from": {"id": 555, "first_name": "Айгүл"},
+        "message": {"message_id": 8, "chat": {"id": 555, "type": "private"}},
+    }}
+
+
+def sent_texts(call):
+    return [c.args[1].get("text", "") for c in call.call_args_list if c.args[0] == "sendMessage"]
+
+
+@override_settings(MEDIA_ROOT=tempfile.mkdtemp(), TELEGRAM_BOT_TOKEN="test-token",
+                   TELEGRAM_BOT_USERNAME="qaldyq_test_bot", TELEGRAM_SYNC=True)
+class TelegramBotTests(TestCase):
+
+    def setUp(self):
+        patcher = mock.patch("sensor.telegram.call", return_value={"message_id": 1})
+        self.call = patcher.start()
+        self.addCleanup(patcher.stop)
+
+    def run_updates(self, *updates):
+        from .telegram import handle_update
+        for update in updates:
+            handle_update(update)
+
+    def chat(self):
+        from .models import TelegramChat
+        return TelegramChat.objects.get(chat_id=555)
+
+    def test_full_report_with_location_and_photo(self):
+        with mock.patch("sensor.telegram.download", return_value=PNG_BYTES):
+            self.run_updates(
+                tg_message("/start"),
+                tg_message("/new"),
+                tg_callback("cat:overflow"),
+                tg_message(location={"latitude": 43.26368, "longitude": 76.9552}),
+                tg_message("Көк базар, Жібек жолы"),
+                tg_message(photo=[{"file_id": "small", "file_size": 900}, {"file_id": "big", "file_size": 90000}],
+                           caption="Толып кетті"),
+            )
+
+        item = ResidentRequest.objects.get()
+        self.assertEqual(item.category, "overflow")
+        self.assertEqual(item.district.slug, "medeu")
+        self.assertEqual(item.description, "Толып кетті")
+        self.assertTrue(item.photo.name.endswith(".png"))
+        self.assertEqual(item.telegram_chat, self.chat())
+        self.assertEqual(item.events.count(), 1)
+        self.assertEqual(self.chat().state, "")
+
+        texts = sent_texts(self.call)
+        self.assertIn("Сәлеметсіз бе, Айгүл", texts[0])
+        self.assertIn(item.code, texts[-1])
+        self.assertIn("Медеу ауданы", texts[-1])
+
+    def test_report_without_location_or_photo_needs_an_address(self):
+        self.run_updates(
+            tg_message("📝 Өтініш қалдыру"),
+            tg_callback("cat:littered"),
+            tg_message("Орынсыз жалғастыру"),
+            tg_message("аа"),
+        )
+        self.assertEqual(self.chat().state, "address")
+
+        self.run_updates(tg_message("Абай даңғылы 10"), tg_message("Фотосыз жіберу"))
+
+        item = ResidentRequest.objects.get()
+        self.assertEqual(item.address, "Абай даңғылы 10")
+        self.assertIsNone(item.latitude)
+        self.assertFalse(item.photo)
+
+    def test_a_chosen_place_skips_the_address_step(self):
+        self.run_updates(
+            tg_message("/new"),
+            tg_callback("cat:not_collected"),
+            tg_message(venue={"location": {"latitude": 43.25, "longitude": 76.92},
+                              "title": "Аула", "address": "Төле би 50"}),
+        )
+
+        self.assertEqual(self.chat().state, "photo")
+        self.assertEqual(self.chat().draft["address"], "Аула, Төле би 50")
+
+    def test_text_at_the_photo_step_becomes_the_description(self):
+        self.run_updates(tg_message("/new"), tg_callback("cat:other"), tg_message("Орынсыз жалғастыру"),
+                         tg_message("Сәтбаев 22"), tg_message("Контейнер сынған"), tg_message("Фотосыз жіберу"))
+
+        self.assertEqual(ResidentRequest.objects.get().description, "Контейнер сынған")
+
+    def test_cancel_and_stray_callbacks(self):
+        self.run_updates(tg_callback("cat:overflow"), tg_message("/new"), tg_message("❌ Бас тарту"))
+
+        self.assertEqual(self.chat().state, "")
+        self.assertFalse(ResidentRequest.objects.exists())
+
+    def test_too_many_reports_in_an_hour(self):
+        self.run_updates(tg_message("/start"))
+        for _ in range(5):
+            ResidentRequest.objects.create(category="other", address="x", telegram_chat=self.chat())
+
+        self.run_updates(tg_message("/new"))
+
+        self.assertEqual(self.chat().state, "")
+        self.assertIn("тым көп", sent_texts(self.call)[-1])
+
+    def test_group_chats_are_ignored(self):
+        self.run_updates(tg_message("/start", chat_type="group"))
+
+        self.call.assert_not_called()
+
+    def test_status_by_code_and_subscribing(self):
+        item = ResidentRequest.objects.create(category="overflow", address="Абай 1", status="accepted")
+
+        self.run_updates(tg_message(f"менің кодым {item.code.lower()}"))
+        self.assertIn("Қабылданды", sent_texts(self.call)[-1])
+
+        self.run_updates(tg_message(f"/start {item.code}"))
+        item.refresh_from_db()
+        self.assertEqual(item.telegram_chat, self.chat())
+
+        self.run_updates(tg_message("/my"))
+        self.assertIn(item.code, sent_texts(self.call)[-1])
+
+    def test_status_changes_are_sent_to_the_chat(self):
+        from .residents import log_event
+        from .models import TelegramChat
+
+        chat = TelegramChat.objects.create(chat_id=777)
+        item = ResidentRequest.objects.create(category="overflow", address="Абай 1", telegram_chat=chat)
+        log_event(item, "new")
+
+        with self.captureOnCommitCallbacks(execute=True):
+            log_event(item, "new", note="note only")
+        self.call.assert_not_called()
+
+        item.status = "accepted"
+        item.save()
+        with self.captureOnCommitCallbacks(execute=True):
+            log_event(item, "accepted")
+
+        method, payload = self.call.call_args.args[:2]
+        self.assertEqual(method, "sendMessage")
+        self.assertEqual(payload["chat_id"], 777)
+        self.assertIn("Қабылданды", payload["text"])
+
+        item.status = "done"
+        item.result_photo.save("after.png", ContentFile(PNG_BYTES), save=True)
+        with self.captureOnCommitCallbacks(execute=True):
+            log_event(item, "done")
+
+        self.assertEqual(self.call.call_args.args[0], "sendPhoto")
+        self.assertIn("photo", self.call.call_args.kwargs["files"])
+
+    def test_status_page_offers_the_bot(self):
+        item = ResidentRequest.objects.create(category="overflow", address="Абай 1")
+
+        page = self.client.get(f'/otinish/?code={item.code}')
+        self.assertContains(page, f"https://t.me/qaldyq_test_bot?start={item.code}")
+
+        with self.settings(TELEGRAM_BOT_TOKEN=""):
+            self.assertNotContains(self.client.get(f'/otinish/?code={item.code}'), "t.me/")
+
+
+@override_settings(MEDIA_ROOT=tempfile.mkdtemp(), TELEGRAM_BOT_TOKEN="test-token",
+                   TELEGRAM_BOT_USERNAME="qaldyq_test_bot", TELEGRAM_SYNC=True)
+class EcoPointsTests(TestCase):
+
+    def setUp(self):
+        from .models import TelegramChat
+
+        patcher = mock.patch("sensor.telegram.call", return_value={"message_id": 1})
+        self.call = patcher.start()
+        self.addCleanup(patcher.stop)
+
+        self.chat = TelegramChat.objects.create(chat_id=555, first_name="Айгүл")
+
+    def report(self, **fields):
+        from .residents import log_event
+
+        item = ResidentRequest.objects.create(
+            category="overflow", address="Абай 1", telegram_chat=self.chat, **fields
+        )
+        log_event(item, "new")
+        return item
+
+    def finish(self, item, status="done"):
+        from .residents import log_event
+
+        item.status = status
+        item.save()
+        log_event(item, status)
+
+    def test_confirmed_request_earns_points_with_bonuses_once(self):
+        from . import eco
+
+        item = self.report(sensor_fill_level=92)
+        RequestAnalysis.objects.create(request=item, state="done", is_waste_photo=True, needs_review=False)
+
+        self.finish(item)
+        self.finish(item)
+
+        self.assertEqual(eco.balance(self.chat), 20)
+        self.assertIn("датчик растады", item.eco_points.get().reason)
+
+    def test_duplicate_earns_less_and_rejected_earns_nothing(self):
+        from . import eco
+
+        primary = ResidentRequest.objects.create(category="overflow", address="Абай 1")
+        duplicate = self.report(parent=primary)
+        self.finish(duplicate)
+        self.assertEqual(eco.balance(self.chat), eco.POINTS_DUPLICATE)
+
+        rejected = self.report()
+        self.finish(rejected, "rejected")
+        self.assertEqual(eco.balance(self.chat), eco.POINTS_DUPLICATE)
+
+    def test_requests_without_a_chat_earn_nothing(self):
+        from .models import EcoPoints
+        from .residents import log_event
+
+        item = ResidentRequest.objects.create(category="overflow", address="Абай 1")
+        log_event(item, "new")
+        item.status = "done"
+        item.save()
+        log_event(item, "done")
+
+        self.assertFalse(EcoPoints.objects.exists())
+
+    def test_daily_cap(self):
+        from . import eco
+        from .models import EcoPoints
+
+        EcoPoints.objects.create(chat=self.chat, amount=45, reason="test")
+
+        item = self.report()
+        self.finish(item)
+
+        self.assertEqual(item.eco_points.get().amount, 5)
+        self.assertEqual(eco.balance(self.chat), eco.DAILY_CAP)
+
+    def test_redeeming_a_reward(self):
+        from . import eco
+        from .models import EcoPoints, Reward
+
+        EcoPoints.objects.create(chat=self.chat, amount=40, reason="test")
+        coffee = Reward.objects.create(title="Кофе", partner="Жасыл", cost=30, stock=1)
+
+        voucher = eco.redeem(self.chat, coffee.pk)
+
+        self.assertTrue(voucher.code.startswith("ECO-"))
+        self.assertEqual(eco.balance(self.chat), 10)
+        coffee.refresh_from_db()
+        self.assertEqual(coffee.stock, 0)
+
+        EcoPoints.objects.create(chat=self.chat, amount=100, reason="test")
+        with self.assertRaisesMessage(eco.EcoError, "таусылды"):
+            eco.redeem(self.chat, coffee.pk)
+
+        ticket = Reward.objects.create(title="Билет", partner="Кино", cost=500)
+        with self.assertRaisesMessage(eco.EcoError, "Ұпай жетпейді"):
+            eco.redeem(self.chat, ticket.pk)
+
+    def test_bot_eco_menu_rewards_and_osi(self):
+        from .models import EcoPoints, Osi, Redemption, Reward
+        from .telegram import handle_update
+
+        EcoPoints.objects.create(chat=self.chat, amount=35, reason="test")
+        coffee = Reward.objects.create(title="Кофе", partner="Жасыл", cost=30)
+        osi = Osi.objects.create(name="ОСИ Самал-2")
+
+        handle_update(tg_message("🌱 Эко-ұпайлар"))
+        self.assertIn("Эко-ұпайларыңыз: 35", sent_texts(self.call)[-1])
+
+        handle_update(tg_callback(f"rwok:{coffee.pk}"))
+        voucher = Redemption.objects.get()
+        self.assertIn(voucher.code, sent_texts(self.call)[-1])
+
+        handle_update(tg_callback(f"osi:{osi.pk}"))
+        self.chat.refresh_from_db()
+        self.assertEqual(self.chat.osi, osi)
+
+        handle_update(tg_callback("top"))
+        self.assertIn("ОСИ Самал-2", sent_texts(self.call)[-1])
+
+    def test_done_notice_mentions_the_points(self):
+        item = self.report(sensor_fill_level=90)
+
+        with self.captureOnCommitCallbacks(execute=True):
+            self.finish(item)
+
+        self.assertIn("+15 эко-ұпай", self.call.call_args.args[1]["text"])
+
+        page = self.client.get(f'/otinish/?code={item.code}')
+        self.assertContains(page, "+15 эко-ұпай берілді")
+
+    def test_public_page_and_admin_panel(self):
+        from .models import Osi, Redemption, Reward
+
+        coffee = Reward.objects.create(title="Тегін кофе", partner="Жасыл", cost=30)
+        Osi.objects.create(name="ОСИ Самал-2")
+
+        page = self.client.get('/eco/')
+        self.assertContains(page, "Тегін кофе")
+        self.assertContains(page, "ОСИ Самал-2")
+        self.assertContains(page, "https://t.me/qaldyq_test_bot")
+
+        self.client.force_login(create_user())
+        self.assertRedirects(self.client.get('/manage/eco/'), '/dashboard/', fetch_redirect_response=False)
+
+        self.client.force_login(create_admin())
+        self.assertContains(self.client.get('/manage/eco/'), "Тегін кофе")
+
+        response = self.client.post('/manage/eco/rewards/new/', {
+            'title': 'Кино', 'partner': 'Kinopark', 'cost': 200, 'is_active': 'on',
+        })
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(Reward.objects.filter(title='Кино', stock__isnull=True).exists())
+
+        self.assertEqual(self.client.post('/manage/eco/osi/new/', {'name': 'ОСИ Мира-5', 'is_active': 'on'}).status_code, 302)
+
+        voucher = Redemption.objects.create(chat=self.chat, reward=coffee, cost=30)
+        self.client.post(f'/manage/eco/vouchers/{voucher.pk}/use/')
+        voucher.refresh_from_db()
+        self.assertIsNotNone(voucher.used_at)
+
+
+class LanguageTests(TestCase):
+    """The site opens in Kazakh; Russian and English are picked from the header."""
+
+    def pick(self, language):
+        return self.client.post("/i18n/setlang/", {"language": language, "next": "/"})
+
+    def test_kazakh_by_default_even_for_a_russian_browser(self):
+        response = self.client.get("/", HTTP_ACCEPT_LANGUAGE="ru-RU,ru;q=0.9")
+        self.assertContains(response, '<html lang="kk">')
+        self.assertContains(response, "Өтінішті жіберу")
+
+    def test_russian_and_english_pages(self):
+        for language, html_lang, label in (
+            ("ru", "ru", "Отправить заявку"),
+            ("en", "en", "Send the request"),
+        ):
+            with self.subTest(language=language):
+                response = self.pick(language)
+                self.assertRedirects(response, "/", fetch_redirect_response=False)
+                page = self.client.get("/")
+                self.assertContains(page, f'<html lang="{html_lang}">')
+                self.assertContains(page, label)
+                self.assertNotContains(page, "Өтінішті жіберу")
+
+    def test_switch_back_to_kazakh(self):
+        self.pick("en")
+        self.pick("kk")
+        self.assertContains(self.client.get("/"), "Өтінішті жіберу")
+
+    def test_unknown_language_falls_back_to_kazakh(self):
+        self.client.cookies["qaldyq_language"] = "de"
+        self.assertContains(self.client.get("/"), '<html lang="kk">')
+
+    def test_staff_pages_and_form_errors_are_translated(self):
+        self.pick("en")
+        response = self.client.post("/login/", {"username": "nobody", "password": "wrong"})
+        self.assertContains(response, "Wrong username or password.")
+
+        self.client.force_login(create_user())
+        self.assertContains(self.client.get("/dashboard/"), "Container map")
+
+    def test_script_strings_come_from_the_catalog(self):
+        self.pick("ru")
+        catalog = self.client.get("/jsi18n/")
+        self.assertEqual(catalog.status_code, 200)
+        # The catalog escapes non-ASCII text as \uXXXX
+        self.assertContains(catalog, json.dumps("Нет связи с сервером"))

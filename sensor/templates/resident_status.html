@@ -1,11 +1,13 @@
 {% extends "layout.html" %}
+{% load i18n %}
 
-{% block title %}Qaldyq — Өтініш мәртебесі{% endblock %}
+{% block title %}{% translate "Qaldyq — Өтініш мәртебесі" %}{% endblock %}
 
-{% block brand_note %}Тұрғындарға арналған{% endblock %}
+{% block brand_note %}{% translate "Тұрғындарға арналған" %}{% endblock %}
 
 {% block nav %}
-    <a class="header-link" href="{% url 'resident_home' %}">Жаңа өтініш</a>
+    <a class="header-link" href="{% url 'eco_page' %}">{% translate "Эко-ұпай" %}</a>
+    <a class="header-link" href="{% url 'resident_home' %}">{% translate "Жаңа өтініш" %}</a>
 {% endblock %}
 
 {% block main_class %}resident-page{% endblock %}
@@ -16,25 +18,46 @@
 <div class="notice notice-success" role="status">
     <svg class="icon" aria-hidden="true"><use href="#i-normal"></use></svg>
     <div>
-        <strong>Өтініш қабылданды.</strong>
-        Кодыңыз: <span class="request-code">{{ resident_request.code }}</span>.
-        Оны сақтап қойыңыз, мәртебені осы код арқылы тексересіз.
+        <strong>{% translate "Өтініш қабылданды." %}</strong>
+        {% blocktranslate trimmed with code=resident_request.code %}
+        Кодыңыз: <span class="request-code">{{ code }}</span>. Оны сақтап қойыңыз, мәртебені осы код арқылы тексересіз.
+        {% endblocktranslate %}
     </div>
 </div>
 {% endif %}
 
+{% if eco_points %}
+<div class="notice notice-success eco-earned" role="status">
+    <svg class="icon" aria-hidden="true"><use href="#i-leaf"></use></svg>
+    <div>
+        <strong>{% blocktranslate with amount=eco_points.amount %}+{{ amount }} эко-ұпай берілді.{% endblocktranslate %}</strong>
+        {{ eco_points.reason|capfirst }}. {% translate "Ұпайды Telegram-боттағы «Эко-ұпайлар» бөлімінен жұмсайсыз." %}
+    </div>
+</div>
+{% endif %}
+
+{% if telegram_link and resident_request and resident_request.status != 'done' and resident_request.status != 'rejected' %}
+<a class="panel telegram-cta" href="{{ telegram_link }}" target="_blank" rel="noopener">
+    <span class="telegram-cta-icon"><svg class="icon" aria-hidden="true"><use href="#i-send"></use></svg></span>
+    <span>
+        <strong>{% translate "Жаңалықты Telegram арқылы алыңыз" %}</strong>
+        <span class="field-hint">{% translate "Мәртебе өзгергенде бот хабарлайды, жұмыс біткенде нәтиже фотосын жібереді, ал расталған өтініш үшін эко-ұпай береді." %}</span>
+    </span>
+</a>
+{% endif %}
+
 <form class="panel status-lookup" method="get" action="{% url 'resident_status' %}">
-    <label for="code">Өтініш коды</label>
+    <label for="code">{% translate "Өтініш коды" %}</label>
     <div class="status-lookup-row">
         <input id="code" name="code" type="text" value="{{ code }}" placeholder="Q-XXXXXX" autocomplete="off" spellcheck="false">
-        <button class="button-primary" type="submit">Тексеру</button>
+        <button class="button-primary" type="submit">{% translate "Тексеру" %}</button>
     </div>
 </form>
 
 {% if code and not resident_request %}
 <div class="notice notice-error" role="alert">
     <svg class="icon" aria-hidden="true"><use href="#i-full"></use></svg>
-    «{{ code }}» кодымен өтініш табылмады. Кодты қайта тексеріңіз.
+    {% blocktranslate %}«{{ code }}» кодымен өтініш табылмады. Кодты қайта тексеріңіз.{% endblocktranslate %}
 </div>
 {% endif %}
 
@@ -52,8 +75,7 @@
 
     {% if resident_request.parent %}
     <p class="notice notice-merged">
-        Бұл жердегі мәселе туралы басқа тұрғын да хабарлаған. Өтініштер біріктірілді,
-        жұмыс бір рет орындалады, ал нәтижесін осы жерден көресіз.
+        {% translate "Бұл жердегі мәселе туралы басқа тұрғын да хабарлаған. Өтініштер біріктірілді, жұмыс бір рет орындалады, ал нәтижесін осы жерден көресіз." %}
     </p>
     {% endif %}
 
@@ -68,16 +90,16 @@
 
     {% if resident_request.resolution_note %}
     <div class="resolution">
-        <span class="field-label">Жауап</span>
+        <span class="field-label">{% translate "Жауап" %}</span>
         <p>{{ resident_request.resolution_note }}</p>
     </div>
     {% endif %}
 
     <dl class="request-facts">
-        <div><dt>Жіберілді</dt><dd>{{ resident_request.created_at|date:"d.m.Y H:i" }}</dd></div>
-        <div><dt>Соңғы өзгеріс</dt><dd>{{ resident_request.updated_at|date:"d.m.Y H:i" }}</dd></div>
+        <div><dt>{% translate "Жіберілді" %}</dt><dd>{{ resident_request.created_at|date:"d.m.Y H:i" }}</dd></div>
+        <div><dt>{% translate "Соңғы өзгеріс" %}</dt><dd>{{ resident_request.updated_at|date:"d.m.Y H:i" }}</dd></div>
         {% if resident_request.description %}
-        <div class="request-facts-wide"><dt>Сипаттама</dt><dd>{{ resident_request.description|linebreaksbr }}</dd></div>
+        <div class="request-facts-wide"><dt>{% translate "Сипаттама" %}</dt><dd>{{ resident_request.description|linebreaksbr }}</dd></div>
         {% endif %}
     </dl>
 
@@ -85,14 +107,14 @@
     <div class="photo-pair">
         {% if resident_request.photo %}
         <figure>
-            <img class="request-photo" src="{{ resident_request.photo.url }}" alt="Өтінішке тіркелген фото" loading="lazy">
-            <figcaption>Сіздің фотоңыз</figcaption>
+            <img class="request-photo" src="{{ resident_request.photo.url }}" alt="{% translate 'Өтінішке тіркелген фото' %}" loading="lazy">
+            <figcaption>{% translate "Сіздің фотоңыз" %}</figcaption>
         </figure>
         {% endif %}
         {% if resident_request.result_photo %}
         <figure>
-            <img class="request-photo" src="{{ resident_request.result_photo.url }}" alt="Жұмыс аяқталғаннан кейінгі фото" loading="lazy">
-            <figcaption>Жұмыстан кейін</figcaption>
+            <img class="request-photo" src="{{ resident_request.result_photo.url }}" alt="{% translate 'Жұмыс аяқталғаннан кейінгі фото' %}" loading="lazy">
+            <figcaption>{% translate "Жұмыстан кейін" %}</figcaption>
         </figure>
         {% endif %}
     </div>

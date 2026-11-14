@@ -1,21 +1,23 @@
 {% extends "manage/base.html" %}
+{% load i18n %}
 
-{% block title %}Qaldyq — {% if creating %}Жаңа қызметкер{% else %}{{ target.username }}{% endif %}{% endblock %}
+{% block title %}Qaldyq — {% if creating %}{% translate "Жаңа қызметкер" %}{% else %}{{ target.username }}{% endif %}{% endblock %}
 
 {% block manage %}
 
 <section aria-labelledby="staffFormTitle" class="manage-narrow">
 
+    <a class="back-link" href="{% url 'manage_staff' %}"><svg class="icon" aria-hidden="true"><use href="#i-caret"></use></svg>{% translate "Тізімге оралу" %}</a>
+
     <div class="section-header">
-        <h1 id="staffFormTitle">{% if creating %}Жаңа қызметкер{% else %}{{ target.username }}{% endif %}</h1>
-        <a class="header-link" href="{% url 'manage_staff' %}">← Тізімге оралу</a>
+        <h1 id="staffFormTitle">{% if creating %}{% translate "Жаңа қызметкер" %}{% else %}{{ target.username }}{% endif %}</h1>
     </div>
 
     {% if locked %}
 
     <div class="panel detail-form">
-        <p>Бұл — әкімші аккаунты. Ол барлық бөлімге кіре алады, сондықтан рөлі мен ауданы өзгертілмейді.</p>
-        <div><a class="button-secondary" href="{% url 'manage_staff_password' target.pk %}">Құпия сөзді ауыстыру</a></div>
+        <p>{% translate "Бұл — әкімші аккаунты. Ол барлық бөлімге кіре алады, сондықтан рөлі мен ауданы өзгертілмейді." %}</p>
+        <div><a class="button-secondary" href="{% url 'manage_staff_password' target.pk %}">{% translate "Құпия сөзді ауыстыру" %}</a></div>
     </div>
 
     {% else %}
@@ -32,7 +34,7 @@
         </div>
 
         <fieldset class="field">
-            <legend>Рөлі</legend>
+            <legend>{% translate "Рөлі" %}</legend>
             <div class="choice-list">
                 {% for radio in form.role %}
                 <label class="choice">
@@ -46,7 +48,7 @@
 
         <div id="districtField">
             {% include "manage/field.html" with field=form.district %}
-            <p class="field-hint">Бас диспетчерге аудан керек емес, ол бүкіл қаланы көреді.</p>
+            <p class="field-hint">{% translate "Бас диспетчерге аудан керек емес, ол бүкіл қаланы көреді." %}</p>
         </div>
 
         {% if form.password1 %}
@@ -54,7 +56,7 @@
             {% include "manage/field.html" with field=form.password1 %}
             {% include "manage/field.html" with field=form.password2 %}
         </div>
-        <p class="field-hint">Кемінде 8 таңба, тек сандардан тұрмасын және логинге ұқсамасын.</p>
+        <p class="field-hint">{% translate "Кемінде 8 таңба, тек сандардан тұрмасын және логинге ұқсамасын." %}</p>
         {% endif %}
 
         <label class="check-row">
@@ -63,8 +65,8 @@
         </label>
 
         <div class="form-actions">
-            <button class="button-primary" type="submit">{% if creating %}Қызметкерді қосу{% else %}Сақтау{% endif %}</button>
-            {% if target %}<a class="button-secondary" href="{% url 'manage_staff_password' target.pk %}">Құпия сөзді ауыстыру</a>{% endif %}
+            <button class="button-primary" type="submit">{% if creating %}{% translate "Қызметкерді қосу" %}{% else %}{% translate "Сақтау" %}{% endif %}</button>
+            {% if target %}<a class="button-secondary" href="{% url 'manage_staff_password' target.pk %}">{% translate "Құпия сөзді ауыстыру" %}</a>{% endif %}
         </div>
 
     </form>

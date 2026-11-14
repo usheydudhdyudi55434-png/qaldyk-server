@@ -1,17 +1,9 @@
 {% extends "layout.html" %}
+{% load i18n %}
 
 {% block title %}Qaldyq — {{ item.code }}{% endblock %}
 
 {% block brand_href %}{% url 'dashboard' %}{% endblock %}
-
-{% block nav %}
-    <a class="header-link" href="{% url 'requests_list' %}">Өтініштер</a>
-    <a class="header-link" href="{% url 'dashboard' %}">Панель</a>
-{% endblock %}
-
-{% block account %}
-    {% include "account_menu.html" %}
-{% endblock %}
 
 {% block content %}
 
@@ -26,7 +18,7 @@
 {% if saved %}
 <div class="notice notice-success" role="status">
     <svg class="icon" aria-hidden="true"><use href="#i-normal"></use></svg>
-    Өзгеріс сақталды. Тұрғын жаңа мәртебені өтініш бетінен көреді.
+    {% translate "Өзгеріс сақталды. Тұрғын жаңа мәртебені өтініш бетінен көреді." %}
 </div>
 {% endif %}
 
@@ -34,12 +26,13 @@
 <div class="notice notice-merged" role="status">
     <svg class="icon" aria-hidden="true"><use href="#i-pin"></use></svg>
     <div>
-        Бұл өтініш осы жердегі
-        <a href="{% url 'request_detail' item.parent.pk %}"><span class="request-code">{{ item.parent.code }}</span></a>
-        өтінішімен біріктірілген. Мәртебесі мен нәтижесі сол өтініштен алынады.
+        {% url 'request_detail' item.parent.pk as parent_url %}
+        {% blocktranslate trimmed with code=item.parent.code %}
+        Бұл өтініш осы жердегі <a href="{{ parent_url }}"><span class="request-code">{{ code }}</span></a> өтінішімен біріктірілген. Мәртебесі мен нәтижесі сол өтініштен алынады.
+        {% endblocktranslate %}
         <form method="post" action="{% url 'request_unmerge' item.pk %}" class="inline-form">
             {% csrf_token %}
-            <button class="button-secondary" type="submit">Бөлек өтініш ету</button>
+            <button class="button-secondary" type="submit">{% translate "Бөлек өтініш ету" %}</button>
         </form>
     </div>
 </div>
@@ -50,19 +43,19 @@
     <article class="panel detail-main">
 
         <dl class="request-facts">
-            <div class="request-facts-wide"><dt>Мекенжай</dt><dd>{{ item.address }}</dd></div>
-            <div><dt>Аудан</dt><dd>{{ item.district.name|default:"Анықталмады (картада нүкте жоқ)" }}</dd></div>
+            <div class="request-facts-wide"><dt>{% translate "Мекенжай" %}</dt><dd>{{ item.address }}</dd></div>
+            <div><dt>{% translate "Аудан" %}</dt><dd>{% if item.district %}{{ item.district.name }}{% else %}{% translate "Анықталмады (картада нүкте жоқ)" %}{% endif %}</dd></div>
             {% if item.description %}
-            <div class="request-facts-wide"><dt>Сипаттама</dt><dd>{{ item.description|linebreaksbr }}</dd></div>
+            <div class="request-facts-wide"><dt>{% translate "Сипаттама" %}</dt><dd>{{ item.description|linebreaksbr }}</dd></div>
             {% endif %}
-            <div><dt>Жіберілді</dt><dd>{{ item.created_at|date:"d.m.Y H:i" }}</dd></div>
+            <div><dt>{% translate "Жіберілді" %}</dt><dd>{{ item.created_at|date:"d.m.Y H:i" }}</dd></div>
             <div>
-                <dt>Картадағы орны</dt>
+                <dt>{% translate "Картадағы орны" %}</dt>
                 <dd>
                     {% if item.latitude is not None %}
-                    <a href="https://2gis.kz/almaty/geo/{{ item.longitude|stringformat:'.6f' }}%2C{{ item.latitude|stringformat:'.6f' }}" target="_blank" rel="noopener">2GIS-те ашу</a>
+                    <a href="https://2gis.kz/almaty/geo/{{ item.longitude|stringformat:'.6f' }}%2C{{ item.latitude|stringformat:'.6f' }}" target="_blank" rel="noopener">{% translate "2GIS-те ашу" %}</a>
                     {% else %}
-                    Белгіленбеген
+                    {% translate "Белгіленбеген" %}
                     {% endif %}
                 </dd>
             </div>
@@ -73,17 +66,17 @@
             {% if item.photo %}
             <figure>
                 <a href="{{ item.photo.url }}" target="_blank" rel="noopener">
-                    <img class="request-photo" src="{{ item.photo.url }}" alt="Тұрғын тіркеген фото">
+                    <img class="request-photo" src="{{ item.photo.url }}" alt="{% translate 'Тұрғын тіркеген фото' %}">
                 </a>
-                <figcaption>Дейін: тұрғынның фотосы</figcaption>
+                <figcaption>{% translate "Дейін: тұрғынның фотосы" %}</figcaption>
             </figure>
             {% endif %}
             {% if item.result_photo %}
             <figure>
                 <a href="{{ item.result_photo.url }}" target="_blank" rel="noopener">
-                    <img class="request-photo" src="{{ item.result_photo.url }}" alt="Орындалғаннан кейінгі фото">
+                    <img class="request-photo" src="{{ item.result_photo.url }}" alt="{% translate 'Орындалғаннан кейінгі фото' %}">
                 </a>
-                <figcaption>Кейін: қызметкердің фотосы</figcaption>
+                <figcaption>{% translate "Кейін: қызметкердің фотосы" %}</figcaption>
             </figure>
             {% endif %}
         </div>
@@ -91,7 +84,7 @@
 
         {% if duplicates %}
         <section class="duplicates" aria-labelledby="duplicatesTitle">
-            <h2 id="duplicatesTitle">Осы мәселе туралы тағы {{ duplicates|length }} тұрғын хабарлады</h2>
+            <h2 id="duplicatesTitle">{% blocktranslate with count=duplicates|length %}Осы мәселе туралы тағы {{ count }} тұрғын хабарлады{% endblocktranslate %}</h2>
             <ul>
                 {% for duplicate in duplicates %}
                 <li>
@@ -99,48 +92,47 @@
                     <span class="cell-secondary">{{ duplicate.get_category_display }} · {{ duplicate.created_at|date:"d.m H:i" }}</span>
                     <form method="post" action="{% url 'request_unmerge' duplicate.pk %}" class="inline-form">
                         {% csrf_token %}
-                        <button class="button-secondary" type="submit">Бөлу</button>
+                        <button class="button-secondary" type="submit">{% translate "Бөлу" %}</button>
                     </form>
                 </li>
                 {% endfor %}
             </ul>
-            <p class="field-hint">Мәртебе, жауап және нәтиже фотосы оларға автоматты түрде беріледі.</p>
+            <p class="field-hint">{% translate "Мәртебе, жауап және нәтиже фотосы оларға автоматты түрде беріледі." %}</p>
         </section>
         {% endif %}
 
         <section class="ai-check" aria-labelledby="aiTitle">
             <div class="ai-head">
-                <h2 id="aiTitle">AI талдауы</h2>
+                <h2 id="aiTitle">{% translate "AI талдауы" %}</h2>
                 {% if analysis.state == "done" and analysis.confidence is not None %}
-                <span class="cell-secondary">сенімділік {% widthratio analysis.confidence 1 100 %}%</span>
+                <span class="cell-secondary">{% translate "сенімділік" %} {% widthratio analysis.confidence 1 100 %}%</span>
                 {% endif %}
             </div>
 
             {% if not analysis %}
-            <p class="cell-secondary">Талдау жүргізілмеген.</p>
+            <p class="cell-secondary">{% translate "Талдау жүргізілмеген." %}</p>
             {% elif analysis.state == "pending" %}
-            <p class="cell-secondary">Фото талдануда. Бірнеше секундтан кейін бетті жаңартыңыз.</p>
+            <p class="cell-secondary">{% translate "Фото талдануда. Бірнеше секундтан кейін бетті жаңартыңыз." %}</p>
             {% elif analysis.state == "done" %}
                 {% if analysis.hazard == "high" %}
                 <p class="verdict verdict-danger">
-                    Қауіпті қалдық белгісі{% if analysis.hazard_reason %}: {{ analysis.hazard_reason }}{% endif %}.
-                    Қарапайым жұмысшыға бермеңіз, арнайы бригада керек.
+                    {% translate "Қауіпті қалдық белгісі" %}{% if analysis.hazard_reason %}: {{ analysis.hazard_reason }}{% endif %}. {% translate "Қарапайым жұмысшыға бермеңіз, арнайы бригада керек." %}
                 </p>
                 {% endif %}
                 {% if analysis.needs_review %}
-                <p class="verdict verdict-unconfirmed">Тексеру керек: {{ analysis.review_reason }}</p>
+                <p class="verdict verdict-unconfirmed">{% translate "Тексеру керек:" %} {{ analysis.review_reason }}</p>
                 {% endif %}
                 <p class="ai-summary">{{ analysis.summary }}</p>
                 <dl class="request-facts">
-                    <div><dt>Қалдық түрі</dt><dd>{{ analysis.get_waste_type_display }}</dd></div>
-                    <div><dt>Көлемі</dt><dd>{{ analysis.get_volume_display }}</dd></div>
-                    <div><dt>Қауіп</dt><dd>{{ analysis.get_hazard_display }}{% if analysis.hazard_reason and analysis.hazard != "high" %}: {{ analysis.hazard_reason }}{% endif %}</dd></div>
-                    <div><dt>Ұсынылған санат</dt><dd>{{ analysis.get_suggested_category_display }}</dd></div>
+                    <div><dt>{% translate "Қалдық түрі" %}</dt><dd>{{ analysis.get_waste_type_display }}</dd></div>
+                    <div><dt>{% translate "Көлемі" %}</dt><dd>{{ analysis.get_volume_display }}</dd></div>
+                    <div><dt>{% translate "Қауіп" %}</dt><dd>{{ analysis.get_hazard_display }}{% if analysis.hazard_reason and analysis.hazard != "high" %}: {{ analysis.hazard_reason }}{% endif %}</dd></div>
+                    <div><dt>{% translate "Ұсынылған санат" %}</dt><dd>{{ analysis.get_suggested_category_display }}</dd></div>
                 </dl>
                 {% if analysis.suggested_category and analysis.suggested_category != item.category %}
                 <form method="post" action="{% url 'request_accept_category' item.pk %}">
                     {% csrf_token %}
-                    <button class="button-secondary" type="submit">AI ұсынған санатты қабылдау</button>
+                    <button class="button-secondary" type="submit">{% translate "AI ұсынған санатты қабылдау" %}</button>
                 </form>
                 {% endif %}
             {% else %}
@@ -150,26 +142,26 @@
             {% if item.photo %}
             <form method="post" action="{% url 'request_analyze' item.pk %}">
                 {% csrf_token %}
-                <button class="button-secondary" type="submit">Қайта талдау</button>
+                <button class="button-secondary" type="submit">{% translate "Қайта талдау" %}</button>
             </form>
             {% endif %}
 
-            <p class="field-hint">AI тек ұсыныс береді. Шешімді диспетчер қабылдайды.</p>
+            <p class="field-hint">{% translate "AI тек ұсыныс береді. Шешімді диспетчер қабылдайды." %}</p>
         </section>
 
         <section class="sensor-check" aria-labelledby="sensorTitle">
-            <h2 id="sensorTitle">Датчикпен салыстыру</h2>
+            <h2 id="sensorTitle">{% translate "Датчикпен салыстыру" %}</h2>
             <p class="verdict verdict-{{ verdict.0 }}">{{ verdict.1 }}</p>
             {% if clearance %}
             <p class="verdict verdict-confirmed">
-                Датчик контейнердің босатылғанын көрді: {{ clearance.0 }}% → {{ clearance.1 }}%, {{ clearance.2|date:"d.m H:i" }}
+                {% translate "Датчик контейнердің босатылғанын көрді:" %} {{ clearance.0 }}% → {{ clearance.1 }}%, {{ clearance.2|date:"d.m H:i" }}
             </p>
             {% endif %}
             {% if item.container %}
             <dl class="request-facts">
-                <div><dt>Жақын контейнер</dt><dd>{{ item.container.name }} · {{ item.container_distance|floatformat:0 }} м</dd></div>
+                <div><dt>{% translate "Жақын контейнер" %}</dt><dd>{{ item.container.name }} · {{ item.container_distance|floatformat:0 }} {% translate "м" context "metres" %}</dd></div>
                 <div>
-                    <dt>Өтініш түскендегі дерек</dt>
+                    <dt>{% translate "Өтініш түскендегі дерек" %}</dt>
                     <dd>
                         {% if item.sensor_fill_level is not None %}
                         {{ item.sensor_fill_level|floatformat:0 }}% · {{ item.sensor_reading_at|date:"d.m H:i" }}
@@ -177,7 +169,7 @@
                     </dd>
                 </div>
                 <div>
-                    <dt>Қазіргі дерек</dt>
+                    <dt>{% translate "Қазіргі дерек" %}</dt>
                     <dd>
                         {% if latest %}{{ latest.fill_level|floatformat:0 }}% · {{ latest.created_at|date:"d.m H:i" }}{% else %}—{% endif %}
                     </dd>
@@ -187,7 +179,7 @@
         </section>
 
         <section class="history" aria-labelledby="historyTitle">
-            <h2 id="historyTitle">Тарихы</h2>
+            <h2 id="historyTitle">{% translate "Тарихы" %}</h2>
             <ol class="timeline">
                 {% for event in events %}
                 <li>
@@ -196,10 +188,10 @@
                         <span class="status-pill status-{{ event.status }}">{{ event.get_status_display }}</span>
                         {% if event.note %}{{ event.note }}{% endif %}
                     </span>
-                    <span class="cell-secondary">{{ event.actor.username|default:"тұрғын" }}</span>
+                    <span class="cell-secondary">{% if event.actor %}{{ event.actor.username }}{% else %}{% translate "тұрғын" %}{% endif %}</span>
                 </li>
                 {% empty %}
-                <li><span class="cell-secondary">Тарих жазылмаған</span></li>
+                <li><span class="cell-secondary">{% translate "Тарих жазылмаған" %}</span></li>
                 {% endfor %}
             </ol>
         </section>
@@ -210,36 +202,35 @@
 
     {% if suggestions is not None %}
     <section class="panel suggest-panel" aria-labelledby="suggestTitle">
-        <h2 id="suggestTitle">Ұсынылатын жұмысшылар</h2>
+        <h2 id="suggestTitle">{% translate "Ұсынылатын жұмысшылар" %}</h2>
         <p class="field-hint">
-            {{ item.district.name|default:"Бүкіл қала" }} жұмысшылары, жақыннан алысқа қарай.
-            {% if item.latitude is None %}Өтініште картадағы нүкте жоқ, сондықтан қашықтық есептелмейді.{% endif %}
+            {% if item.district %}{% blocktranslate with district=item.district.name %}{{ district }} жұмысшылары, жақыннан алысқа қарай.{% endblocktranslate %}{% else %}{% translate "Бүкіл қаланың жұмысшылары, жақыннан алысқа қарай." %}{% endif %}
+            {% if item.latitude is None %}{% translate "Өтініште картадағы нүкте жоқ, сондықтан қашықтық есептелмейді." %}{% endif %}
         </p>
         {% for suggestion in suggestions %}
         <div class="suggest-row{% if forloop.first %} is-best{% endif %}">
             <div class="suggest-text">
                 <strong>{{ suggestion.user.username }}</strong>
-                {% if forloop.first and suggestion.fresh %}<span class="status-pill status-done">Ең жақын</span>{% endif %}
+                {% if forloop.first and suggestion.fresh %}<span class="status-pill status-done">{% translate "Ең жақын" %}</span>{% endif %}
                 <span class="cell-secondary">
-                    {% if suggestion.distance is not None %}{{ suggestion.distance_label }}{% elif suggestion.seen %}орны белгілі{% else %}орны белгісіз{% endif %}
-                    · {{ suggestion.active }} белсенді тапсырма
-                    {% if suggestion.seen %}· {{ suggestion.seen }}{% if not suggestion.fresh %} (ескі){% endif %}{% endif %}
+                    {% if suggestion.distance is not None %}{{ suggestion.distance_label }}{% elif suggestion.seen %}{% translate "орны белгілі" %}{% else %}{% translate "орны белгісіз" %}{% endif %}
+                    · {% blocktranslate with count=suggestion.active %}{{ count }} белсенді тапсырма{% endblocktranslate %}
+                    {% if suggestion.seen %}· {{ suggestion.seen }}{% if not suggestion.fresh %} {% translate "(ескі)" %}{% endif %}{% endif %}
                 </span>
             </div>
             {% if item.assignee_id == suggestion.user.pk %}
-            <span class="status-pill status-accepted">Тағайындалған</span>
+            <span class="status-pill status-accepted">{% translate "Тағайындалған" %}</span>
             {% else %}
             <form method="post" action="{% url 'request_assign' item.pk %}">
                 {% csrf_token %}
                 <input type="hidden" name="worker" value="{{ suggestion.user.pk }}">
-                <button class="button-secondary" type="submit">Тағайындау</button>
+                <button class="button-secondary" type="submit">{% translate "Тағайындау" %}</button>
             </form>
             {% endif %}
         </div>
         {% empty %}
         <p class="cell-secondary">
-            Бұл ауданға бекітілген жұмысшы жоқ. Әкімші /admin/ бетінде жұмысшыны
-            «Жұмысшылар» тобына қосып, оған аудан тағайындайды.
+            {% translate "Бұл ауданға бекітілген жұмысшы жоқ. Әкімші «Әкімші» бөлімінде жұмысшыға осы ауданды тағайындайды." %}
         </p>
         {% endfor %}
     </section>
@@ -247,11 +238,12 @@
 
     {% if item.parent %}
     <div class="panel detail-form">
-        <h2>Өңдеу</h2>
+        <h2>{% translate "Өңдеу" %}</h2>
         <p class="cell-secondary">
-            Біріктірілген өтінішті негізгі
-            <a href="{% url 'request_detail' item.parent.pk %}">{{ item.parent.code }}</a>
-            өтініші арқылы басқарыңыз.
+            {% url 'request_detail' item.parent.pk as parent_url %}
+            {% blocktranslate trimmed with code=item.parent.code %}
+            Біріктірілген өтінішті негізгі <a href="{{ parent_url }}">{{ code }}</a> өтініші арқылы басқарыңыз.
+            {% endblocktranslate %}
         </p>
     </div>
     {% else %}
@@ -259,7 +251,7 @@
 
         {% csrf_token %}
 
-        <h2>Өңдеу</h2>
+        <h2>{% translate "Өңдеу" %}</h2>
 
         {% for field in form %}
         <div class="field">
@@ -270,7 +262,7 @@
         </div>
         {% endfor %}
 
-        <button class="button-primary" type="submit">Сақтау</button>
+        <button class="button-primary" type="submit">{% translate "Сақтау" %}</button>
 
     </form>
     {% endif %}

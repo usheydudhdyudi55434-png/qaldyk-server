@@ -9,3 +9,6 @@ media/
 *.log
 .vscode/
 .idea/
+
+# Compiled translations; the Docker build makes them from locale/*.po
+*.mo

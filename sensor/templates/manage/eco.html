@@ -1,0 +1,129 @@
+{% extends "manage/base.html" %}
+{% load i18n %}
+
+{% block title %}{% translate "Qaldyq — Эко-ұпай" %}{% endblock %}
+
+{% block manage %}
+
+<section aria-labelledby="ecoTitle">
+
+    <div class="section-header">
+        <h1 id="ecoTitle">{% translate "Эко-ұпай" %}</h1>
+        <a class="header-link" href="{% url 'eco_page' %}" target="_blank" rel="noopener">{% translate "Тұрғындар беті" %}</a>
+    </div>
+
+    <div class="manage-stats">
+        <div class="panel manage-stat"><span>{% translate "Берілген ұпай" %}</span><strong>{{ totals.awarded }}</strong></div>
+        <div class="panel manage-stat"><span>{% translate "Жұмсалған ұпай" %}</span><strong>{{ totals.spent }}</strong></div>
+        <div class="panel manage-stat"><span>{% translate "Ұпай алған тұрғын" %}</span><strong>{{ totals.residents }}</strong></div>
+        <div class="panel manage-stat"><span>{% translate "Ваучер" %}</span><strong>{{ totals.vouchers }}</strong></div>
+    </div>
+
+    <div class="section-header manage-subhead">
+        <h2>{% translate "Сыйлықтар" %}</h2>
+        <a class="button-secondary" href="{% url 'manage_reward_create' %}">{% translate "Сыйлық қосу" %}</a>
+    </div>
+
+    <div class="panel table-scroll">
+        <table class="data-table stack-table">
+            <thead>
+                <tr>
+                    <th scope="col">{% translate "Сыйлық" %}</th>
+                    <th scope="col">{% translate "Серіктес" %}</th>
+                    <th scope="col" class="align-end">{% translate "Бағасы" %}</th>
+                    <th scope="col" class="align-end">{% translate "Қалғаны" %}</th>
+                    <th scope="col" class="align-end">{% translate "Алынды" %}</th>
+                    <th scope="col">{% translate "Күйі" %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for reward in rewards %}
+                <tr class="{% if not reward.is_active %}is-inactive{% endif %}">
+                    <td><a class="row-name" href="{% url 'manage_reward_edit' reward.pk %}">{{ reward.title }}</a></td>
+                    <td>{{ reward.partner }}</td>
+                    <td class="align-end numeric">{{ reward.cost }}</td>
+                    <td class="align-end numeric">{{ reward.stock|default_if_none:"∞" }}</td>
+                    <td class="align-end numeric">{{ reward.taken }}</td>
+                    <td>{% if reward.is_active %}<span class="verdict verdict-confirmed">{% translate "Көрсетіледі" %}</span>{% else %}<span class="verdict verdict-none">{% translate "Жасырын" %}</span>{% endif %}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="6" class="cell-secondary">{% translate "Сыйлық әлі жоқ. Серіктестің ұсынысын қосыңыз." %}</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="section-header manage-subhead">
+        <h2>{% translate "ОСИ" %}</h2>
+        <a class="button-secondary" href="{% url 'manage_osi_create' %}">{% translate "ОСИ қосу" %}</a>
+    </div>
+
+    <div class="panel table-scroll">
+        <table class="data-table stack-table">
+            <thead>
+                <tr>
+                    <th scope="col">{% translate "Атауы" %}</th>
+                    <th scope="col">{% translate "Мекенжайы" %}</th>
+                    <th scope="col">{% translate "Аудан" %}</th>
+                    <th scope="col" class="align-end">{% translate "Тұрғын" %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for osi in osis %}
+                <tr class="{% if not osi.is_active %}is-inactive{% endif %}">
+                    <td><a class="row-name" href="{% url 'manage_osi_edit' osi.pk %}">{{ osi.name }}</a></td>
+                    <td>{{ osi.address|default:"—" }}</td>
+                    <td>{{ osi.district.name|default:"—" }}</td>
+                    <td class="align-end numeric">{{ osi.residents }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="4" class="cell-secondary">{% translate "ОСИ әлі қосылмаған." %}</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="section-header manage-subhead">
+        <h2>{% translate "Ваучерлер" %}</h2>
+        <span class="section-meta">{% translate "Серіктес кодты айтқанда, «Пайдаланылды» деп белгілеңіз" %}</span>
+    </div>
+
+    <div class="panel table-scroll">
+        <table class="data-table stack-table">
+            <thead>
+                <tr>
+                    <th scope="col">{% translate "Код" %}</th>
+                    <th scope="col">{% translate "Сыйлық" %}</th>
+                    <th scope="col">{% translate "Тұрғын" %}</th>
+                    <th scope="col">{% translate "Алған уақыты" %}</th>
+                    <th scope="col">{% translate "Күйі" %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for voucher in redemptions %}
+                <tr>
+                    <td class="request-code">{{ voucher.code }}</td>
+                    <td>{{ voucher.reward.title }} <span class="cell-secondary">· {{ voucher.reward.partner }}</span></td>
+                    <td>{{ voucher.chat.first_name|default:voucher.chat }}</td>
+                    <td>{{ voucher.created_at|date:"d.m.Y H:i" }}</td>
+                    <td>
+                        {% if voucher.used_at %}
+                        <span class="verdict verdict-none">{% blocktranslate with day=voucher.used_at|date:"d.m" %}Пайдаланылды {{ day }}{% endblocktranslate %}</span>
+                        {% else %}
+                        <form method="post" action="{% url 'manage_redemption_use' voucher.pk %}">
+                            {% csrf_token %}
+                            <button class="button-secondary button-small" type="submit">{% translate "Пайдаланылды" %}</button>
+                        </form>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5" class="cell-secondary">{% translate "Ваучер әлі алынбаған." %}</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</section>
+
+{% endblock %}

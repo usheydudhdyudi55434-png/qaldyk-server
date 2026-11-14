@@ -1,0 +1,39 @@
+{% extends "manage/base.html" %}
+{% load i18n %}
+
+{% block title %}Qaldyq — {{ title }}{% endblock %}
+
+{% block manage %}
+
+<section aria-labelledby="formTitle" class="manage-narrow">
+
+    <a class="back-link" href="{{ back_url }}"><svg class="icon" aria-hidden="true"><use href="#i-caret"></use></svg>{% translate "Артқа" %}</a>
+
+    <div class="section-header">
+        <h1 id="formTitle">{{ title }}</h1>
+    </div>
+
+    <form class="panel detail-form" method="post" novalidate>
+
+        {% csrf_token %}
+
+        {% for field in form %}
+            {% if field.field.widget.input_type == 'checkbox' %}
+            <label class="check-row">
+                {{ field }}
+                <span>{{ field.label }}</span>
+            </label>
+            {% else %}
+            {% include "manage/field.html" with field=field %}
+            {% endif %}
+        {% endfor %}
+
+        <div class="form-actions">
+            <button class="button-primary" type="submit">{% translate "Сақтау" %}</button>
+        </div>
+
+    </form>
+
+</section>
+
+{% endblock %}

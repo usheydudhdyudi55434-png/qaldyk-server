@@ -1,35 +1,32 @@
 {% extends "layout.html" %}
+{% load i18n %}
 {% load static %}
 
-{% block title %}Qaldyq — Менің тапсырмаларым{% endblock %}
+{% block title %}{% translate "Qaldyq — Менің тапсырмаларым" %}{% endblock %}
 
 {% block brand_href %}{% url 'my_tasks' %}{% endblock %}
 
-{% block brand_note %}Қызметкерге арналған{% endblock %}
-
-{% block account %}
-    {% include "account_menu.html" %}
-{% endblock %}
+{% block brand_note %}{% translate "Қызметкерге арналған" %}{% endblock %}
 
 {% block main_class %}tasks-page{% endblock %}
 
 {% block content %}
 
 <div class="section-header">
-    <h1>Менің тапсырмаларым</h1>
-    <span class="section-meta">{{ active|length }} белсенді</span>
+    <h1>{% translate "Менің тапсырмаларым" %}</h1>
+    <span class="section-meta">{% blocktranslate with count=active|length %}{{ count }} белсенді{% endblocktranslate %}</span>
 </div>
 
 <p class="worker-location">
     <svg class="icon" aria-hidden="true"><use href="#i-pin"></use></svg>
-    <span id="locationStatus" aria-live="polite">Орныңыз анықталуда…</span>
+    <span id="locationStatus" aria-live="polite">{% translate "Орныңыз анықталуда…" %}</span>
 </p>
 <span hidden>{% csrf_token %}</span>
 
 {% if done_code %}
 <div class="notice notice-success" role="status">
     <svg class="icon" aria-hidden="true"><use href="#i-normal"></use></svg>
-    <span><span class="request-code">{{ done_code }}</span> орындалды деп белгіленді. Тұрғын нәтижені өз бетінен көреді.</span>
+    <span>{% blocktranslate trimmed %}<span class="request-code">{{ done_code }}</span> орындалды деп белгіленді. Тұрғын нәтижені өз бетінен көреді.{% endblocktranslate %}</span>
 </div>
 {% endif %}
 
@@ -53,11 +50,11 @@
         {% if task.item.latitude is not None %}
         <a class="button-secondary" href="https://2gis.kz/almaty/geo/{{ task.item.longitude|stringformat:'.6f' }}%2C{{ task.item.latitude|stringformat:'.6f' }}" target="_blank" rel="noopener">
             <svg class="icon" aria-hidden="true"><use href="#i-pin"></use></svg>
-            Картада ашу
+            {% translate "Картада ашу" %}
         </a>
         {% endif %}
         {% if task.item.photo %}
-        <a class="button-secondary" href="{{ task.item.photo.url }}" target="_blank" rel="noopener">Тұрғынның фотосы</a>
+        <a class="button-secondary" href="{{ task.item.photo.url }}" target="_blank" rel="noopener">{% translate "Тұрғынның фотосы" %}</a>
         {% endif %}
     </div>
 
@@ -67,14 +64,14 @@
 
     {% if task.clearance %}
     <p class="verdict verdict-confirmed">
-        Датчик контейнердің босатылғанын көрді: {{ task.clearance.0 }}% → {{ task.clearance.1 }}%, {{ task.clearance.2|date:"H:i" }}
+        {% translate "Датчик контейнердің босатылғанын көрді:" %} {{ task.clearance.0 }}% → {{ task.clearance.1 }}%, {{ task.clearance.2|date:"H:i" }}
     </p>
     {% endif %}
 
     {% if task.item.status == "accepted" %}
     <form method="post" action="{% url 'task_start' task.item.pk %}">
         {% csrf_token %}
-        <button class="button-primary" type="submit">Жұмысқа кірістім</button>
+        <button class="button-primary" type="submit">{% translate "Жұмысқа кірістім" %}</button>
     </form>
     {% endif %}
 
@@ -87,20 +84,20 @@
             {% for error in field.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
         </div>
         {% endfor %}
-        <button class="button-primary" type="submit">Орындадым</button>
+        <button class="button-primary" type="submit">{% translate "Орындадым" %}</button>
     </form>
 
 </article>
 {% empty %}
 <div class="panel queue-empty level-normal">
     <svg class="icon" aria-hidden="true"><use href="#i-normal"></use></svg>
-    Қазір сізге тағайындалған белсенді тапсырма жоқ
+    {% translate "Қазір сізге тағайындалған белсенді тапсырма жоқ" %}
 </div>
 {% endfor %}
 
 {% if finished %}
 <section class="task-history" aria-labelledby="finishedTitle">
-    <h2 id="finishedTitle">Жақында орындалғандар</h2>
+    <h2 id="finishedTitle">{% translate "Жақында орындалғандар" %}</h2>
     <ul>
         {% for item in finished %}
         <li>

@@ -1,39 +1,31 @@
 {% extends "layout.html" %}
+{% load i18n %}
 
-{% block title %}Qaldyq — Аудандарды бақылау{% endblock %}
+{% block title %}{% translate "Qaldyq — Аудандарды бақылау" %}{% endblock %}
 
 {% block brand_href %}{% url 'dashboard' %}{% endblock %}
-
-{% block nav %}
-    <a class="header-link" href="{% url 'requests_list' %}">Өтініштер</a>
-    <a class="header-link" href="{% url 'dashboard' %}">Панель</a>
-{% endblock %}
-
-{% block account %}
-    {% include "account_menu.html" %}
-{% endblock %}
 
 {% block content %}
 
 <section aria-labelledby="supervisionTitle">
 
     <div class="section-header">
-        <h1 id="supervisionTitle">Аудандарды бақылау</h1>
-        <span class="section-meta">Жаңа өтініш {{ late_minutes }} минуттан ұзақ өңделмесе, аудан қызылмен белгіленеді</span>
+        <h1 id="supervisionTitle">{% translate "Аудандарды бақылау" %}</h1>
+        <span class="section-meta">{% blocktranslate %}Жаңа өтініш {{ late_minutes }} минуттан ұзақ өңделмесе, аудан қызылмен белгіленеді{% endblocktranslate %}</span>
     </div>
 
     <div class="panel table-scroll">
-        <table class="data-table supervision-table">
+        <table class="data-table stack-table supervision-table">
             <thead>
                 <tr>
-                    <th scope="col">Аудан</th>
-                    <th scope="col">Диспетчер</th>
-                    <th scope="col" class="align-end">Жұмысшы (желіде)</th>
-                    <th scope="col" class="align-end">Өңделмеген</th>
-                    <th scope="col">Ең ұзақ күткені</th>
-                    <th scope="col" class="align-end">Орындалуда</th>
-                    <th scope="col" class="align-end">24 сағатта орындалды</th>
-                    <th scope="col">Қабылдау уақыты (7 күн, орташа)</th>
+                    <th scope="col">{% translate "Аудан" %}</th>
+                    <th scope="col">{% translate "Диспетчер" %}</th>
+                    <th scope="col" class="align-end">{% translate "Жұмысшы (желіде)" %}</th>
+                    <th scope="col" class="align-end">{% translate "Өңделмеген" %}</th>
+                    <th scope="col">{% translate "Ең ұзақ күткені" %}</th>
+                    <th scope="col" class="align-end">{% translate "Орындалуда" %}</th>
+                    <th scope="col" class="align-end">{% translate "24 сағатта орындалды" %}</th>
+                    <th scope="col">{% translate "Қабылдау уақыты (7 күн, орташа)" %}</th>
                 </tr>
             </thead>
             <tbody>
@@ -43,14 +35,14 @@
                         {% if row.district %}
                         <a class="row-name" href="{% url 'requests_list' %}?district={{ row.district.slug }}">{{ row.district.name }}</a>
                         {% else %}
-                        <a class="row-name" href="{% url 'requests_list' %}">Ауданы анықталмаған</a>
+                        <a class="row-name" href="{% url 'requests_list' %}">{% translate "Ауданы анықталмаған" %}</a>
                         {% endif %}
                     </td>
                     <td>
                         {% if not row.district %}
-                        <span class="cell-secondary">Бас диспетчер өзі өңдейді</span>
+                        <span class="cell-secondary">{% translate "Бас диспетчер өзі өңдейді" %}</span>
                         {% else %}
-                        {% for dispatcher in row.dispatchers %}{{ dispatcher.username }}{% if not forloop.last %}, {% endif %}{% empty %}<span class="verdict verdict-unconfirmed">Тағайындалмаған</span>{% endfor %}
+                        {% for dispatcher in row.dispatchers %}{{ dispatcher.username }}{% if not forloop.last %}, {% endif %}{% empty %}<span class="verdict verdict-unconfirmed">{% translate "Тағайындалмаған" %}</span>{% endfor %}
                         {% endif %}
                     </td>
                     <td class="align-end numeric">{% if row.district %}{{ row.workers }} ({{ row.workers_online }}){% else %}—{% endif %}</td>

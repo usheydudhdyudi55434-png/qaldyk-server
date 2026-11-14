@@ -20,23 +20,21 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/6.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure--xj=^fae)@uri2nlrfa7*kzfh_5hwu4h9&px6bi1%v1=hl8vjm'
+SECRET_KEY = os.environ['DJANGO_SECRET_KEY']
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('DJANGO_DEBUG', '') == '1'
 
-# The Cloudflare tunnel address changes when cloudflared restarts
-TUNNEL_HOST = "situated-adventure-evaluated-lab.trycloudflare.com"
+# Quick tunnel address from .env; it changes whenever cloudflared restarts
+TUNNEL_HOST = os.environ.get('TUNNEL_HOST', '').strip()
 
 ALLOWED_HOSTS = [
     "127.0.0.1",
     "localhost",
-    TUNNEL_HOST,
+    *([TUNNEL_HOST] if TUNNEL_HOST else []),
 ]
 
-CSRF_TRUSTED_ORIGINS = [
-    f"https://{TUNNEL_HOST}",
-]
+CSRF_TRUSTED_ORIGINS = [f"https://{TUNNEL_HOST}"] if TUNNEL_HOST else []
 
 # A form from a stale tab (after logging in or out elsewhere) gets a page in Kazakh
 CSRF_FAILURE_VIEW = 'sensor.views.csrf_failure'
@@ -61,6 +59,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'sensor.middleware.LanguageMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -78,6 +77,7 @@ TEMPLATES = [
         'OPTIONS': {
             'context_processors': [
                 'django.template.context_processors.request',
+                'django.template.context_processors.i18n',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'sensor.context_processors.staff_scope',
@@ -97,7 +97,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'qaldyk_db',
         'USER': 'qaldyk_user',
-        'PASSWORD': 'baxa2005',
+        'PASSWORD': os.environ['POSTGRES_PASSWORD'],
         'HOST': 'postgres',
         'PORT': '5432',
     },
@@ -126,7 +126,19 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/6.1/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+# Kazakh first; the visitor switches to Russian or English from the header
+LANGUAGE_CODE = 'kk'
+
+LANGUAGES = [
+    ('kk', 'Қазақша'),
+    ('ru', 'Русский'),
+    ('en', 'English'),
+]
+
+LOCALE_PATHS = [BASE_DIR / 'locale']
+
+LANGUAGE_COOKIE_NAME = 'qaldyq_language'
+LANGUAGE_COOKIE_AGE = 365 * 24 * 60 * 60
 
 TIME_ZONE = 'UTC'
 
@@ -160,6 +172,13 @@ GEMINI_MODELS = [
 
 # Tests run the analysis inline instead of in a background thread
 AI_ANALYSIS_SYNC = False
+
+# Telegram bot for residents (token from @BotFather, kept in .env)
+TELEGRAM_BOT_TOKEN = os.environ.get('TELEGRAM_BOT_TOKEN', '')
+TELEGRAM_BOT_USERNAME = os.environ.get('TELEGRAM_BOT_USERNAME', '').lstrip('@')
+
+# Tests send notifications inline instead of in a background thread
+TELEGRAM_SYNC = False
 
 
 # Email

@@ -8,13 +8,13 @@ from django.contrib.staticfiles import finders
 from django.shortcuts import render
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
+from django.utils.translation import gettext_lazy as _
 
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 
 from . import fire
 from .districts import district_for
-from .models import District
 from .roles import (
     IsDispatcher,
     dispatcher_required,
@@ -23,7 +23,7 @@ from .roles import (
     scope_by_district,
     staff_district,
 )
-from .models import ResidentRequest, SensorReading, Container
+from .models import Container, District, ResidentRequest, SensorReading
 
 
 HISTORY_HOURS = (1, 6, 24, 168)
@@ -313,8 +313,8 @@ def asset_version(path):
 class DispatcherLoginForm(AuthenticationForm):
 
     error_messages = {
-        "invalid_login": "Логин немесе құпия сөз қате.",
-        "inactive": "Бұл аккаунт өшірілген."
+        "invalid_login": _("Логин немесе құпия сөз қате."),
+        "inactive": _("Бұл аккаунт өшірілген.")
     }
 
 
@@ -353,8 +353,4 @@ def dashboard(request):
         'reading': reading,
         'css_version': asset_version('sensor/css/dashboard.css'),
         'js_version': asset_version('sensor/js/dashboard.js'),
-        'new_requests': scope_by_district(ResidentRequest.objects, request.user).filter(
-            status=ResidentRequest.Status.NEW,
-            parent__isnull=True
-        ).count()
     })

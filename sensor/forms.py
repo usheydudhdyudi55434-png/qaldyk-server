@@ -1,5 +1,6 @@
 from django import forms
 from django.contrib.auth import get_user_model
+from django.utils.translation import gettext_lazy as _
 
 from .models import ResidentRequest
 from .roles import WORKERS
@@ -13,13 +14,13 @@ PHOTO_SIGNATURES = (
     b"\x89PNG\r\n\x1a\n",     # PNG
 )
 
-REQUIRED = {"required": "Бұл өрісті толтырыңыз."}
+REQUIRED = {"required": _("Бұл өрісті толтырыңыз.")}
 
 
 def validate_photo(photo):
 
     if photo.size > MAX_PHOTO_BYTES:
-        raise forms.ValidationError("Фото 5 МБ-тан аспауы керек.")
+        raise forms.ValidationError(_("Фото 5 МБ-тан аспауы керек."))
 
     head = photo.read(12)
     photo.seek(0)
@@ -27,7 +28,7 @@ def validate_photo(photo):
     is_webp = head[:4] == b"RIFF" and head[8:12] == b"WEBP"
 
     if not (is_webp or head.startswith(PHOTO_SIGNATURES)):
-        raise forms.ValidationError("Тек JPG, PNG немесе WEBP суретін жүктеңіз.")
+        raise forms.ValidationError(_("Тек JPG, PNG немесе WEBP суретін жүктеңіз."))
 
     return photo
 
@@ -46,12 +47,12 @@ class ResidentRequestForm(forms.ModelForm):
         widgets = {
             "category": forms.RadioSelect,
             "address": forms.TextInput(attrs={
-                "placeholder": "Мысалы: Абай даңғылы 12, аула ішінде",
+                "placeholder": _("Мысалы: Абай даңғылы 12, аула ішінде"),
                 "autocomplete": "street-address"
             }),
             "description": forms.Textarea(attrs={
                 "rows": 4,
-                "placeholder": "Не болғанын қысқаша жазыңыз"
+                "placeholder": _("Не болғанын қысқаша жазыңыз")
             }),
             "photo": forms.ClearableFileInput(attrs={"accept": "image/jpeg,image/png,image/webp"}),
             "latitude": forms.HiddenInput,
@@ -69,7 +70,7 @@ class ResidentRequestForm(forms.ModelForm):
 
     def clean_website(self):
         if self.cleaned_data["website"]:
-            raise forms.ValidationError("Өтінішті жіберу мүмкін болмады.")
+            raise forms.ValidationError(_("Өтінішті жіберу мүмкін болмады."))
         return ""
 
     def clean_photo(self):
@@ -86,10 +87,10 @@ class ResidentRequestForm(forms.ModelForm):
         longitude = cleaned.get("longitude")
 
         if (latitude is None) != (longitude is None):
-            raise forms.ValidationError("Картадағы нүкте толық көрсетілмеді, қайта белгілеңіз.")
+            raise forms.ValidationError(_("Картадағы нүкте толық көрсетілмеді, қайта белгілеңіз."))
 
         if latitude is not None and not (-90 <= latitude <= 90 and -180 <= longitude <= 180):
-            raise forms.ValidationError("Картадағы нүкте дұрыс емес, қайта белгілеңіз.")
+            raise forms.ValidationError(_("Картадағы нүкте дұрыс емес, қайта белгілеңіз."))
 
         return cleaned
 
@@ -100,14 +101,14 @@ class RequestUpdateForm(forms.ModelForm):
         model = ResidentRequest
         fields = ["status", "assignee", "resolution_note"]
         labels = {
-            "status": "Мәртебесі",
-            "assignee": "Орындаушы жұмысшы",
-            "resolution_note": "Тұрғынға жауап",
+            "status": _("Мәртебесі"),
+            "assignee": _("Орындаушы жұмысшы"),
+            "resolution_note": _("Тұрғынға жауап"),
         }
         widgets = {
             "resolution_note": forms.Textarea(attrs={
                 "rows": 3,
-                "placeholder": "Тұрғын өтініш бетінде көреді"
+                "placeholder": _("Тұрғын өтініш бетінде көреді")
             }),
         }
 
@@ -120,12 +121,11 @@ class RequestUpdateForm(forms.ModelForm):
         workers = eligible_workers(self.instance)
 
         self.fields["assignee"].queryset = workers
-        self.fields["assignee"].empty_label = "Тағайындалмаған"
+        self.fields["assignee"].empty_label = _("Тағайындалмаған")
 
         if not workers.exists():
             self.fields["assignee"].help_text = (
-                "Бұл ауданға бекітілген жұмысшы жоқ. Әкімші /admin/ бетінде "
-                "жұмысшыны «Жұмысшылар» тобына қосып, оған аудан тағайындайды."
+                _("Бұл ауданға бекітілген жұмысшы жоқ. Әкімші «Әкімші» бөлімінде жұмысшыға осы ауданды тағайындайды.")
             )
 
     def clean(self):
@@ -135,7 +135,7 @@ class RequestUpdateForm(forms.ModelForm):
         active = (ResidentRequest.Status.ACCEPTED, ResidentRequest.Status.IN_PROGRESS)
 
         if cleaned.get("status") in active and not cleaned.get("assignee"):
-            self.add_error("assignee", "Бұл мәртебе үшін орындаушы жұмысшыны таңдаңыз.")
+            self.add_error("assignee", _("Бұл мәртебе үшін орындаушы жұмысшыны таңдаңыз."))
 
         return cleaned
 
@@ -147,8 +147,8 @@ class TaskCompleteForm(forms.ModelForm):
         model = ResidentRequest
         fields = ["result_photo", "resolution_note"]
         labels = {
-            "result_photo": "Орындалғаннан кейінгі фото",
-            "resolution_note": "Тұрғынға жауап",
+            "result_photo": _("Орындалғаннан кейінгі фото"),
+            "resolution_note": _("Тұрғынға жауап"),
         }
         widgets = {
             "result_photo": forms.ClearableFileInput(attrs={
@@ -157,7 +157,7 @@ class TaskCompleteForm(forms.ModelForm):
             }),
             "resolution_note": forms.Textarea(attrs={
                 "rows": 2,
-                "placeholder": "Мысалы: контейнер босатылды, аула тазартылды"
+                "placeholder": _("Мысалы: контейнер босатылды, аула тазартылды")
             }),
         }
 
@@ -165,7 +165,7 @@ class TaskCompleteForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.fields["result_photo"].required = True
         self.fields["result_photo"].error_messages["required"] = (
-            "Жұмыс аяқталғанын көрсететін фото қажет."
+            _("Жұмыс аяқталғанын көрсететін фото қажет.")
         )
 
     def clean_result_photo(self):

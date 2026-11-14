@@ -4,8 +4,10 @@ import math
 from datetime import timedelta
 
 from django.contrib.auth import get_user_model
+from django.db import transaction
 from django.db.models import Count, Q
 from django.utils import timezone
+from django.utils.translation import gettext as _
 
 from .models import Container, RequestEvent, ResidentRequest
 from .roles import WORKERS
@@ -119,13 +121,15 @@ def eligible_workers(request):
 
 
 def distance_label(meters):
-    return f"{round(meters)} м" if meters < 1000 else f"{meters / 1000:.1f} км".replace(".", ",")
+    if meters < 1000:
+        return _("%(meters)s м") % {"meters": round(meters)}
+    return _("%(km)s км") % {"km": f"{meters / 1000:.1f}".replace(".", ",")}
 
 
 def minutes_label(minutes):
     if minutes < 60:
-        return f"{minutes} мин"
-    return f"{minutes // 60} сағ {minutes % 60} мин"
+        return _("%(minutes)s мин") % {"minutes": minutes}
+    return _("%(hours)s сағ %(minutes)s мин") % {"hours": minutes // 60, "minutes": minutes % 60}
 
 
 def suggest_workers(request):
@@ -155,7 +159,7 @@ def suggest_workers(request):
 
             minutes = int((now - profile.located_at).total_seconds() // 60)
             row["fresh"] = minutes <= LOCATION_FRESH_MINUTES
-            row["seen"] = minutes_label(minutes) + " бұрын"
+            row["seen"] = _("%(time)s бұрын") % {"time": minutes_label(minutes)}
 
             if request.latitude is not None:
                 row["distance"] = distance_meters(
@@ -234,14 +238,75 @@ def sync_duplicates(parent, actor=None):
             )
 
 
-def log_event(request, status, actor=None, note=""):
+def log_event(request, status, actor=None, note="", notify=True):
 
-    return RequestEvent.objects.create(
+    previous = request.events.order_by('-created_at', '-pk').values_list('status', flat=True).first()
+
+    event = RequestEvent.objects.create(
         request=request,
         status=status,
         actor=actor,
         note=note[:300]
     )
+
+    # Eco-points are paid when a worker's photo confirms the job was real
+    if status == ResidentRequest.Status.DONE and previous != status:
+        from .eco import award
+        award(request)
+
+    # A resident who wrote through Telegram hears when the status moves on
+    if notify and previous is not None and previous != status and request.telegram_chat_id:
+        from .telegram import notify_status
+        transaction.on_commit(lambda: notify_status(request.pk))
+
+    return event
+
+
+def submit_request(resident_request):
+    """Saves a resident's new request, from the website or the Telegram bot.
+
+    Links the nearest sensor, the district and an open request it repeats,
+    then starts the photo analysis.
+    """
+
+    from .ai import start_analysis
+    from .districts import district_for
+
+    attach_sensor_snapshot(resident_request)
+
+    resident_request.district = district_for(
+        resident_request.latitude, resident_request.longitude
+    )
+
+    primary = find_primary(resident_request)
+
+    if primary:
+        resident_request.parent = primary
+        resident_request.status = primary.status
+        resident_request.assignee = primary.assignee
+
+    resident_request.save()
+
+    log_event(resident_request, ResidentRequest.Status.NEW, note="Тұрғын өтініш жіберді")
+
+    if primary:
+        # The reply to the resident already says so; no separate notice
+        log_event(
+            resident_request,
+            resident_request.status,
+            note=f"Осы жердегі {primary.code} өтінішімен біріктірілді",
+            notify=False
+        )
+        log_event(
+            primary,
+            primary.status,
+            note=f"Тағы бір тұрғын хабарлады: {resident_request.code}"
+        )
+
+    if resident_request.photo:
+        transaction.on_commit(lambda: start_analysis(resident_request))
+
+    return resident_request
 
 
 def sensor_clearance(request):
@@ -274,14 +339,14 @@ def sensor_verdict(request):
     """What the sensor says about the complaint, for the dispatcher."""
 
     if request.container is None:
-        return "none", "Жақын жерде датчигі бар контейнер жоқ"
+        return "none", _("Жақын жерде датчигі бар контейнер жоқ")
 
     if request.sensor_fill_level is None:
-        return "none", "Контейнердің датчигінен дерек болмаған"
+        return "none", _("Контейнердің датчигінен дерек болмаған")
 
     fill = round(request.sensor_fill_level)
 
     if fill >= CONFIRM_FILL_LEVEL:
-        return "confirmed", f"Датчик контейнердің толғанын растайды: {fill}%"
+        return "confirmed", _("Датчик контейнердің толғанын растайды: %(fill)s%%") % {"fill": fill}
 
-    return "unconfirmed", f"Датчик бойынша контейнер толмаған: {fill}%"
+    return "unconfirmed", _("Датчик бойынша контейнер толмаған: %(fill)s%%") % {"fill": fill}

@@ -1,13 +1,14 @@
+{% load i18n %}
 {% load static %}
 
 <!DOCTYPE html>
 
-<html lang="kk">
+<html lang="{{ LANGUAGE_CODE|default:'kk' }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Qaldyq — Кіру</title>
+    <title>{% translate "Qaldyq — Кіру" %}</title>
 
     <link rel="icon" type="image/svg+xml" href="{% static 'sensor/img/qaldyq-icon.svg' %}">
     <link rel="apple-touch-icon" href="{% static 'sensor/img/qaldyq-apple-touch-icon.png' %}">
@@ -37,6 +38,8 @@
     </symbol>
 </svg>
 
+<div class="login-language">{% include "language_menu.html" %}</div>
+
 <main class="login-card">
 
     <div class="login-brand">
@@ -57,11 +60,11 @@
             height="56"
         >
 
-        <div class="brand-note">Қалдықтарды бақылау жүйесі</div>
+        <div class="brand-note">{% translate "Қалдықтарды бақылау жүйесі" %}</div>
 
     </div>
 
-    <h1>Диспетчер панеліне кіру</h1>
+    <h1>{% translate "Диспетчер панеліне кіру" %}</h1>
 
     {% if form.non_field_errors %}
     <div class="login-error level-full" role="alert">
@@ -77,16 +80,16 @@
         <input type="hidden" name="next" value="{{ next }}">
 
         <label class="login-field">
-            <span>Логин</span>
+            <span>{% translate "Логин" %}</span>
             {{ form.username }}
         </label>
 
         <label class="login-field">
-            <span>Құпия сөз</span>
+            <span>{% translate "Құпия сөз" %}</span>
             {{ form.password }}
         </label>
 
-        <button type="submit" class="login-submit">Кіру</button>
+        <button type="submit" class="login-submit">{% translate "Кіру" %}</button>
 
     </form>
 

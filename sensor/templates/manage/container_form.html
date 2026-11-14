@@ -1,7 +1,8 @@
 {% extends "manage/base.html" %}
+{% load i18n %}
 {% load static %}
 
-{% block title %}Qaldyq — {% if creating %}Жаңа контейнер{% else %}{{ container.name }}{% endif %}{% endblock %}
+{% block title %}Qaldyq — {% if creating %}{% translate "Жаңа контейнер" %}{% else %}{{ container.name }}{% endif %}{% endblock %}
 
 {% block head %}
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
@@ -11,9 +12,10 @@
 
 <section aria-labelledby="containerFormTitle" class="manage-narrow">
 
+    <a class="back-link" href="{% url 'manage_containers' %}"><svg class="icon" aria-hidden="true"><use href="#i-caret"></use></svg>{% translate "Тізімге оралу" %}</a>
+
     <div class="section-header">
-        <h1 id="containerFormTitle">{% if creating %}Жаңа контейнер{% else %}{{ container.name }} <span class="cell-secondary">№{{ container.pk }}</span>{% endif %}</h1>
-        <a class="header-link" href="{% url 'manage_containers' %}">← Тізімге оралу</a>
+        <h1 id="containerFormTitle">{% if creating %}{% translate "Жаңа контейнер" %}{% else %}{{ container.name }} <span class="cell-secondary">№{{ container.pk }}</span>{% endif %}</h1>
     </div>
 
     <form class="panel detail-form" method="post" novalidate>
@@ -31,15 +33,15 @@
         {% include "manage/field.html" with field=form.location %}
 
         <div class="field">
-            <span class="field-label">Картадағы орны</span>
-            <p class="field-hint">Картадан нүктені басыңыз. Аудан нүкте бойынша автоматты түрде анықталады.</p>
-            <div id="pickMap" class="pick-map" role="region" aria-label="Контейнердің орнын белгілейтін карта"></div>
+            <span class="field-label">{% translate "Картадағы орны" %}</span>
+            <p class="field-hint">{% translate "Картадан нүктені басыңыз. Аудан нүкте бойынша автоматты түрде анықталады." %}</p>
+            <div id="pickMap" class="pick-map" role="region" aria-label="{% translate 'Контейнердің орнын белгілейтін карта' %}"></div>
             <div class="pick-actions">
                 <button id="locateMe" class="button-secondary" type="button">
                     <svg class="icon" aria-hidden="true"><use href="#i-pin"></use></svg>
-                    Менің орным
+                    {% translate "Менің орным" %}
                 </button>
-                <span id="pickStatus" class="field-hint" aria-live="polite">Нүкте белгіленбеген</span>
+                <span id="pickStatus" class="field-hint" aria-live="polite">{% translate "Нүкте белгіленбеген" %}</span>
             </div>
             {{ form.latitude }}
             {{ form.longitude }}
@@ -47,14 +49,14 @@
 
         {% if container %}
         <div class="field">
-            <span class="field-label">Датчик адресі</span>
-            <p class="field-hint">ESP32 прошивкасында осы адресті көрсетіңіз. Ауданы: {{ container.district.name|default:"анықталмаған" }}.</p>
+            <span class="field-label">{% translate "Датчик адресі" %}</span>
+            <p class="field-hint">{% translate "анықталмаған" as unknown %}{% blocktranslate with district=container.district.name|default:unknown %}ESP32 прошивкасында осы адресті көрсетіңіз. Ауданы: {{ district }}.{% endblocktranslate %}</p>
             <code class="device-url">{{ device_url }}</code>
         </div>
         {% endif %}
 
         <div class="form-actions">
-            <button class="button-primary" type="submit">{% if creating %}Контейнерді қосу{% else %}Сақтау{% endif %}</button>
+            <button class="button-primary" type="submit">{% if creating %}{% translate "Контейнерді қосу" %}{% else %}{% translate "Сақтау" %}{% endif %}</button>
         </div>
 
     </form>
@@ -62,13 +64,13 @@
     {% if container %}
     <div class="panel detail-form manage-danger">
         {% if can_delete %}
-        <form method="post" action="{% url 'manage_container_delete' container.pk %}" onsubmit="return confirm('{{ container.name|escapejs }} өшірілсін бе?');">
+        <form method="post" action="{% url 'manage_container_delete' container.pk %}" {% blocktranslate asvar delete_question with name=container.name %}{{ name }} өшірілсін бе?{% endblocktranslate %}onsubmit="return confirm('{{ delete_question|escapejs }}');">
             {% csrf_token %}
-            <button class="button-secondary" type="submit">Контейнерді өшіру</button>
+            <button class="button-secondary" type="submit">{% translate "Контейнерді өшіру" %}</button>
         </form>
-        <p class="field-hint">Контейнерге әлі дерек пен өтініш келмеген, сондықтан оны өшіруге болады.</p>
+        <p class="field-hint">{% translate "Контейнерге әлі дерек пен өтініш келмеген, сондықтан оны өшіруге болады." %}</p>
         {% else %}
-        <p class="field-hint">Бұл контейнердің датчик деректері немесе өтініштері бар. Тарих жоғалмауы үшін оны өшіруге болмайды.</p>
+        <p class="field-hint">{% translate "Бұл контейнердің датчик деректері немесе өтініштері бар. Тарих жоғалмауы үшін оны өшіруге болмайды." %}</p>
         {% endif %}
     </div>
     {% endif %}

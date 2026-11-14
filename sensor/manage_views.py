@@ -11,11 +11,14 @@ from django.urls import reverse
 from django.utils import timezone
 from django.utils.http import urlencode
 from django.views.decorators.http import require_POST
+from django.utils.translation import gettext as _
 
-from . import ai
+from . import ai, eco, telegram
 from .districts import district_for
-from .manage_forms import ContainerForm, PasswordForm, StaffCreateForm, StaffForm
-from .models import Container, District, ResidentRequest, SensorReading
+from .manage_forms import ContainerForm, OsiForm, PasswordForm, RewardForm, StaffCreateForm, StaffForm
+from .models import (
+    Container, District, Osi, Redemption, ResidentRequest, Reward, SensorReading, TelegramChat,
+)
 from .residents import LOCATION_FRESH_MINUTES, minutes_label
 from .roles import ROLE_LABELS, apply_role, is_admin, role_of, role_required, staff_district
 from .views import asset_version
@@ -58,7 +61,7 @@ def staff_list(request):
         if role == 'worker' and profile and profile.located_at:
             minutes = int((now - profile.located_at).total_seconds() // 60)
             seen = {
-                'label': minutes_label(minutes) + " бұрын",
+                'label': _("%(time)s бұрын") % {'time': minutes_label(minutes)},
                 'fresh': minutes <= LOCATION_FRESH_MINUTES,
             }
 
@@ -101,7 +104,7 @@ def staff_create(request):
 
         apply_role(user, data['role'], data['district'])
 
-        return done('manage_staff', f"{user.username} қосылды")
+        return done('manage_staff', _("%(name)s қосылды") % {"name": user.username})
 
     return render(request, 'manage/staff_form.html', {
         'form': form,
@@ -145,7 +148,7 @@ def staff_edit(request, pk):
 
         apply_role(user, data['role'], data['district'])
 
-        return done('manage_staff', f"{user.username} сақталды")
+        return done('manage_staff', _("%(name)s сақталды") % {"name": user.username})
 
     return render(request, 'manage/staff_form.html', {
         'form': form,
@@ -171,7 +174,7 @@ def staff_password(request, pk):
         if user == request.user:
             update_session_auth_hash(request, user)
 
-        return done('manage_staff', f"{user.username} құпия сөзі ауыстырылды")
+        return done('manage_staff', _("%(name)s құпия сөзі ауыстырылды") % {"name": user.username})
 
     return render(request, 'manage/password_form.html', {
         'form': form,
@@ -219,7 +222,7 @@ def container_create(request):
 
     if request.method == 'POST' and form.is_valid():
         container = save_container(form)
-        return done('manage_containers', f"{container.name} қосылды (№{container.pk})")
+        return done('manage_containers', _("%(name)s қосылды (№%(number)s)") % {"name": container.name, "number": container.pk})
 
     return render(request, 'manage/container_form.html', {
         'form': form,
@@ -238,7 +241,7 @@ def container_edit(request, pk):
 
     if request.method == 'POST' and form.is_valid():
         container = save_container(form)
-        return done('manage_containers', f"{container.name} сақталды")
+        return done('manage_containers', _("%(name)s сақталды") % {"name": container.name})
 
     return render(request, 'manage/container_form.html', {
         'form': form,
@@ -263,7 +266,7 @@ def container_delete(request, pk):
     name = container.name
     container.delete()
 
-    return done('manage_containers', f"{name} өшірілді")
+    return done('manage_containers', _("%(name)s өшірілді") % {"name": name})
 
 
 # ============================================================
@@ -279,14 +282,91 @@ def system_status(request):
         'ai_provider': {'gemini': 'Google Gemini', 'anthropic': 'Claude (Anthropic)'}.get(provider),
         'ai_models': settings.GEMINI_MODELS if provider == 'gemini' else [ai.MODEL] if provider else [],
         'tunnel_host': settings.TUNNEL_HOST,
+        'telegram_on': telegram.enabled(),
+        'telegram_link': telegram.bot_link(),
+        'telegram_chats': TelegramChat.objects.count(),
+        'telegram_requests': ResidentRequest.objects.filter(telegram_chat__isnull=False).count(),
         'debug': settings.DEBUG,
         'counts': {
-            'Аудандар': District.objects.count(),
-            'Контейнерлер': Container.objects.count(),
-            'Датчик көрсеткіштері': SensorReading.objects.count(),
-            'Тұрғындардың өтініштері': ResidentRequest.objects.filter(parent__isnull=True).count(),
-            'Белсенді аккаунттар': get_user_model().objects.filter(is_active=True).count(),
+            _('Аудандар'): District.objects.count(),
+            _('Контейнерлер'): Container.objects.count(),
+            _('Датчик көрсеткіштері'): SensorReading.objects.count(),
+            _('Тұрғындардың өтініштері'): ResidentRequest.objects.filter(parent__isnull=True).count(),
+            _('Белсенді аккаунттар'): get_user_model().objects.filter(is_active=True).count(),
         },
         'tab': 'system',
         **assets()
     })
+
+
+# ============================================================
+# ECO-POINTS
+# ============================================================
+
+@admin_required
+def eco_overview(request):
+
+    return render(request, 'manage/eco.html', {
+        'totals': eco.totals(),
+        'rewards': Reward.objects.annotate(taken=Count('redemptions')).order_by('-is_active', 'cost'),
+        'osis': Osi.objects.select_related('district').annotate(
+            residents=Count('chats', distinct=True)
+        ).order_by('-is_active', 'name'),
+        'redemptions': Redemption.objects.select_related('reward', 'chat')[:30],
+        'done': request.GET.get('done', ''),
+        'tab': 'eco',
+        **assets()
+    })
+
+
+def edit_object(request, form_class, instance, title, back_message):
+
+    form = form_class(request.POST or None, instance=instance)
+
+    if request.method == 'POST' and form.is_valid():
+        saved = form.save()
+        return done('manage_eco', back_message % {'name': saved})
+
+    return render(request, 'manage/simple_form.html', {
+        'form': form,
+        'title': title,
+        'back_url': reverse('manage_eco'),
+        'tab': 'eco',
+        **assets()
+    })
+
+
+@admin_required
+def reward_create(request):
+    return edit_object(request, RewardForm, None, _("Жаңа сыйлық"), _("%(name)s қосылды"))
+
+
+@admin_required
+def reward_edit(request, pk):
+    reward = get_object_or_404(Reward, pk=pk)
+    return edit_object(request, RewardForm, reward, reward.title, _("%(name)s сақталды"))
+
+
+@admin_required
+def osi_create(request):
+    return edit_object(request, OsiForm, None, _("Жаңа ОСИ"), _("%(name)s қосылды"))
+
+
+@admin_required
+def osi_edit(request, pk):
+    osi = get_object_or_404(Osi, pk=pk)
+    return edit_object(request, OsiForm, osi, osi.name, _("%(name)s сақталды"))
+
+
+@admin_required
+@require_POST
+def redemption_use(request, pk):
+
+    redemption = get_object_or_404(Redemption, pk=pk)
+
+    # A voucher is spent once; pressing again changes nothing
+    if redemption.used_at is None:
+        redemption.used_at = timezone.now()
+        redemption.save(update_fields=['used_at'])
+
+    return done('manage_eco', _("%(code)s пайдаланылды деп белгіленді") % {"code": redemption.code})

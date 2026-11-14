@@ -1,23 +1,17 @@
 {% extends "layout.html" %}
+{% load i18n %}
 
 {% block brand_href %}{% url 'manage_staff' %}{% endblock %}
 
-{% block brand_note %}Әкімші панелі{% endblock %}
-
-{% block nav %}
-    <a class="header-link" href="{% url 'dashboard' %}">Диспетчер панелі</a>
-{% endblock %}
-
-{% block account %}
-    {% include "account_menu.html" %}
-{% endblock %}
+{% block brand_note %}{% translate "Әкімші панелі" %}{% endblock %}
 
 {% block content %}
 
-<nav class="manage-tabs" aria-label="Әкімші панелінің бөлімдері">
-    <a href="{% url 'manage_staff' %}" {% if tab == 'staff' %}aria-current="page"{% endif %}>Қызметкерлер</a>
-    <a href="{% url 'manage_containers' %}" {% if tab == 'containers' %}aria-current="page"{% endif %}>Контейнерлер</a>
-    <a href="{% url 'manage_system' %}" {% if tab == 'system' %}aria-current="page"{% endif %}>Жүйе</a>
+<nav class="manage-tabs" aria-label="{% translate 'Әкімші панелінің бөлімдері' %}">
+    <a href="{% url 'manage_staff' %}" {% if tab == 'staff' %}aria-current="page"{% endif %}>{% translate "Қызметкерлер" %}</a>
+    <a href="{% url 'manage_containers' %}" {% if tab == 'containers' %}aria-current="page"{% endif %}>{% translate "Контейнерлер" %}</a>
+    <a href="{% url 'manage_eco' %}" {% if tab == 'eco' %}aria-current="page"{% endif %}>{% translate "Эко-ұпай" %}</a>
+    <a href="{% url 'manage_system' %}" {% if tab == 'system' %}aria-current="page"{% endif %}>{% translate "Жүйе" %}</a>
 </nav>
 
 {% if done %}

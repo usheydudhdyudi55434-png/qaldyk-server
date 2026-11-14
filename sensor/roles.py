@@ -8,6 +8,7 @@ from functools import wraps
 
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
+from django.utils.translation import gettext_lazy as _
 from rest_framework.permissions import BasePermission
 
 DISPATCHERS = "Диспетчерлер"
@@ -98,11 +99,11 @@ ROLE_WORKER = "worker"
 ROLE_NONE = "none"
 
 ROLE_LABELS = {
-    ROLE_ADMIN: "Әкімші",
-    ROLE_HEAD: "Бас диспетчер",
-    ROLE_DISTRICT: "Аудан диспетчері",
-    ROLE_WORKER: "Жұмысшы",
-    ROLE_NONE: "Рөлі жоқ",
+    ROLE_ADMIN: _("Әкімші"),
+    ROLE_HEAD: _("Бас диспетчер"),
+    ROLE_DISTRICT: _("Аудан диспетчері"),
+    ROLE_WORKER: _("Жұмысшы"),
+    ROLE_NONE: _("Рөлі жоқ"),
 }
 
 
@@ -131,8 +132,8 @@ def apply_role(user, role, district=None):
 
     from .models import StaffProfile
 
-    dispatchers, _ = Group.objects.get_or_create(name=DISPATCHERS)
-    workers, _ = Group.objects.get_or_create(name=WORKERS)
+    dispatchers, _created = Group.objects.get_or_create(name=DISPATCHERS)
+    workers, _created = Group.objects.get_or_create(name=WORKERS)
 
     user.groups.remove(dispatchers, workers)
 
@@ -144,7 +145,7 @@ def apply_role(user, role, district=None):
     if role == ROLE_HEAD:
         district = None
 
-    profile, _ = StaffProfile.objects.get_or_create(user=user)
+    profile, _created = StaffProfile.objects.get_or_create(user=user)
 
     if profile.district != district:
         profile.district = district

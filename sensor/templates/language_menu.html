@@ -1,0 +1,45 @@
+{% load i18n %}
+{% get_current_language as current_language %}
+{% get_available_languages as site_languages %}
+<details class="account-menu language-menu">
+
+    <summary aria-label="{% translate 'Тілді таңдау' %}">
+        <svg class="icon language-globe" viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="9"/>
+            <path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/>
+        </svg>
+        <span class="language-code">{% if current_language == 'kk' %}ҚАЗ{% elif current_language == 'ru' %}РУС{% else %}ENG{% endif %}</span>
+    </summary>
+
+    <form class="account-panel language-panel" method="post" action="{% url 'set_language' %}">
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{{ request.get_full_path }}">
+        {% for code, name in site_languages %}
+        <button
+            class="account-item"
+            type="submit"
+            name="language"
+            value="{{ code }}"
+            lang="{{ code }}"
+            {% if code == current_language %}aria-current="true"{% endif %}
+        >
+            {{ name }}
+            {% if code == current_language %}<svg class="icon language-check" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg>{% endif %}
+        </button>
+        {% endfor %}
+    </form>
+
+</details>
+
+<script>
+    // One menu at a time; a click outside or Escape closes it
+    (function () {
+        if (window.qaldyqMenu) return;
+        window.qaldyqMenu = true;
+        const close = except => document.querySelectorAll("details.account-menu[open]").forEach(menu => {
+            if (menu !== except) menu.removeAttribute("open");
+        });
+        document.addEventListener("click", event => close(event.target.closest("details.account-menu")));
+        document.addEventListener("keydown", event => { if (event.key === "Escape") close(null); });
+    })();
+</script>

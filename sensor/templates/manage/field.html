@@ -1,5 +1,6 @@
+{% load i18n %}
 <div class="field">
-    <label for="{{ field.id_for_label }}">{{ field.label }}{% if not field.field.required and field.name != 'district' %} <span class="field-optional">міндетті емес</span>{% endif %}</label>
+    <label for="{{ field.id_for_label }}">{{ field.label }}{% if not field.field.required and field.name != 'district' %} <span class="field-optional">{% translate "міндетті емес" %}</span>{% endif %}</label>
     {{ field }}
     {% if field.help_text %}<p class="field-hint">{{ field.help_text }}</p>{% endif %}
     {% for error in field.errors %}<p class="field-error">{{ error }}</p>{% endfor %}

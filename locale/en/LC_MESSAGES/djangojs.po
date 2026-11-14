@@ -1,0 +1,330 @@
+# Qaldyq: Russian and English translations of the Kazakh interface.
+# Kazakh is the source language; regenerate with makemessages, then fill msgstr.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-11-14 10:13+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: en\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: sensor/static/sensor/js/dashboard.js:27
+msgid "Толы"
+msgstr "Full"
+
+#: sensor/static/sensor/js/dashboard.js:28
+msgid "Жартылай толы"
+msgstr "Half full"
+
+#: sensor/static/sensor/js/dashboard.js:29
+#: sensor/static/sensor/js/dashboard.js:42
+msgid "Қалыпты"
+msgstr "Normal"
+
+#: sensor/static/sensor/js/dashboard.js:30
+#: sensor/static/sensor/js/dashboard.js:994
+#: sensor/static/sensor/js/dashboard.js:1402
+msgid "Дерек жоқ"
+msgstr "No data"
+
+#: sensor/static/sensor/js/dashboard.js:34
+msgid "Толы шегі"
+msgstr "Full threshold"
+
+#: sensor/static/sensor/js/dashboard.js:35
+msgid "Жартылай шегі"
+msgstr "Half threshold"
+
+#: sensor/static/sensor/js/dashboard.js:40
+#: sensor/static/sensor/js/dashboard.js:1576
+#: sensor/static/sensor/js/dashboard.js:1594
+msgid "Қауіпті"
+msgstr "Danger"
+
+#: sensor/static/sensor/js/dashboard.js:41
+#: sensor/static/sensor/js/dashboard.js:567
+#: sensor/static/sensor/js/dashboard.js:1577
+#: sensor/static/sensor/js/dashboard.js:1595
+msgid "Ескерту"
+msgstr "Warning"
+
+#: sensor/static/sensor/js/dashboard.js:43
+msgid "Датчик жоқ"
+msgstr "No sensor"
+
+#: sensor/static/sensor/js/dashboard.js:203
+msgid "%(value)s см"
+msgstr "%(value)s cm"
+
+#: sensor/static/sensor/js/dashboard.js:243
+msgid "%(count)s сек бұрын"
+msgstr "%(count)s s ago"
+
+#: sensor/static/sensor/js/dashboard.js:247
+msgid "%(count)s мин бұрын"
+msgstr "%(count)s min ago"
+
+#: sensor/static/sensor/js/dashboard.js:251
+msgid "%(count)s сағ бұрын"
+msgstr "%(count)s h ago"
+
+#: sensor/static/sensor/js/dashboard.js:254
+msgid "%(count)s күн бұрын"
+msgstr "%(count)s d ago"
+
+#: sensor/static/sensor/js/dashboard.js:530
+msgid "Сервер қосулы"
+msgstr "Server online"
+
+#: sensor/static/sensor/js/dashboard.js:530
+msgid "Сервермен байланыс жоқ"
+msgstr "No connection to the server"
+
+#: sensor/static/sensor/js/dashboard.js:567
+#: sensor/static/sensor/js/dashboard.js:1399
+msgid "Өрт қаупі"
+msgstr "Fire risk"
+
+#: sensor/static/sensor/js/dashboard.js:589
+msgid "Өрт қаупінің белгілері анықталды"
+msgstr "Signs of fire danger detected"
+
+#: sensor/static/sensor/js/dashboard.js:590
+msgid "Өрт қаупі: ескерту белгілері"
+msgstr "Fire risk: warning signs"
+
+#: sensor/static/sensor/js/dashboard.js:602
+msgid "датчик үнсіз, деректер ескі болуы мүмкін"
+msgstr "the sensor is silent, data may be stale"
+
+#: sensor/static/sensor/js/dashboard.js:730
+#: sensor/static/sensor/js/dashboard.js:964
+msgid "Әзірге контейнер қосылмаған"
+msgstr "No containers added yet"
+
+#: sensor/static/sensor/js/dashboard.js:731
+msgid "Барлық контейнер қалыпты жұмыс істеп тұр"
+msgstr "All containers are working normally"
+
+#: sensor/static/sensor/js/dashboard.js:805
+msgid "өрт қаупінің белгісі"
+msgstr "sign of fire danger"
+
+#: sensor/static/sensor/js/dashboard.js:806
+msgid "соңғы дерек %(age)s"
+msgstr "last data %(age)s"
+
+#: sensor/static/sensor/js/dashboard.js:811
+msgid "Датчик әлі дерек жібермеген"
+msgstr "The sensor has not sent data yet"
+
+#: sensor/static/sensor/js/dashboard.js:815
+msgid "Датчик үнсіз, соңғы дерек %(age)s"
+msgstr "Sensor silent, last data %(age)s"
+
+#: sensor/static/sensor/js/dashboard.js:819
+msgid "Шығару қажет, соңғы дерек %(age)s"
+msgstr "Needs collection, last data %(age)s"
+
+#: sensor/static/sensor/js/dashboard.js:822
+msgid "Қоқысты шығару қажет"
+msgstr "Needs collection"
+
+#: sensor/static/sensor/js/dashboard.js:965
+msgid "Сүзгіге сәйкес контейнер табылмады"
+msgstr "No containers match the filter"
+
+#: sensor/static/sensor/js/dashboard.js:1070
+msgid "газ %(value)s"
+msgstr "gas %(value)s"
+
+#: sensor/static/sensor/js/dashboard.js:1234
+msgid "%(count)s контейнердің координаты көрсетілмеген"
+msgstr "%(count)s containers have no coordinates"
+
+#: sensor/static/sensor/js/dashboard.js:1235
+msgid "Алматыдағы бақылау аймағы"
+msgstr "Monitoring area in Almaty"
+
+#: sensor/static/sensor/js/dashboard.js:1394
+msgid "Толу деңгейі"
+msgstr "Fill level"
+
+#: sensor/static/sensor/js/dashboard.js:1395
+msgid "Қашықтық"
+msgstr "Distance"
+
+#: sensor/static/sensor/js/dashboard.js:1396
+#: sensor/static/sensor/js/dashboard.js:2379
+msgid "Күйі"
+msgstr "State"
+
+#: sensor/static/sensor/js/dashboard.js:1397
+msgid "Температура"
+msgstr "Temperature"
+
+#: sensor/static/sensor/js/dashboard.js:1398
+msgid "Түтін/газ"
+msgstr "Smoke/gas"
+
+#: sensor/static/sensor/js/dashboard.js:1401
+msgid "Соңғы дерек"
+msgstr "Last data"
+
+#: sensor/static/sensor/js/dashboard.js:1573
+msgid "температурасы"
+msgstr "temperature"
+
+#: sensor/static/sensor/js/dashboard.js:1574
+msgid "Таңдалған кезеңде температура дерегі жоқ."
+msgstr "No temperature data for the selected period."
+
+#: sensor/static/sensor/js/dashboard.js:1591
+msgid "түтін/газ деңгейі (сенсор шкаласынан)"
+msgstr "smoke/gas level (sensor scale)"
+
+#: sensor/static/sensor/js/dashboard.js:1592
+msgid "Таңдалған кезеңде түтін/газ дерегі жоқ."
+msgstr "No smoke/gas data for the selected period."
+
+#: sensor/static/sensor/js/dashboard.js:1607
+msgid "толу деңгейі"
+msgstr "fill level"
+
+#: sensor/static/sensor/js/dashboard.js:1608
+msgid "Таңдалған кезеңде дерек жоқ. Ұзағырақ кезеңді таңдап көріңіз."
+msgstr "No data for the selected period. Try a longer one."
+
+#: sensor/static/sensor/js/dashboard.js:1662
+msgid ""
+"Контейнерлердің %(metric)s графигі. Мәндерді көру үшін сол және оң "
+"көрсеткілерді басыңыз."
+msgstr "Container %(metric)s chart. Use the left and right arrow keys to read the values."
+
+#: sensor/static/sensor/js/dashboard.js:2043
+msgid "Таңдалған кезеңде дерек жоқ"
+msgstr "No data for the selected period"
+
+#: sensor/static/sensor/js/dashboard.js:2065
+msgid "Уақыт"
+msgstr "Time"
+
+#: sensor/static/sensor/js/dashboard.js:2104
+msgid "Желіде"
+msgstr "Online"
+
+#: sensor/static/sensor/js/dashboard.js:2105
+msgid "Жақында белгі берді"
+msgstr "Seen recently"
+
+#: sensor/static/sensor/js/dashboard.js:2106
+msgid "Желіден тыс"
+msgstr "Offline"
+
+#: sensor/static/sensor/js/dashboard.js:2107
+msgid "Орны белгісіз"
+msgstr "Location unknown"
+
+#: sensor/static/sensor/js/dashboard.js:2354
+msgid "%(value)s м"
+msgstr "%(value)s m"
+
+#: sensor/static/sensor/js/dashboard.js:2355
+msgid "%(value)s км"
+msgstr "%(value)s km"
+
+#: sensor/static/sensor/js/dashboard.js:2369
+#: sensor/static/sensor/js/dashboard.js:2437
+msgid "Бос"
+msgstr "Free"
+
+#: sensor/static/sensor/js/dashboard.js:2375
+msgid "Ауданы берілмеген"
+msgstr "No district assigned"
+
+#: sensor/static/sensor/js/dashboard.js:2380
+msgid "Тапсырма"
+msgstr "Task"
+
+#: sensor/static/sensor/js/dashboard.js:2381
+msgid "Мекенжай"
+msgstr "Address"
+
+#: sensor/static/sensor/js/dashboard.js:2382
+msgid "Тапсырмаға дейін"
+msgstr "To the task"
+
+#: sensor/static/sensor/js/dashboard.js:2383
+msgid "%(minutes)s минутта жүрді"
+msgstr "Walked in %(minutes)s min"
+
+#: sensor/static/sensor/js/dashboard.js:2384
+msgid "Барлық тапсырма"
+msgstr "All tasks"
+
+#: sensor/static/sensor/js/dashboard.js:2413
+msgid "Жұмысшылар"
+msgstr "Workers"
+
+#: sensor/static/sensor/js/dashboard.js:2414
+msgid "%(live)s/%(total)s желіде"
+msgstr "%(live)s/%(total)s online"
+
+#: sensor/static/sensor/js/dashboard.js:2430
+msgid "Ауданға жұмысшы бекітілмеген"
+msgstr "No workers attached to the district"
+
+#: sensor/static/sensor/js/dashboard.js:2437
+msgid "Орнын әлі бөліспеген"
+msgstr "Has not shared a location yet"
+
+#: sensor/static/sensor/js/dashboard.js:2468
+msgid "Картадан жасыру"
+msgstr "Hide from the map"
+
+#: sensor/static/sensor/js/dashboard.js:2468
+msgid "Картада көрсету"
+msgstr "Show on the map"
+
+#: sensor/static/sensor/js/resident.js:41
+msgid "Нүкте белгіленді"
+msgstr "Point marked"
+
+#: sensor/static/sensor/js/resident.js:56
+msgid "Браузер орынды анықтай алмайды, картадан белгілеңіз"
+msgstr "Your browser cannot find your location, mark it on the map"
+
+#: sensor/static/sensor/js/resident.js:60
+msgid "Орын анықталуда…"
+msgstr "Finding your location…"
+
+#: sensor/static/sensor/js/resident.js:68
+msgid "Орын анықталмады, картадан белгілеңіз"
+msgstr "Location not found, mark it on the map"
+
+#: sensor/static/sensor/js/worker.js:18
+msgid "Браузер орынды анықтай алмайды"
+msgstr "Your browser cannot find your location"
+
+#: sensor/static/sensor/js/worker.js:49
+msgid "Орныңыз диспетчерге көрінеді · %(time)s"
+msgstr "The dispatcher can see your location · %(time)s"
+
+#: sensor/static/sensor/js/worker.js:50
+msgid "Орын жіберілмеді, бетті жаңартыңыз"
+msgstr "Location not sent, reload the page"
+
+#: sensor/static/sensor/js/worker.js:54
+msgid "Орын жіберілмеді: интернет байланысын тексеріңіз"
+msgstr "Location not sent: check your internet connection"
+
+#: sensor/static/sensor/js/worker.js:70
+msgid "Орынға рұқсат берілмеді: диспетчер сізді жақын жұмысшы ретінде көрмейді"
+msgstr "Location access denied: the dispatcher will not see you among nearby workers"

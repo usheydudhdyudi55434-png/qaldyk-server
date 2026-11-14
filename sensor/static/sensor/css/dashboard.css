@@ -2797,3 +2797,754 @@ a.button-secondary {
         max-height: 150px;
     }
 }
+
+/* Telegram bot invitation on the resident pages */
+
+.telegram-cta {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 16px;
+    padding: 14px 16px;
+    border-color: color-mix(in srgb, #229ed9 45%, var(--border));
+    color: var(--ink);
+    text-decoration: none;
+}
+
+.telegram-cta:hover {
+    background: color-mix(in srgb, #229ed9 8%, var(--surface));
+}
+
+.telegram-cta > span:last-child {
+    display: grid;
+    gap: 2px;
+}
+
+.telegram-cta-icon,
+.telegram-inline {
+    display: inline-grid;
+    flex: 0 0 auto;
+    place-items: center;
+    border-radius: 50%;
+    background: #229ed9;
+    color: #ffffff;
+}
+
+.telegram-cta-icon {
+    width: 38px;
+    height: 38px;
+    font-size: 18px;
+}
+
+.telegram-inline {
+    width: 18px;
+    height: 18px;
+    font-size: 10px;
+}
+
+.resident-privacy a {
+    color: var(--accent);
+}
+
+/* ============================================================
+   ECO-POINTS
+   ============================================================ */
+
+.eco-page {
+    max-width: 1100px;
+}
+
+.eco-hero {
+    display: flex;
+    align-items: flex-start;
+    gap: 18px;
+    margin-bottom: 20px;
+    padding: 24px;
+    border: 1px solid color-mix(in srgb, var(--series-3) 40%, var(--border));
+    border-radius: var(--radius);
+    background:
+        radial-gradient(circle at 0 0, color-mix(in srgb, var(--series-3) 22%, transparent), transparent 60%),
+        var(--surface);
+}
+
+.eco-hero h1 {
+    margin: 0 0 6px;
+    font-size: 26px;
+}
+
+.eco-hero p {
+    max-width: 640px;
+    margin: 0 0 16px;
+    color: var(--ink-secondary);
+}
+
+.eco-hero-badge {
+    display: grid;
+    flex: 0 0 56px;
+    place-items: center;
+    width: 56px;
+    height: 56px;
+    border-radius: 16px;
+    background: color-mix(in srgb, var(--series-3) 22%, var(--surface));
+    font-size: 30px;
+}
+
+.eco-grid {
+    display: grid;
+    align-items: start;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.eco-card {
+    display: grid;
+    align-content: start;
+    gap: 12px;
+    padding: 18px 20px;
+}
+
+.eco-card h2 {
+    margin: 0;
+    font-size: 16px;
+}
+
+.eco-rules,
+.eco-rewards,
+.eco-ranking {
+    display: grid;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.eco-rules li {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 14px;
+}
+
+.eco-points {
+    flex: 0 0 44px;
+    padding: 3px 0;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--series-3) 20%, transparent);
+    color: var(--series-3);
+    font-weight: 700;
+    text-align: center;
+}
+
+.eco-points.is-zero {
+    background: color-mix(in srgb, var(--status-none) 20%, transparent);
+    color: var(--muted);
+}
+
+.eco-rewards li,
+.eco-ranking li {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+}
+
+.eco-rewards li:last-child,
+.eco-ranking li:last-child {
+    border-bottom: 0;
+}
+
+.eco-reward-text {
+    display: grid;
+    flex: 1;
+    min-width: 0;
+}
+
+.eco-cost {
+    color: var(--series-3);
+    font-weight: 700;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+}
+
+.eco-place {
+    display: grid;
+    flex: 0 0 28px;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--surface-raised);
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.eco-ranking li:nth-child(1) .eco-place { background: #e3b341; color: #1a1a19; }
+.eco-ranking li:nth-child(2) .eco-place { background: #b8bcc4; color: #1a1a19; }
+.eco-ranking li:nth-child(3) .eco-place { background: #c9844c; color: #1a1a19; }
+
+.eco-earned > span:first-child {
+    font-size: 20px;
+}
+
+.manage-subhead {
+    margin-top: 28px;
+}
+
+.manage-subhead h2 {
+    margin: 0;
+    font-size: 16px;
+}
+
+.button-small {
+    height: 30px;
+    padding: 0 10px;
+    font-size: 13px;
+}
+
+.field input[type="number"] {
+    width: 100%;
+    padding: 9px 10px;
+    border: 1px solid var(--axis);
+    border-radius: 8px;
+    background: var(--page);
+    color: var(--ink);
+    font: inherit;
+    font-size: 14px;
+}
+
+@media (max-width: 760px) {
+
+    .eco-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .eco-hero {
+        padding: 18px;
+    }
+
+    .eco-hero-badge {
+        display: none;
+    }
+
+}
+
+/* ============================================================
+   INTERFACE POLISH: one header, one menu, one rhythm
+   ============================================================ */
+
+/* Header: brand, then the sections, then the account */
+
+.topbar-inner {
+    gap: 20px;
+}
+
+.topbar .brand {
+    flex: 0 0 auto;
+}
+
+.topbar-nav {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    gap: 2px;
+    min-width: 0;
+}
+
+.topbar-actions {
+    flex: 0 0 auto;
+    gap: 8px;
+}
+
+.main-nav {
+    display: flex;
+    gap: 2px;
+}
+
+.main-nav a,
+.topbar-nav .header-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 34px;
+    padding: 0 12px;
+    border-radius: 8px;
+    color: var(--ink-secondary);
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.main-nav a:hover,
+.topbar-nav .header-link:hover {
+    background: var(--hover);
+    color: var(--ink);
+}
+
+.main-nav a[aria-current="page"] {
+    background: var(--accent-wash);
+    color: var(--ink);
+    font-weight: 600;
+}
+
+.main-nav .count-badge {
+    margin-left: 0;
+    background: var(--brand);
+    color: #ffffff;
+}
+
+/* Account menu: who is signed in, their role, and the way out */
+
+.account-menu {
+    position: relative;
+}
+
+.account-menu summary {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 34px;
+    padding: 0 8px 0 3px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    cursor: pointer;
+    list-style: none;
+    user-select: none;
+}
+
+.account-menu summary::-webkit-details-marker {
+    display: none;
+}
+
+.account-menu summary:hover,
+.account-menu[open] summary {
+    background: var(--hover);
+}
+
+.account-menu summary:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
+
+.account-avatar {
+    display: grid;
+    flex: 0 0 28px;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--brand);
+    color: #ffffff;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .02em;
+}
+
+.account-name {
+    max-width: 150px;
+    overflow: hidden;
+    color: var(--ink-secondary);
+    font-size: 13px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.account-caret {
+    width: 14px;
+    height: 14px;
+    flex-basis: 14px;
+    color: var(--muted);
+    transition: transform .15s ease;
+}
+
+.account-menu[open] .account-caret {
+    transform: rotate(180deg);
+}
+
+.account-panel {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    z-index: 1100;
+    min-width: 240px;
+    padding: 6px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    box-shadow: 0 14px 36px rgba(0, 0, 0, .35);
+}
+
+.account-who {
+    display: grid;
+    gap: 3px;
+    margin-bottom: 6px;
+    padding: 10px 10px 12px;
+    border-bottom: 1px solid var(--border);
+}
+
+.account-who strong {
+    font-size: 14px;
+}
+
+.account-who span {
+    color: var(--muted);
+    font-size: 12px;
+}
+
+.account-panel form {
+    margin: 0;
+}
+
+.account-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 9px 10px;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--ink);
+    font: inherit;
+    font-size: 14px;
+    text-align: left;
+    cursor: pointer;
+}
+
+.account-item:hover {
+    background: var(--hover);
+}
+
+/* Admin pages: section tabs sit close to the content they switch */
+
+.page:has(> .manage-tabs) {
+    gap: 20px;
+}
+
+.manage-tabs {
+    margin-bottom: 0;
+}
+
+.manage-tabs + .notice {
+    margin-bottom: 0;
+}
+
+/* Back link above a form's title */
+
+.back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    margin-bottom: 6px;
+    color: var(--muted);
+    font-size: 13px;
+    text-decoration: none;
+}
+
+.back-link .icon {
+    transform: rotate(90deg);
+}
+
+.back-link:hover {
+    color: var(--ink);
+}
+
+/* Icons that replaced emoji */
+
+.telegram-cta-icon .icon {
+    width: 18px;
+    height: 18px;
+    flex-basis: 18px;
+    color: #ffffff;
+}
+
+.telegram-inline .icon {
+    width: 10px;
+    height: 10px;
+    flex-basis: 10px;
+    color: #ffffff;
+}
+
+.eco-hero-badge .icon {
+    width: 28px;
+    height: 28px;
+    flex-basis: 28px;
+    color: var(--series-3);
+}
+
+.eco-earned .icon {
+    color: var(--series-3);
+}
+
+/* Focus rings for keyboard users, the same everywhere */
+
+a:focus-visible,
+button:focus-visible,
+select:focus-visible,
+input:focus-visible,
+textarea:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
+
+@media (max-width: 760px) {
+
+    /* The sections move to their own scrollable row under the logo */
+    .topbar-inner {
+        flex-wrap: wrap;
+        row-gap: 6px;
+        padding-top: 8px;
+        padding-bottom: 6px;
+    }
+
+    .topbar .brand-note,
+    .account-name {
+        display: none;
+    }
+
+    .topbar-nav {
+        order: 3;
+        flex-basis: 100%;
+        margin: 0 calc(var(--gutter) * -1);
+        padding: 0 var(--gutter);
+        overflow-x: auto;
+        scrollbar-width: none;
+    }
+
+    .topbar-nav:not(:has(a)) {
+        display: none;
+    }
+
+    .main-nav a,
+    .topbar-nav .header-link {
+        height: 32px;
+        padding: 0 10px;
+        font-size: 13px;
+    }
+
+}
+
+@media (max-width: 640px) {
+
+    /* Live status keeps only its dot */
+    .connection #connectionText {
+        display: none;
+    }
+
+    /* Each table row becomes a card with labelled values */
+    .table-scroll:has(.stack-table) {
+        overflow: visible;
+    }
+
+    .stack-table {
+        min-width: 0;
+    }
+
+    .stack-table thead {
+        display: none;
+    }
+
+    .stack-table,
+    .stack-table tbody,
+    .stack-table tr {
+        display: block;
+        width: 100%;
+    }
+
+    .stack-table tbody tr {
+        padding: 10px 14px;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .stack-table tbody tr:last-child {
+        border-bottom: 0;
+    }
+
+    .data-table.stack-table td {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 3px 0;
+        border: 0;
+        text-align: right;
+    }
+
+    .stack-table td::before {
+        content: attr(data-label);
+        flex: 0 0 auto;
+        color: var(--muted);
+        font-size: 12px;
+        text-align: left;
+    }
+
+    /* A row's name is its title, without a label */
+    .data-table.stack-table td:first-child:has(.row-name) {
+        justify-content: flex-start;
+        padding-bottom: 6px;
+        font-size: 15px;
+    }
+
+    .stack-table td:first-child:has(.row-name)::before,
+    .stack-table td[colspan]::before {
+        content: none;
+    }
+
+    .data-table.stack-table td[colspan] {
+        justify-content: flex-start;
+        text-align: left;
+    }
+
+}
+
+/* Worker roster: folding list and a separate map switch */
+
+.worker-roster-toggle .icon {
+    width: 14px;
+    height: 14px;
+    flex-basis: 14px;
+    color: var(--muted);
+    transition: transform .15s ease;
+}
+
+.worker-roster-toggle[aria-expanded="true"] .icon {
+    transform: rotate(180deg);
+}
+
+.worker-roster-count {
+    margin-left: auto;
+}
+
+.worker-roster-dot.is-off {
+    background: var(--status-none);
+    box-shadow: none;
+}
+
+.worker-roster-switch {
+    width: 100%;
+    padding: 8px 12px;
+    border: 0;
+    border-top: 1px solid var(--border);
+    background: transparent;
+    color: var(--accent);
+    font: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    text-align: left;
+    cursor: pointer;
+}
+
+.worker-roster-switch:hover {
+    background: var(--hover);
+}
+
+@media (max-width: 640px) {
+
+    /* Monitoring figures become one swipeable strip, so the map is near the top */
+    .kpi-grid {
+        grid-template-columns: none;
+        grid-auto-flow: column;
+        grid-auto-columns: minmax(136px, 40%);
+        gap: 8px;
+        margin: 0 calc(var(--gutter) * -1);
+        padding: 0 var(--gutter) 4px;
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+        scrollbar-width: none;
+    }
+
+    .kpi {
+        padding: 12px 14px;
+        scroll-snap-align: start;
+    }
+
+    .kpi-value {
+        margin-top: 4px;
+        font-size: 24px;
+    }
+
+    .kpi-note {
+        display: none;
+    }
+
+    /* Admin figures in one compact row */
+    .manage-stats {
+        grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+        gap: 8px;
+    }
+
+    .manage-stat {
+        padding: 10px 12px;
+    }
+
+    .manage-stat span {
+        font-size: 12px;
+    }
+
+    .manage-stat strong {
+        font-size: 20px;
+    }
+
+}
+
+.telegram-inline {
+    flex: 0 0 18px;
+}
+
+/* ============================================================
+   LANGUAGE SWITCH: Kazakh, Russian, English
+   ============================================================ */
+
+.language-menu summary {
+    gap: 6px;
+    padding: 0 10px;
+}
+
+.language-globe {
+    width: 16px;
+    height: 16px;
+    flex-basis: 16px;
+    color: var(--muted);
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+}
+
+.language-code {
+    color: var(--ink-secondary);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: .04em;
+}
+
+.language-panel {
+    min-width: 168px;
+    margin: 0;
+}
+
+.language-panel .account-item {
+    justify-content: space-between;
+}
+
+.language-panel .account-item[aria-current] {
+    font-weight: 600;
+}
+
+.language-check {
+    width: 16px;
+    height: 16px;
+    flex-basis: 16px;
+    color: var(--accent);
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.2;
+}
+
+/* The sign-in page has no header; the switch sits in its corner */
+.login-language {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    z-index: 10;
+}

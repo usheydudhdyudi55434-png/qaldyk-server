@@ -5,7 +5,7 @@ services:
     environment:
       POSTGRES_DB: qaldyk_db
       POSTGRES_USER: qaldyk_user
-      POSTGRES_PASSWORD: baxa2005
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U qaldyk_user -d qaldyk_db"]
       interval: 5s
@@ -22,17 +22,50 @@ services:
     container_name: qaldyk-django
     ports:
       - "8000:8000"
-    environment:
+    environment: &app-env
       # Read from .env next to this file (kept out of git)
+      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:?set DJANGO_SECRET_KEY in .env}
+      DJANGO_DEBUG: ${DJANGO_DEBUG:-0}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+      TUNNEL_HOST: ${TUNNEL_HOST:-}
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
       GEMINI_API_KEY: ${GEMINI_API_KEY:-}
       GEMINI_MODELS: ${GEMINI_MODELS:-gemini-flash-lite-latest,gemini-flash-latest}
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
+      TELEGRAM_BOT_USERNAME: ${TELEGRAM_BOT_USERNAME:-}
+      PYTHONUNBUFFERED: "1"
     volumes:
       # Resident photos survive a rebuild of the image
       - media_data:/app/media
     depends_on:
       postgres:
         condition: service_healthy
+
+  # Residents report problems through Telegram; polls the Bot API, needs no public address
+  telegram-bot:
+    build: .
+    container_name: qaldyk-telegram-bot
+    command: ["python", "manage.py", "run_telegram_bot"]
+    environment: *app-env
+    volumes:
+      - media_data:/app/media
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # Permanent public address through a named Cloudflare Tunnel; the token lives in .env
+  cloudflared:
+    image: cloudflare/cloudflared:2026.10.7
+    container_name: qaldyk-cloudflared
+    command: ["tunnel", "--no-autoupdate", "run"]
+    environment:
+      TUNNEL_TOKEN: ${CLOUDFLARE_TUNNEL_TOKEN:-}
+    depends_on:
+      - django
+    restart: unless-stopped
+    # Needs a domain on Cloudflare; start it with: docker compose --profile tunnel up -d
+    profiles: ["tunnel"]
 
   # Collects CPU, memory, network and disk usage of every container
   cadvisor:

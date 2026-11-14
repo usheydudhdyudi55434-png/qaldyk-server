@@ -1,8 +1,9 @@
+{% load i18n %}
 {% load static %}
 
 <!DOCTYPE html>
 
-<html lang="kk">
+<html lang="{{ LANGUAGE_CODE|default:'kk' }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -33,6 +34,17 @@
 <body class="{% block body_class %}{% endblock %}">
 
 <svg class="icon-sprite" aria-hidden="true" focusable="false">
+    <symbol id="i-caret" viewBox="0 0 24 24">
+        <path d="m6 9 6 6 6-6"/>
+    </symbol>
+    <symbol id="i-leaf" viewBox="0 0 24 24">
+        <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.5 19 2c1 2 2 4.2 2 8 0 5.5-4.8 10-10 10Z"/>
+        <path d="M2 21c0-3 1.9-5.4 5.1-6"/>
+    </symbol>
+    <symbol id="i-send" viewBox="0 0 24 24">
+        <path d="m22 2-7 20-4-9-9-4Z"/>
+        <path d="M22 2 11 13"/>
+    </symbol>
     <symbol id="i-sun" viewBox="0 0 24 24">
         <circle cx="12" cy="12" r="4"/>
         <path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5 19 19M5 19l1.5-1.5M17.5 6.5 19 5"/>
@@ -84,24 +96,28 @@
                 height="26"
             >
 
-            <span class="brand-note">{% block brand_note %}Қалдықтарды бақылау жүйесі{% endblock %}</span>
+            <span class="brand-note">{% block brand_note %}{% translate "Қалдықтарды бақылау жүйесі" %}{% endblock %}</span>
 
         </a>
 
+        <div class="topbar-nav">
+            {% block nav %}{% include "staff_nav.html" %}{% endblock %}
+        </div>
+
         <div class="topbar-actions">
 
-            {% block nav %}{% endblock %}
+            {% include "language_menu.html" %}
 
             <button
                 id="themeToggle"
                 class="icon-button"
                 type="button"
-                aria-label="Тақырыпты өзгерту"
+                aria-label="{% translate 'Тақырыпты өзгерту' %}"
             >
                 <svg class="icon"><use id="themeIcon" href="#i-sun"></use></svg>
             </button>
 
-            {% block account %}{% endblock %}
+            {% block account %}{% include "account_menu.html" %}{% endblock %}
 
         </div>
 
@@ -117,7 +133,7 @@
 
 <footer class="footer">
     <span>Qaldyq</span>
-    <span>Қалдықтарды бақылау жүйесі</span>
+    <span>{% translate "Қалдықтарды бақылау жүйесі" %}</span>
 </footer>
 
 <script>
@@ -137,6 +153,20 @@
         });
     })();
 </script>
+
+<script>
+    // On a phone, each table row becomes a card; its cells get their column name as a label
+    document.querySelectorAll("table.stack-table").forEach(table => {
+        const names = [...table.querySelectorAll("thead th")].map(th => th.textContent.trim());
+        table.querySelectorAll("tbody tr").forEach(row => {
+            [...row.children].forEach((cell, index) => {
+                if (!cell.hasAttribute("colspan") && names[index]) cell.dataset.label = names[index];
+            });
+        });
+    });
+</script>
+
+<script src="{% url 'javascript-catalog' %}"></script>
 
 {% block scripts %}{% endblock %}
 

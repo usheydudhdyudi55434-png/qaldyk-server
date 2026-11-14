@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth import get_user_model
 from django.contrib.auth.admin import UserAdmin
+from django.utils.translation import gettext_lazy as _
 
 from .models import (
     Container,
@@ -10,13 +11,18 @@ from .models import (
     ResidentRequest,
     SensorReading,
     StaffProfile,
+    TelegramChat,
+    EcoPoints,
+    Osi,
+    Redemption,
+    Reward,
 )
 
 
 class StaffProfileInline(admin.StackedInline):
     model = StaffProfile
     can_delete = False
-    verbose_name_plural = "Аудан (бос қалса — бүкіл қала)"
+    verbose_name_plural = _("Аудан (бос қалса — бүкіл қала)")
     readonly_fields = ("latitude", "longitude", "located_at")
 
 
@@ -68,3 +74,21 @@ class ResidentRequestAdmin(admin.ModelAdmin):
 class RequestAnalysisAdmin(admin.ModelAdmin):
     list_display = ("request", "state", "waste_type", "hazard", "confidence", "needs_review", "created_at")
     list_filter = ("state", "hazard", "needs_review")
+
+
+@admin.register(TelegramChat)
+class TelegramChatAdmin(admin.ModelAdmin):
+    list_display = ("chat_id", "username", "first_name", "state", "updated_at")
+    search_fields = ("username", "first_name", "chat_id")
+    readonly_fields = ("created_at", "updated_at")
+
+
+@admin.register(EcoPoints)
+class EcoPointsAdmin(admin.ModelAdmin):
+    list_display = ("chat", "amount", "reason", "request", "created_at")
+    list_select_related = ("chat", "request")
+
+
+admin.site.register(Osi)
+admin.site.register(Reward)
+admin.site.register(Redemption)

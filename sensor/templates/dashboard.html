@@ -1,13 +1,14 @@
+{% load i18n %}
 {% load static %}
 
 <!DOCTYPE html>
 
-<html lang="kk">
+<html lang="{{ LANGUAGE_CODE|default:'kk' }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Qaldyq — Мониторинг панелі</title>
+    <title>{% translate "Qaldyq — Мониторинг панелі" %}</title>
 
     <link rel="icon" type="image/svg+xml" href="{% static 'sensor/img/qaldyq-icon.svg' %}">
     <link rel="apple-touch-icon" href="{% static 'sensor/img/qaldyq-apple-touch-icon.png' %}">
@@ -88,6 +89,9 @@
     <symbol id="i-flame" viewBox="0 0 24 24">
         <path d="M12 3c3 3.2 6 6.2 6 10a6 6 0 0 1-12 0c0-2 .9-3.7 2.4-5 .2 1.6 1 2.8 2.1 3.3C10.2 8.6 10.7 5.7 12 3z"/>
     </symbol>
+    <symbol id="i-caret" viewBox="0 0 24 24">
+        <path d="m6 9 6 6 6-6"/>
+    </symbol>
     <symbol id="i-logout" viewBox="0 0 24 24">
         <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
         <path d="m16 17 5-5-5-5M21 12H9"/>
@@ -120,53 +124,33 @@
                 height="26"
             >
 
-            <div class="brand-note">Қалдықтарды бақылау жүйесі</div>
+            <div class="brand-note">{% translate "Қалдықтарды бақылау жүйесі" %}</div>
 
+        </div>
+
+        <div class="topbar-nav">
+            {% include "staff_nav.html" %}
         </div>
 
         <div class="topbar-actions">
 
             <div id="connection" class="connection" role="status">
                 <span class="connection-dot"></span>
-                <span id="connectionText">Қосылуда…</span>
+                <span id="connectionText">{% translate "Қосылуда…" %}</span>
             </div>
 
-            {% if user.is_superuser %}
-            <a class="header-link" href="{% url 'manage_staff' %}">Әкімші</a>
-            {% endif %}
-
-            {% if is_head_dispatcher %}
-            <a class="header-link" href="{% url 'supervision' %}">Бақылау</a>
-            {% endif %}
-
-            <a class="header-link" href="{% url 'requests_list' %}">
-                Өтініштер{% if new_requests %}<span class="count-badge">{{ new_requests }}</span>{% endif %}
-            </a>
+            {% include "language_menu.html" %}
 
             <button
                 id="themeToggle"
                 class="icon-button"
                 type="button"
-                aria-label="Тақырыпты өзгерту"
+                aria-label="{% translate 'Тақырыпты өзгерту' %}"
             >
                 <svg class="icon"><use id="themeIcon" href="#i-sun"></use></svg>
             </button>
 
-            {% if staff_district %}<span class="scope-chip" title="Тек осы аудан көрсетіледі">{{ staff_district.name }}</span>{% elif is_head_dispatcher %}<span class="scope-chip" title="Барлық аудан">Бас диспетчер</span>{% endif %}
-
-            <span class="user-name">{{ user.get_username }}</span>
-
-            <form method="post" action="{% url 'logout' %}" class="logout-form">
-                {% csrf_token %}
-                <button
-                    class="icon-button"
-                    type="submit"
-                    aria-label="Жүйеден шығу"
-                    title="Жүйеден шығу"
-                >
-                    <svg class="icon"><use href="#i-logout"></use></svg>
-                </button>
-            </form>
+            {% include "account_menu.html" %}
 
         </div>
 
@@ -191,11 +175,9 @@
         <svg class="icon"><use href="#i-flame"></use></svg>
 
         <div>
-            <h2 id="fireAlertTitle">Өрт қаупінің белгілері анықталды</h2>
+            <h2 id="fireAlertTitle">{% translate "Өрт қаупінің белгілері анықталды" %}</h2>
             <p>
-                Датчиктер өртті алдын ала болжамайды: олар жоғары температураны,
-                оның жылдам көтерілуін, түтін немесе жанғыш газды байқайды.
-                Контейнерді орнында тексеріңіз.
+                {% translate "Датчиктер өртті алдын ала болжамайды: олар жоғары температураны, оның жылдам көтерілуін, түтін немесе жанғыш газды байқайды. Контейнерді орнында тексеріңіз." %}
             </p>
         </div>
 
@@ -213,11 +195,10 @@
 
     <div class="section-header">
 
-        <h1 id="overviewTitle">Жүйеге шолу</h1>
+        <h1 id="overviewTitle">{% translate "Жүйеге шолу" %}</h1>
 
         <div class="section-meta">
-            Әр 5 секунд сайын жаңарады ·
-            соңғы жаңарту <span id="lastUpdated" class="numeric">--:--:--</span>
+            {% translate "Әр 5 секунд сайын жаңарады · соңғы жаңарту" %} <span id="lastUpdated" class="numeric">--:--:--</span>
         </div>
 
     </div>
@@ -227,7 +208,7 @@
         <article class="kpi">
             <div class="kpi-label">
                 <svg class="icon"><use href="#i-bin"></use></svg>
-                Барлық контейнер
+                {% translate "Барлық контейнер" %}
             </div>
             <div id="kpiTotal" class="kpi-value">–</div>
             <div id="kpiShare" class="share-bar" role="img"></div>
@@ -236,55 +217,55 @@
         <article class="kpi level-full">
             <div class="kpi-label">
                 <svg class="icon"><use href="#i-full"></use></svg>
-                Толы
+                {% translate "Толы" %}
             </div>
             <div id="kpiFull" class="kpi-value">–</div>
-            <div class="kpi-note">80% және жоғары, шығару қажет</div>
+            <div class="kpi-note">{% translate "80% және жоғары, шығару қажет" %}</div>
         </article>
 
         <article class="kpi level-half">
             <div class="kpi-label">
                 <svg class="icon"><use href="#i-half"></use></svg>
-                Жартылай толы
+                {% translate "Жартылай толы" %}
             </div>
             <div id="kpiHalf" class="kpi-value">–</div>
-            <div class="kpi-note">50–79%, бақылауда ұстау</div>
+            <div class="kpi-note">{% translate "50–79%, бақылауда ұстау" %}</div>
         </article>
 
         <article class="kpi level-normal">
             <div class="kpi-label">
                 <svg class="icon"><use href="#i-normal"></use></svg>
-                Қалыпты
+                {% translate "Қалыпты" %}
             </div>
             <div id="kpiNormal" class="kpi-value">–</div>
-            <div class="kpi-note">50%-дан төмен</div>
+            <div class="kpi-note">{% translate "50%-дан төмен" %}</div>
         </article>
 
         <article class="kpi level-none">
             <div class="kpi-label">
                 <svg class="icon"><use href="#i-offline"></use></svg>
-                Байланыс жоқ
+                {% translate "Байланыс жоқ" %}
             </div>
             <div id="kpiOffline" class="kpi-value">–</div>
-            <div class="kpi-note">5 минуттан астам дерек келмеген</div>
+            <div class="kpi-note">{% translate "5 минуттан астам дерек келмеген" %}</div>
         </article>
 
         <article id="kpiFireTile" class="kpi kpi-fire">
             <div class="kpi-label">
                 <svg class="icon"><use href="#i-flame"></use></svg>
-                Өрт қаупі
+                {% translate "Өрт қаупі" %}
             </div>
             <div id="kpiFire" class="kpi-value">–</div>
-            <div class="kpi-note">Температура, түтін немесе газ шектен асты</div>
+            <div class="kpi-note">{% translate "Температура, түтін немесе газ шектен асты" %}</div>
         </article>
 
         <article class="kpi">
             <div class="kpi-label">
                 <svg class="icon"><use href="#i-gauge"></use></svg>
-                Орташа толу
+                {% translate "Орташа толу" %}
             </div>
             <div id="kpiAverage" class="kpi-value">–</div>
-            <div class="kpi-note">Соңғы белгілі деректер бойынша</div>
+            <div class="kpi-note">{% translate "Соңғы белгілі деректер бойынша" %}</div>
         </article>
 
     </div>
@@ -302,15 +283,15 @@
         <div class="panel-header">
 
             <div>
-                <h2 id="mapTitle">Контейнерлер картасы</h2>
-                <p id="mapNote" class="panel-note">Алматыдағы бақылау аймағы</p>
+                <h2 id="mapTitle">{% translate "Контейнерлер картасы" %}</h2>
+                <p id="mapNote" class="panel-note">{% translate "Алматыдағы бақылау аймағы" %}</p>
             </div>
 
             <ul class="map-legend">
-                <li class="level-normal"><svg class="icon" aria-hidden="true"><use href="#i-bin"></use></svg>Қалыпты</li>
-                <li class="level-half"><svg class="icon" aria-hidden="true"><use href="#i-bin"></use></svg>Жартылай</li>
-                <li class="level-full"><svg class="icon" aria-hidden="true"><use href="#i-bin"></use></svg>Толы</li>
-                <li class="level-none"><svg class="icon" aria-hidden="true"><use href="#i-bin"></use></svg>Байланыс жоқ</li>
+                <li class="level-normal"><svg class="icon" aria-hidden="true"><use href="#i-bin"></use></svg>{% translate "Қалыпты" %}</li>
+                <li class="level-half"><svg class="icon" aria-hidden="true"><use href="#i-bin"></use></svg>{% translate "Жартылай" %}</li>
+                <li class="level-full"><svg class="icon" aria-hidden="true"><use href="#i-bin"></use></svg>{% translate "Толы" %}</li>
+                <li class="level-none"><svg class="icon" aria-hidden="true"><use href="#i-bin"></use></svg>{% translate "Байланыс жоқ" %}</li>
             </ul>
 
         </div>
@@ -318,7 +299,7 @@
         <div
             id="map"
             role="region"
-            aria-label="Контейнерлер орналасқан карта"
+            aria-label="{% translate 'Контейнерлер орналасқан карта' %}"
         ></div>
 
     </section>
@@ -328,8 +309,8 @@
         <div class="panel-header">
 
             <div>
-                <h2 id="queueTitle">Назар аударыңыз</h2>
-                <p class="panel-note">Өрт қаупі, толы және үнсіз контейнерлер</p>
+                <h2 id="queueTitle">{% translate "Назар аударыңыз" %}</h2>
+                <p class="panel-note">{% translate "Өрт қаупі, толы және үнсіз контейнерлер" %}</p>
             </div>
 
             <span id="queueCount" class="count-badge">0</span>
@@ -349,29 +330,29 @@
 <section aria-labelledby="tableTitle">
 
     <div class="section-header">
-        <h2 id="tableTitle">Контейнерлер</h2>
+        <h2 id="tableTitle">{% translate "Контейнерлер" %}</h2>
     </div>
 
     <div class="filter-row">
 
         <label class="search">
             <svg class="icon"><use href="#i-search"></use></svg>
-            <span class="visually-hidden">Контейнерді іздеу</span>
+            <span class="visually-hidden">{% translate "Контейнерді іздеу" %}</span>
             <input
                 id="tableSearch"
                 type="search"
-                placeholder="Атауы немесе орны бойынша"
+                placeholder="{% translate 'Атауы немесе орны бойынша' %}"
                 autocomplete="off"
             >
         </label>
 
-        <div id="tableFilters" class="segmented" role="group" aria-label="Күйі бойынша сүзу">
-            <button type="button" data-filter="all" aria-pressed="true">Барлығы</button>
-            <button type="button" data-filter="full" aria-pressed="false">Толы</button>
-            <button type="button" data-filter="half" aria-pressed="false">Жартылай</button>
-            <button type="button" data-filter="normal" aria-pressed="false">Қалыпты</button>
-            <button type="button" data-filter="offline" aria-pressed="false">Байланыс жоқ</button>
-            <button type="button" data-filter="fire" aria-pressed="false">Өрт қаупі</button>
+        <div id="tableFilters" class="segmented" role="group" aria-label="{% translate 'Күйі бойынша сүзу' %}">
+            <button type="button" data-filter="all" aria-pressed="true">{% translate "Барлығы" %}</button>
+            <button type="button" data-filter="full" aria-pressed="false">{% translate "Толы" %}</button>
+            <button type="button" data-filter="half" aria-pressed="false">{% translate "Жартылай" %}</button>
+            <button type="button" data-filter="normal" aria-pressed="false">{% translate "Қалыпты" %}</button>
+            <button type="button" data-filter="offline" aria-pressed="false">{% translate "Байланыс жоқ" %}</button>
+            <button type="button" data-filter="fire" aria-pressed="false">{% translate "Өрт қаупі" %}</button>
         </div>
 
     </div>
@@ -382,13 +363,13 @@
 
             <thead>
                 <tr>
-                    <th data-sort="name" scope="col"><button type="button">Контейнер</button></th>
-                    <th data-sort="location" scope="col"><button type="button">Орны</button></th>
-                    <th data-sort="fill" scope="col"><button type="button">Толу деңгейі</button></th>
-                    <th data-sort="distance" class="align-end" scope="col"><button type="button">Қашықтық</button></th>
-                    <th scope="col">Күйі</th>
-                    <th data-sort="fireRank" scope="col"><button type="button">Қауіпсіздік</button></th>
-                    <th data-sort="age" scope="col"><button type="button">Соңғы дерек</button></th>
+                    <th data-sort="name" scope="col"><button type="button">{% translate "Контейнер" %}</button></th>
+                    <th data-sort="location" scope="col"><button type="button">{% translate "Орны" %}</button></th>
+                    <th data-sort="fill" scope="col"><button type="button">{% translate "Толу деңгейі" %}</button></th>
+                    <th data-sort="distance" class="align-end" scope="col"><button type="button">{% translate "Қашықтық" %}</button></th>
+                    <th scope="col">{% translate "Күйі" %}</th>
+                    <th data-sort="fireRank" scope="col"><button type="button">{% translate "Қауіпсіздік" %}</button></th>
+                    <th data-sort="age" scope="col"><button type="button">{% translate "Соңғы дерек" %}</button></th>
                 </tr>
             </thead>
 
@@ -407,22 +388,22 @@
 <section aria-labelledby="trendTitle">
 
     <div class="section-header">
-        <h2 id="trendTitle">Көрсеткіштер динамикасы</h2>
+        <h2 id="trendTitle">{% translate "Көрсеткіштер динамикасы" %}</h2>
     </div>
 
     <div class="filter-row">
 
-        <div id="metricFilters" class="segmented" role="group" aria-label="Көрсеткішті таңдау">
-            <button type="button" data-metric="fill" aria-pressed="true">Толу деңгейі</button>
-            <button type="button" data-metric="temperature" aria-pressed="false">Температура</button>
-            <button type="button" data-metric="gas" aria-pressed="false">Түтін/газ</button>
+        <div id="metricFilters" class="segmented" role="group" aria-label="{% translate 'Көрсеткішті таңдау' %}">
+            <button type="button" data-metric="fill" aria-pressed="true">{% translate "Толу деңгейі" %}</button>
+            <button type="button" data-metric="temperature" aria-pressed="false">{% translate "Температура" %}</button>
+            <button type="button" data-metric="gas" aria-pressed="false">{% translate "Түтін/газ" %}</button>
         </div>
 
-        <div id="rangeFilters" class="segmented" role="group" aria-label="Кезеңді таңдау">
-            <button type="button" data-hours="1" aria-pressed="false">1 сағат</button>
-            <button type="button" data-hours="6" aria-pressed="false">6 сағат</button>
-            <button type="button" data-hours="24" aria-pressed="true">24 сағат</button>
-            <button type="button" data-hours="168" aria-pressed="false">7 күн</button>
+        <div id="rangeFilters" class="segmented" role="group" aria-label="{% translate 'Кезеңді таңдау' %}">
+            <button type="button" data-hours="1" aria-pressed="false">{% translate "1 сағат" %}</button>
+            <button type="button" data-hours="6" aria-pressed="false">{% translate "6 сағат" %}</button>
+            <button type="button" data-hours="24" aria-pressed="true">{% translate "24 сағат" %}</button>
+            <button type="button" data-hours="168" aria-pressed="false">{% translate "7 күн" %}</button>
         </div>
 
     </div>
@@ -434,7 +415,7 @@
         <div id="trendChart" class="chart"></div>
 
         <details id="trendDetails" class="chart-details">
-            <summary>Кесте түрінде көрсету</summary>
+            <summary>{% translate "Кесте түрінде көрсету" %}</summary>
             <div id="trendTable" class="chart-table"></div>
         </details>
 
@@ -450,7 +431,7 @@
 
 <footer class="footer">
 
-    <span>Qaldyq IoT жүйесі</span>
+    <span>{% translate "Qaldyq IoT жүйесі" %}</span>
 
     <span>ESP32 · HC-SR04 · Django REST · PostgreSQL</span>
 
@@ -467,6 +448,8 @@
 <!-- =========================================================
      QALDYQ JAVASCRIPT
 ========================================================= -->
+
+<script src="{% url 'javascript-catalog' %}"></script>
 
 <script
     src="{% static 'sensor/js/dashboard.js' %}?v={{ js_version }}">
