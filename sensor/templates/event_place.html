@@ -1,0 +1,13 @@
+{% load i18n %}
+{# Where the event is: a small map when it has a point, and links to the map apps #}
+<div class="event-place">
+    {% if event.latitude is not None %}
+    <div class="event-map" id="eventMap" data-lat="{{ event.latitude|stringformat:'.6f' }}" data-lng="{{ event.longitude|stringformat:'.6f' }}" data-radius="{{ radius }}" role="img" aria-label="{% translate 'Сенбілік өтетін жер картада' %}"></div>
+    {% endif %}
+    <div class="event-map-links">
+        <span class="field-hint">{% translate "Картада ашу:" %}</span>
+        {% for name, url in map_links %}
+        <a class="event-map-link" href="{{ url }}" target="_blank" rel="noopener">{{ name }}</a>
+        {% endfor %}
+    </div>
+</div>

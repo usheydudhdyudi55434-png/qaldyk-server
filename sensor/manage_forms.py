@@ -3,7 +3,7 @@ from django.contrib.auth import get_user_model, password_validation
 from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.utils.translation import gettext_lazy as _
 
-from .models import Container, District, Osi, Reward
+from .models import CleanupEvent, Container, District, Osi, Reward
 from .roles import ROLE_DISTRICT, ROLE_HEAD, ROLE_WORKER
 
 ROLE_CHOICES = [
@@ -200,3 +200,47 @@ class OsiForm(forms.ModelForm):
             "name": forms.TextInput(attrs={"placeholder": _("Мысалы: ОСИ «Самал-2, 15»")}),
         }
         error_messages = {"name": REQUIRED}
+
+
+class EventForm(forms.ModelForm):
+    """A cleanup day; its QR is printed from the event's page."""
+
+    class Meta:
+        model = CleanupEvent
+        fields = ["title", "description", "osi", "address", "starts_at", "ends_at", "points",
+                  "latitude", "longitude", "is_active"]
+        labels = {
+            "title": _("Атауы"),
+            "description": _("Сипаттама"),
+            "osi": _("ОСИ"),
+            "address": _("Өтетін жері"),
+            "starts_at": _("Басталуы"),
+            "ends_at": _("Аяқталуы"),
+            "points": _("Қатысқанға эко-ұпай"),
+            "latitude": _("Ендік"),
+            "longitude": _("Бойлық"),
+            "is_active": _("QR қосулы: тұрғындар сканерлеп, ұпай ала алады"),
+        }
+        widgets = {
+            "latitude": forms.HiddenInput,
+            "longitude": forms.HiddenInput,
+            "title": forms.TextInput(attrs={"placeholder": _("Мысалы: «Самал-2» ауласындағы сенбілік")}),
+            "address": forms.TextInput(attrs={"placeholder": _("Мысалы: Самал-2, 15 үйдің ауласы")}),
+            "starts_at": forms.DateTimeInput(attrs={"type": "datetime-local"}, format="%Y-%m-%dT%H:%M"),
+            "ends_at": forms.DateTimeInput(attrs={"type": "datetime-local"}, format="%Y-%m-%dT%H:%M"),
+        }
+        error_messages = {"title": REQUIRED, "address": REQUIRED, "starts_at": REQUIRED, "ends_at": REQUIRED}
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["osi"].empty_label = "—"
+        self.fields["osi"].queryset = Osi.objects.filter(is_active=True)
+
+    def clean(self):
+        cleaned = super().clean()
+        starts, ends = cleaned.get("starts_at"), cleaned.get("ends_at")
+        if starts and ends and ends <= starts:
+            self.add_error("ends_at", _("Аяқталу уақыты басталудан кейін болуы керек."))
+        if (cleaned.get("latitude") is None) != (cleaned.get("longitude") is None):
+            raise forms.ValidationError(_("Картадағы нүкте толық көрсетілмеді, қайта белгілеңіз."))
+        return cleaned

@@ -33,6 +33,9 @@ services:
       GEMINI_MODELS: ${GEMINI_MODELS:-gemini-flash-lite-latest,gemini-flash-latest}
       TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
       TELEGRAM_BOT_USERNAME: ${TELEGRAM_BOT_USERNAME:-}
+      VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY:-}
+      VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY:-}
+      VAPID_SUBJECT: ${VAPID_SUBJECT:-}
       PYTHONUNBUFFERED: "1"
     volumes:
       # Resident photos survive a rebuild of the image

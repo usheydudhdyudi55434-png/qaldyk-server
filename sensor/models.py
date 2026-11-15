@@ -189,6 +189,15 @@ class ResidentRequest(models.Model):
         blank=True
     )
 
+    # The eco-wallet of the phone that sent it from the website or the app
+    wallet = models.ForeignKey(
+        "EcoWallet",
+        on_delete=models.SET_NULL,
+        related_name="requests",
+        null=True,
+        blank=True
+    )
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -344,6 +353,35 @@ def new_voucher_code():
     return "ECO-" + "".join(secrets.choice(REQUEST_CODE_ALPHABET) for _ in range(6))
 
 
+def new_wallet_code():
+    part = lambda: "".join(secrets.choice(REQUEST_CODE_ALPHABET) for _ in range(4))
+    return f"W-{part()}-{part()}"
+
+
+class EcoWallet(models.Model):
+    """A resident's eco-points on the website and in the app, without an account.
+
+    The phone keeps the code in a cookie; typing the code on another phone opens the
+    same wallet, so it is a secret the resident is asked to keep.
+    """
+
+    code = models.CharField(max_length=12, unique=True, default=new_wallet_code, editable=False)
+
+    # The homeowners' association the resident's eco-points count towards
+    osi = models.ForeignKey(
+        "Osi",
+        on_delete=models.SET_NULL,
+        related_name="wallets",
+        null=True,
+        blank=True
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.code[:6]}…"
+
+
 class Osi(models.Model):
     """A homeowners' association (ОСИ); its residents' eco-points add up in a public rating."""
 
@@ -368,12 +406,24 @@ class Osi(models.Model):
 
 
 class EcoPoints(models.Model):
-    """One line of a resident's eco-points: earned for a confirmed request, or spent on a reward."""
+    """One line of a resident's eco-points: earned for a confirmed request, or spent on a reward.
+
+    It belongs to a Telegram chat or to an app wallet.
+    """
 
     chat = models.ForeignKey(
         TelegramChat,
         on_delete=models.CASCADE,
-        related_name="points"
+        related_name="points",
+        null=True,
+        blank=True
+    )
+    wallet = models.ForeignKey(
+        EcoWallet,
+        on_delete=models.CASCADE,
+        related_name="points",
+        null=True,
+        blank=True
     )
     request = models.ForeignKey(
         ResidentRequest,
@@ -395,11 +445,15 @@ class EcoPoints(models.Model):
                 fields=["request"],
                 condition=models.Q(amount__gt=0),
                 name="one_award_per_request"
-            )
+            ),
+            models.CheckConstraint(
+                condition=models.Q(chat__isnull=False) | models.Q(wallet__isnull=False),
+                name="eco_points_have_an_owner"
+            ),
         ]
 
     def __str__(self):
-        return f"{self.chat}: {self.amount:+d}"
+        return f"{self.chat or self.wallet}: {self.amount:+d}"
 
 
 class Reward(models.Model):
@@ -429,7 +483,16 @@ class Redemption(models.Model):
     chat = models.ForeignKey(
         TelegramChat,
         on_delete=models.CASCADE,
-        related_name="redemptions"
+        related_name="redemptions",
+        null=True,
+        blank=True
+    )
+    wallet = models.ForeignKey(
+        EcoWallet,
+        on_delete=models.CASCADE,
+        related_name="redemptions",
+        null=True,
+        blank=True
     )
     reward = models.ForeignKey(
         Reward,
@@ -447,3 +510,109 @@ class Redemption(models.Model):
 
     def __str__(self):
         return self.code
+
+    @property
+    def owner_label(self):
+        """Who took it, as the admin sees it: the Telegram name or the app wallet."""
+        if self.chat_id:
+            return self.chat.first_name or str(self.chat)
+        return f"App · {self.wallet}"
+
+
+class PushSubscription(models.Model):
+    """A phone or browser that asked to hear about some requests through web push."""
+
+    endpoint = models.URLField(max_length=600, unique=True)
+    p256dh = models.CharField(max_length=200)
+    auth = models.CharField(max_length=100)
+
+    # The notification is written in the language the site was in when the resident subscribed
+    language = models.CharField(max_length=8, default="kk")
+
+    requests = models.ManyToManyField(ResidentRequest, related_name="push_subscriptions", blank=True)
+
+    # The phone's eco-wallet, so news for its association (a cleanup day) reaches it too
+    wallet = models.ForeignKey(
+        "EcoWallet", on_delete=models.SET_NULL, related_name="push_subscriptions", null=True, blank=True
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.endpoint[:60]
+
+
+def new_event_token():
+    return secrets.token_urlsafe(9)
+
+
+class CleanupEvent(models.Model):
+    """A cleanup day (сенбілік): residents scan its QR on the spot and get eco-points."""
+
+    title = models.CharField(max_length=150)
+    description = models.CharField(max_length=300, blank=True)
+    osi = models.ForeignKey(Osi, on_delete=models.SET_NULL, related_name="events", null=True, blank=True)
+    address = models.CharField(max_length=255)
+
+    # Check-in only counts close to this point, when it is set
+    latitude = models.FloatField(null=True, blank=True)
+    longitude = models.FloatField(null=True, blank=True)
+
+    starts_at = models.DateTimeField()
+    ends_at = models.DateTimeField()
+    points = models.PositiveIntegerField(default=15)
+
+    # Printed in the QR; a secret so the check-in link cannot be guessed
+    token = models.CharField(max_length=20, unique=True, default=new_event_token, editable=False)
+    is_active = models.BooleanField(default=True)
+
+    # Residents of the association are told once, when the event is first published
+    notified_at = models.DateTimeField(null=True, blank=True, editable=False)
+    notified_count = models.PositiveIntegerField(default=0, editable=False)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-starts_at"]
+
+    def __str__(self):
+        return self.title
+
+
+class EventCheckIn(models.Model):
+    """A resident's wallet that came to a cleanup day."""
+
+    event = models.ForeignKey(CleanupEvent, on_delete=models.CASCADE, related_name="check_ins")
+    wallet = models.ForeignKey(EcoWallet, on_delete=models.CASCADE, related_name="check_ins")
+    distance = models.FloatField(null=True, blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["event", "wallet"], name="one_check_in_per_wallet")
+        ]
+
+    def __str__(self):
+        return f"{self.event} · {self.wallet}"
+
+
+class RequestRating(models.Model):
+    """The resident's word on a finished request: solved or not, kept per completion."""
+
+    request = models.ForeignKey(ResidentRequest, on_delete=models.CASCADE, related_name="ratings")
+
+    # Who did the job that is being rated
+    worker = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, related_name="ratings", null=True, blank=True
+    )
+    is_good = models.BooleanField()
+    comment = models.CharField(max_length=300, blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.request.code}: {'👍' if self.is_good else '👎'}"

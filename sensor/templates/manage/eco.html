@@ -104,7 +104,7 @@
                 <tr>
                     <td class="request-code">{{ voucher.code }}</td>
                     <td>{{ voucher.reward.title }} <span class="cell-secondary">· {{ voucher.reward.partner }}</span></td>
-                    <td>{{ voucher.chat.first_name|default:voucher.chat }}</td>
+                    <td>{{ voucher.owner_label }}</td>
                     <td>{{ voucher.created_at|date:"d.m.Y H:i" }}</td>
                     <td>
                         {% if voucher.used_at %}

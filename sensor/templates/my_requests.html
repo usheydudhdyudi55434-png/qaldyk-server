@@ -1,0 +1,53 @@
+{% extends "layout.html" %}
+{% load i18n %}
+
+{% block title %}{% translate "Qaldyq — Менің өтініштерім" %}{% endblock %}
+
+{% block brand_note %}{% translate "Тұрғындарға арналған" %}{% endblock %}
+
+{% block nav %}
+    <a class="header-link" href="{% url 'resident_home' %}">{% translate "Өтініш қалдыру" %}</a>
+    <a class="header-link" href="{% url 'eco_page' %}">{% translate "Эко-ұпай" %}</a>
+{% endblock %}
+
+{% block main_class %}resident-page{% endblock %}
+
+{% block content %}
+
+<section class="my-requests" aria-labelledby="myTitle">
+
+    <div class="section-header">
+        <h1 id="myTitle">{% translate "Менің өтініштерім" %}</h1>
+        <a class="button-primary button-small" href="{% url 'resident_home' %}">{% translate "Жаңа өтініш" %}</a>
+    </div>
+
+    <p class="field-hint">{% translate "Тіркелу керек емес: жіберген өтініштеріңіздің кодтары осы телефонда сақталады." %}</p>
+
+    {% include "install_card.html" %}
+
+    <div id="myRequests" class="my-list" aria-live="polite">
+        <p class="cell-secondary">{% translate "Жүктелуде…" %}</p>
+    </div>
+
+    <template id="myEmpty">
+        <div class="panel my-empty">
+            <strong>{% translate "Әзірге өтініш жоқ" %}</strong>
+            <span>{% translate "Мәселе туралы хабарлаңыз немесе бұрынғы өтініштің кодын төменде қосыңыз." %}</span>
+            <a class="button-primary" href="{% url 'resident_home' %}">{% translate "Өтініш қалдыру" %}</a>
+        </div>
+    </template>
+
+    <form id="myAdd" class="panel status-lookup" autocomplete="off">
+        <label for="myCode">{% translate "Өтініш кодын қосу" %}</label>
+        <div class="status-lookup-row">
+            <input id="myCode" type="text" placeholder="Q-XXXXXX" spellcheck="false" maxlength="8">
+            <button class="button-secondary" type="submit">{% translate "Қосу" %}</button>
+        </div>
+        <p id="myAddError" class="field-error" hidden>{% translate "Мұндай кодпен өтініш табылмады." %}</p>
+    </form>
+
+</section>
+
+{% endblock %}
+
+{% block app_tabs %}{% include "app_tabs.html" with active="my" %}{% endblock %}

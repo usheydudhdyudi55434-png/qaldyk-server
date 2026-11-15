@@ -1,0 +1,61 @@
+{% extends "manage/base.html" %}
+{% load i18n %}
+
+{% block title %}Qaldyq — {{ table }} #{{ obj.pk }}{% endblock %}
+
+{% block manage %}
+
+<section aria-labelledby="deleteTitle" class="manage-narrow">
+
+    <a class="back-link" href="{{ back_url }}"><svg class="icon" aria-hidden="true"><use href="#i-caret"></use></svg>{{ table }} #{{ obj.pk }}</a>
+
+    <div class="section-header">
+        <h1 id="deleteTitle">{% blocktranslate with table=table pk=obj.pk %}{{ table }} #{{ pk }} өшірілсін бе?{% endblocktranslate %}</h1>
+    </div>
+
+    <div class="panel detail-form">
+
+        <p class="db-delete-object">{{ obj }}</p>
+
+        {% if is_self %}
+        <div class="notice notice-error" role="alert">
+            <svg class="icon" aria-hidden="true"><use href="#i-full"></use></svg>
+            {% translate "Өз аккаунтыңызды өшіре алмайсыз." %}
+        </div>
+        {% elif protected %}
+        <div class="notice notice-error" role="alert">
+            <svg class="icon" aria-hidden="true"><use href="#i-full"></use></svg>
+            <div>
+                {% translate "Бұл жолды өшіруге болмайды: оған мына жолдар сілтейді. Алдымен соларды өзгертіңіз немесе өшіріңіз." %}
+                <ul class="db-list">
+                    {% for item in protected %}<li><code>{{ item }}</code></li>{% endfor %}
+                    {% if protected_more %}<li>{% blocktranslate with count=protected_more %}тағы {{ count }}{% endblocktranslate %}</li>{% endif %}
+                </ul>
+            </div>
+        </div>
+        {% else %}
+            {% if affected %}
+            <p>{% translate "Онымен бірге мына байланысты жолдар да өшіріледі:" %}</p>
+            <ul class="db-list">
+                {% for item in affected %}
+                <li><code>{{ item.table }}</code> — {% blocktranslate count rows=item.count %}{{ rows }} жол{% plural %}{{ rows }} жол{% endblocktranslate %}</li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <p class="cell-secondary">{% translate "Басқа кестелерден ештеңе өшірілмейді." %}</p>
+            {% endif %}
+
+            <p class="field-hint">{% translate "Өшірілген жолды қайтару мүмкін емес." %}</p>
+
+            <form method="post" class="db-actions db-confirm">
+                {% csrf_token %}
+                <button class="button-danger" type="submit">{% translate "Иә, өшіру" %}</button>
+                <a class="button-secondary" href="{{ back_url }}">{% translate "Бас тарту" %}</a>
+            </form>
+        {% endif %}
+
+    </div>
+
+</section>
+
+{% endblock %}

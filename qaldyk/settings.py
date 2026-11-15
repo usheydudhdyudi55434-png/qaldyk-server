@@ -140,7 +140,8 @@ LOCALE_PATHS = [BASE_DIR / 'locale']
 LANGUAGE_COOKIE_NAME = 'qaldyq_language'
 LANGUAGE_COOKIE_AGE = 365 * 24 * 60 * 60
 
-TIME_ZONE = 'UTC'
+# Times are shown and entered in Almaty time; the database keeps UTC
+TIME_ZONE = 'Asia/Almaty'
 
 USE_I18N = True
 
@@ -179,6 +180,14 @@ TELEGRAM_BOT_USERNAME = os.environ.get('TELEGRAM_BOT_USERNAME', '').lstrip('@')
 
 # Tests send notifications inline instead of in a background thread
 TELEGRAM_SYNC = False
+
+# Web push to the installed app; keys made once and kept in .env
+VAPID_PUBLIC_KEY = os.environ.get('VAPID_PUBLIC_KEY', '')
+VAPID_PRIVATE_KEY = os.environ.get('VAPID_PRIVATE_KEY', '')
+VAPID_SUBJECT = os.environ.get('VAPID_SUBJECT', '') or (
+    f"https://{TUNNEL_HOST}" if TUNNEL_HOST else "mailto:admin@example.com"
+)
+PUSH_SYNC = False
 
 
 # Email

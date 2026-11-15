@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-14 10:13+0000\n"
+"POT-Creation-Date: 2026-11-14 17:06+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,6 +16,38 @@ msgstr ""
 "Plural-Forms: nplurals=4; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<12 || n%100>14) ? 1 : n%10==0 || (n%10>=5 && n%10<=9) || "
 "(n%100>=11 && n%100<=14)? 2 : 3);\n"
+
+#: sensor/static/sensor/js/app.js:150
+msgid "Байланыс жоқ: соңғы сақталған мәлімет көрсетілген."
+msgstr "Нет связи: показаны последние сохранённые данные."
+
+#: sensor/static/sensor/js/app.js:165
+msgid "Тізімнен алып тастау"
+msgstr "Убрать из списка"
+
+#: sensor/static/sensor/js/app.js:184
+msgid "Жаңартылды: %(time)s"
+msgstr "Обновлено: %(time)s"
+
+#: sensor/static/sensor/js/app.js:272
+msgid "Хабарлама қосулы"
+msgstr "Уведомления включены"
+
+#: sensor/static/sensor/js/app.js:283
+msgid "Қосылуда…"
+msgstr "Включаем…"
+
+#: sensor/static/sensor/js/app.js:318
+msgid "Хабарламаны қосу"
+msgstr "Включить уведомления"
+
+#: sensor/static/sensor/js/app.js:320
+msgid "Хабарламаға рұқсат берілмеді. Оны браузер баптауларынан қосыңыз."
+msgstr "Уведомления запрещены. Разрешите их в настройках браузера."
+
+#: sensor/static/sensor/js/app.js:321
+msgid "Хабарламаны қосу мүмкін болмады. Кейінірек қайталаңыз."
+msgstr "Не удалось включить уведомления. Попробуйте позже."
 
 #: sensor/static/sensor/js/dashboard.js:27
 msgid "Толы"
@@ -310,6 +342,45 @@ msgstr "Определяем местоположение…"
 #: sensor/static/sensor/js/resident.js:68
 msgid "Орын анықталмады, картадан белгілеңіз"
 msgstr "Местоположение не определено, отметьте его на карте"
+
+#: sensor/static/sensor/js/scan.js:77
+msgid "Бұл Qaldyq-тың QR-коды емес."
+msgstr "Это не QR-код Qaldyq."
+
+#: sensor/static/sensor/js/scan.js:87
+msgid "QR табылды, ашылуда…"
+msgstr "QR найден, открываем…"
+
+#: sensor/static/sensor/js/scan.js:132
+msgid ""
+"Бұл браузер камераны аша алмайды. «Фотодан оқу» батырмасын пайдаланыңыз."
+msgstr "Этот браузер не может открыть камеру. Используйте «Считать с фото»."
+
+#: sensor/static/sensor/js/scan.js:136
+msgid "Камера қосылуда…"
+msgstr "Включаем камеру…"
+
+#: sensor/static/sensor/js/scan.js:149
+msgid ""
+"Камераға рұқсат берілмеді. Оны браузер баптауларынан қосыңыз немесе «Фотодан "
+"оқу» батырмасын басыңыз."
+msgstr "Доступ к камере запрещён. Разрешите его в настройках браузера или нажмите «Считать с фото»."
+
+#: sensor/static/sensor/js/scan.js:150
+msgid "Камераны ашу мүмкін болмады. «Фотодан оқу» батырмасын пайдаланыңыз."
+msgstr "Не удалось открыть камеру. Используйте «Считать с фото»."
+
+#: sensor/static/sensor/js/scan.js:160
+msgid "QR-ды рамкаға түсіріңіз"
+msgstr "Наведите рамку на QR"
+
+#: sensor/static/sensor/js/scan.js:175
+msgid "Фото оқылуда…"
+msgstr "Читаем фото…"
+
+#: sensor/static/sensor/js/scan.js:184 sensor/static/sensor/js/scan.js:189
+msgid "Фотодан QR табылмады. Кодты жақынырақ, анық түсіріңіз."
+msgstr "На фото QR не найден. Снимите код ближе и чётче."
 
 #: sensor/static/sensor/js/worker.js:18
 msgid "Браузер орынды анықтай алмайды"

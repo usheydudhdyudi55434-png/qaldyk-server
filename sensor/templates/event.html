@@ -1,0 +1,135 @@
+{% extends "layout.html" %}
+{% load i18n %}
+
+{% block title %}Qaldyq — {{ event.title }}{% endblock %}
+
+{% block brand_note %}{% translate "Тұрғындарға арналған" %}{% endblock %}
+
+{% block nav %}{% endblock %}
+
+{% block head %}
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+{% endblock %}
+
+{% block main_class %}resident-page{% endblock %}
+
+{% block content %}
+
+<article class="panel event-card" aria-labelledby="eventTitle">
+
+    <span class="event-badge"><svg class="icon" aria-hidden="true"><use href="#i-leaf"></use></svg>{% translate "Сенбілік" %}</span>
+
+    <h1 id="eventTitle">{{ event.title }}</h1>
+    {% if event.description %}<p class="event-description">{{ event.description }}</p>{% endif %}
+
+    <dl class="request-facts">
+        <div><dt>{% translate "Уақыты" %}</dt><dd>{% include "event_time.html" %}</dd></div>
+        <div><dt>{% translate "Орны" %}</dt><dd>{{ event.address }}{% if event.osi %} · {{ event.osi.name }}{% endif %}</dd></div>
+        <div><dt>{% translate "Сыйақы" %}</dt><dd class="event-points">+{{ event.points }} {% translate "эко-ұпай" %}</dd></div>
+    </dl>
+
+    {% include "event_place.html" %}
+
+    {% if error %}
+    <div class="notice notice-error" role="alert">
+        <svg class="icon" aria-hidden="true"><use href="#i-full"></use></svg>
+        {{ error }}
+    </div>
+    {% endif %}
+
+    {% if joined %}
+    <div class="notice notice-success" role="status">
+        <svg class="icon" aria-hidden="true"><use href="#i-normal"></use></svg>
+        <div>
+            <strong>{% translate "Сіз тіркелдіңіз." %}</strong>
+            <a href="{% url 'wallet' %}">{% translate "Ұпай әмияныңызда." %}</a>
+        </div>
+    </div>
+    {% elif info_only %}
+    {% if state == 'over' %}
+    <p class="notice notice-merged">{% translate "Бұл сенбілік аяқталды. Келесі шараларды «Эко-ұпай» бөлімінен қараңыз." %}</p>
+    {% else %}
+    <div class="event-howto">
+        <p>{% translate "Шара күні келіп, сол жерде тұрған QR-ды Qaldyq сканерімен оқыңыз: қатысуыңыз тіркеліп, эко-ұпай түседі." %}</p>
+        <a class="button-primary event-join" href="{% url 'scanner' %}">
+            <svg class="icon" aria-hidden="true"><use href="#i-qr"></use></svg>
+            {% translate "QR сканерді ашу" %}
+        </a>
+    </div>
+    {% endif %}
+    {% elif state == 'soon' %}
+    <p class="notice notice-merged">{% translate "Шара әлі басталған жоқ. Сенбілік күні осы QR-ды орнында қайта сканерлеңіз." %}</p>
+    {% elif state == 'off' %}
+    <p class="notice notice-merged">{% translate "Бұл сенбіліктің QR-коды әзірге өшірулі. Ұйымдастырушы оны қосқанда, QR-ды қайта сканерлеңіз." %}</p>
+    {% elif state == 'over' %}
+    <p class="notice notice-merged">{% translate "Бұл сенбілік аяқталды. Келесі шараларды «Эко-ұпай» бөлімінен қараңыз." %}</p>
+    {% else %}
+    <form method="post" id="eventForm" data-needs-location="{{ needs_location|yesno:'1,' }}" data-denied="{% translate 'Қатысуды растау үшін орныңызды анықтауға рұқсат беріңіз.' %}" data-locating="{% translate 'Орын анықталуда…' %}">
+        {% csrf_token %}
+        <input type="hidden" name="latitude">
+        <input type="hidden" name="longitude">
+        <button class="button-primary event-join" type="submit">{% translate "Қатысуды растау" %}</button>
+        {% if needs_location %}<p class="field-hint" id="eventHint">{% translate "Растау үшін телефон сіздің шара орнында екеніңізді тексереді." %}</p>{% endif %}
+    </form>
+    {% endif %}
+
+</article>
+
+{% endblock %}
+
+{% block app_tabs %}{% include "app_tabs.html" with active="scan" %}{% endblock %}
+
+{% block scripts %}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+    // A small map of the event's place, with the circle where its QR is accepted
+    (function () {
+        const box = document.getElementById("eventMap");
+        if (!box || typeof L === "undefined") return;
+        const point = [Number(box.dataset.lat), Number(box.dataset.lng)];
+        const map = L.map(box, { scrollWheelZoom: false }).setView(point, 16);
+        L.tileLayer("https://tile{s}.maps.2gis.com/tiles?x={x}&y={y}&z={z}&v=1", {
+            subdomains: ["0", "1", "2", "3", "4"], maxZoom: 18, attribution: "&copy; 2GIS"
+        }).addTo(map);
+        L.marker(point).addTo(map);
+        if (Number(box.dataset.radius)) {
+            const circle = L.circle(point, {
+                radius: Number(box.dataset.radius), color: "#16a34a", weight: 2, fillColor: "#22c55e", fillOpacity: .12
+            }).addTo(map);
+            // The whole circle fits the small map
+            map.fitBounds(circle.getBounds(), { padding: [10, 10] });
+        }
+    })();
+</script>
+<script>
+    // The event checks the resident is on the spot before it counts the visit
+    (function () {
+        const form = document.getElementById("eventForm");
+        if (!form || !form.dataset.needsLocation) return;
+        const hint = document.getElementById("eventHint");
+        const button = form.querySelector("button");
+        form.addEventListener("submit", event => {
+            if (form.latitude.value) return;
+            event.preventDefault();
+            if (!navigator.geolocation) {
+                hint.textContent = form.dataset.denied;
+                return;
+            }
+            button.disabled = true;
+            hint.textContent = form.dataset.locating;
+            navigator.geolocation.getCurrentPosition(
+                position => {
+                    form.latitude.value = position.coords.latitude.toFixed(6);
+                    form.longitude.value = position.coords.longitude.toFixed(6);
+                    form.submit();
+                },
+                () => {
+                    button.disabled = false;
+                    hint.textContent = form.dataset.denied;
+                },
+                { enableHighAccuracy: true, timeout: 15000 }
+            );
+        });
+    })();
+</script>
+{% endblock %}

@@ -1,0 +1,14 @@
+{% load static %}
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#1a1a19" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#fcfcfb" media="(prefers-color-scheme: light)">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Qaldyq">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<script>
+    // The installed app works through this service worker; old browsers simply skip it
+    if ("serviceWorker" in navigator) {
+        window.addEventListener("load", () => navigator.serviceWorker.register("/sw.js").catch(() => {}));
+    }
+</script>

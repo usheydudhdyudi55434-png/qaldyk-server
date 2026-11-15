@@ -1,0 +1,12 @@
+{% load i18n static %}
+{# Shown by app.js only where the app can be installed and is not yet #}
+<div class="install-card" data-install-card hidden>
+    <img src="{% static 'sensor/img/app-icon-192.png' %}" alt="" width="44" height="44">
+    <div class="install-card-text">
+        <strong>{% translate "Qaldyq-ты телефонға орнатыңыз" %}</strong>
+        <span data-install-hint>{% translate "Басты экраннан бір түртумен ашылады, мәртебе өзгергенде хабарлама келеді." %}</span>
+        <span data-install-ios hidden>{% translate "Safari-де «Бөлісу» батырмасын, сосын «Басты экранға қосу» тармағын басыңыз." %}</span>
+    </div>
+    <button class="button-primary" type="button" data-install-button hidden>{% translate "Орнату" %}</button>
+    <button class="install-card-close" type="button" data-install-close aria-label="{% translate 'Жабу' %}">×</button>
+</div>

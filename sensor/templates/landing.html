@@ -1,0 +1,361 @@
+{% extends "layout.html" %}
+{% load i18n %}
+
+{% block title %}{% translate "Qaldyq — Қаланың тазалығын бақылау жүйесі" %}{% endblock %}
+
+{% block brand_note %}{% translate "Қалдықтарды бақылау жүйесі" %}{% endblock %}
+
+{% block nav %}
+<nav class="main-nav landing-nav" aria-label="{% translate 'Бет бөлімдері' %}">
+    <a href="#services">{% translate "Қызметтер" %}</a>
+    <a href="#how">{% translate "Қалай жұмыс істейді" %}</a>
+    <a href="#city">{% translate "Қала үшін" %}</a>
+    <a href="{% url 'eco_page' %}">{% translate "Эко-ұпай" %}</a>
+</nav>
+{% endblock %}
+
+{% block account %}
+{% if user.is_authenticated %}
+{% include "account_menu.html" %}
+{% else %}
+<a class="button-secondary landing-login" href="{% url 'login' %}">{% translate "Кіру" %}</a>
+{% endif %}
+{% endblock %}
+
+{% block main_class %}landing{% endblock %}
+
+{% block content %}
+
+<svg class="icon-sprite" aria-hidden="true" focusable="false">
+    <symbol id="i-report" viewBox="0 0 24 24">
+        <path d="M12 21s-7-6.2-7-12a7 7 0 0 1 14 0c0 5.8-7 12-7 12z"/>
+        <path d="M12 6.5v5M9.5 9h5"/>
+    </symbol>
+    <symbol id="i-code" viewBox="0 0 24 24">
+        <rect x="4" y="3" width="16" height="18" rx="2"/>
+        <path d="M8 8h8M8 12h5"/>
+        <circle cx="15" cy="16" r="2.2"/>
+        <path d="m16.6 17.6 1.9 1.9"/>
+    </symbol>
+    <symbol id="i-trophy" viewBox="0 0 24 24">
+        <path d="M8 4h8v5a4 4 0 0 1-8 0z"/>
+        <path d="M8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4M12 13v4M8.5 20h7"/>
+    </symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24">
+        <rect x="5" y="11" width="14" height="10" rx="2"/>
+        <path d="M8 11V8a4 4 0 0 1 8 0v3"/>
+    </symbol>
+    <symbol id="i-sensor" viewBox="0 0 24 24">
+        <path d="M5 8h14l-1.4 12.2a1 1 0 0 1-1 .8H7.4a1 1 0 0 1-1-.8z"/>
+        <path d="M3 8h18M10 4h4M9 12.5a4 4 0 0 1 6 0M10.8 15.2a1.6 1.6 0 0 1 2.4 0"/>
+    </symbol>
+    <symbol id="i-flame" viewBox="0 0 24 24">
+        <path d="M12 3c1 3.5 5 5.5 5 10a5 5 0 0 1-10 0c0-2.2 1-3.6 2.2-4.8.3 1.5 1 2.4 1.8 2.8C11 8.5 11 6 12 3z"/>
+    </symbol>
+    <symbol id="i-route" viewBox="0 0 24 24">
+        <circle cx="6" cy="18" r="2.5"/>
+        <circle cx="18" cy="6" r="2.5"/>
+        <path d="M8.5 18H15a3 3 0 0 0 0-6H9a3 3 0 0 1 0-6h6.5"/>
+    </symbol>
+    <symbol id="i-chart" viewBox="0 0 24 24">
+        <path d="M4 20V4M4 20h16"/>
+        <path d="M8 16v-4M12 16V8M16 16v-6"/>
+    </symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24">
+        <path d="M5 12h14M13 6l6 6-6 6"/>
+    </symbol>
+    <symbol id="i-camera" viewBox="0 0 24 24">
+        <path d="M4 8h3l2-3h6l2 3h3v11H4z"/>
+        <circle cx="12" cy="13" r="3.5"/>
+    </symbol>
+</svg>
+
+<!-- HERO: what it is, the main action, and the status check -->
+<section class="landing-hero" aria-labelledby="heroTitle">
+    <div class="landing-inner landing-hero-grid">
+
+        <div class="landing-hero-text">
+            <span class="landing-eyebrow">{% translate "Алматы · IoT датчиктер мен AI" %}</span>
+            <h1 id="heroTitle">{% translate "Таза аула бір хабарламадан басталады" %}</h1>
+            <p class="landing-lead">
+                {% translate "Толып кеткен контейнерді немесе шығарылмаған қоқысты көрдіңіз бе? Өтініш қалдырыңыз: датчик пен AI оны тексереді, жұмысшы орындап, нәтиженің фотосын жібереді." %}
+            </p>
+
+            <div class="landing-actions">
+                <a class="landing-button is-primary" href="{% url 'resident_home' %}">
+                    {% translate "Өтініш қалдыру" %}
+                    <svg class="icon" aria-hidden="true"><use href="#i-arrow"></use></svg>
+                </a>
+                {% if telegram_link %}
+                <a class="landing-button is-ghost" href="{{ telegram_link }}" target="_blank" rel="noopener">
+                    <svg class="icon" aria-hidden="true"><use href="#i-send"></use></svg>
+                    {% translate "Telegram арқылы" %}
+                </a>
+                {% endif %}
+            </div>
+
+            <form class="landing-check" method="get" action="{% url 'resident_status' %}" role="search">
+                <label for="landingCode">{% translate "Өтініш мәртебесін тексеру" %}</label>
+                <div class="landing-check-row">
+                    <svg class="icon" aria-hidden="true"><use href="#i-search"></use></svg>
+                    <input id="landingCode" name="code" placeholder="Q-XXXXXX" autocomplete="off" spellcheck="false" maxlength="12" required>
+                    <button type="submit">{% translate "Тексеру" %}</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- An illustration of what the resident sees, not live data -->
+        <div class="landing-visual" aria-hidden="true">
+            <svg class="landing-map" viewBox="0 0 520 440" preserveAspectRatio="xMidYMid slice">
+                <g class="landing-map-streets">
+                    <path d="M-10 90 C 120 110, 220 60, 330 110 S 480 160, 540 130"/>
+                    <path d="M-10 250 C 110 220, 230 290, 350 250 S 470 210, 540 270"/>
+                    <path d="M-10 380 C 140 400, 260 340, 380 390 S 500 430, 540 400"/>
+                    <path d="M110 -10 C 130 120, 80 230, 140 330 S 120 420, 150 460"/>
+                    <path d="M300 -10 C 270 130, 330 240, 290 330 S 330 420, 300 460"/>
+                    <path d="M450 -10 C 470 140, 410 260, 460 350 S 430 430, 470 460"/>
+                </g>
+                <g class="landing-map-bins">
+                    <circle cx="140" cy="100" r="6"/>
+                    <circle cx="330" cy="110" r="6" class="is-half"/>
+                    <circle cx="295" cy="252" r="6" class="is-full"/>
+                    <circle cx="120" cy="330" r="6"/>
+                    <circle cx="460" cy="265" r="6"/>
+                    <circle cx="380" cy="390" r="6" class="is-half"/>
+                </g>
+            </svg>
+
+            <div class="landing-card landing-card-status">
+                <div class="landing-card-head">
+                    <span class="landing-code">Q-7K2M9A</span>
+                    <span class="landing-pill is-done">{% translate "Орындалды" %}</span>
+                </div>
+                <ol class="landing-steps">
+                    <li class="is-done">{% translate "Жіберілді" %}</li>
+                    <li class="is-done">{% translate "Қабылданды" %}</li>
+                    <li class="is-done">{% translate "Орындалуда" %}</li>
+                    <li class="is-done">{% translate "Орындалды" %}</li>
+                </ol>
+                <div class="landing-card-foot">
+                    <svg class="icon" aria-hidden="true"><use href="#i-leaf"></use></svg>
+                    {% translate "+15 эко-ұпай" %}
+                </div>
+            </div>
+
+            <div class="landing-card landing-card-sensor">
+                <svg class="icon" aria-hidden="true"><use href="#i-sensor"></use></svg>
+                <div>
+                    <strong>87%</strong>
+                    <span>{% translate "Датчик: контейнер толы" %}</span>
+                </div>
+            </div>
+
+            <div class="landing-card landing-card-ai">
+                <svg class="icon" aria-hidden="true"><use href="#i-camera"></use></svg>
+                <span>{% translate "AI: тұрмыстық қоқыс, көлемі орташа" %}</span>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+<!-- LIVE NUMBERS from the database -->
+{% include "install_card.html" %}
+
+<section class="landing-inner landing-stats-wrap" aria-label="{% translate 'Жүйе сандармен' %}">
+    <div class="landing-stats">
+    <div class="landing-stat">
+        <strong>{{ stats.containers }}</strong>
+        <span>{% translate "Датчигі бар контейнер" %}</span>
+    </div>
+    <div class="landing-stat">
+        <strong>{{ stats.solved }}</strong>
+        <span>{% translate "Шешілген өтініш" %}</span>
+    </div>
+    <div class="landing-stat">
+        <strong>{{ stats.resolve_time|default:"—" }}</strong>
+        <span>{% translate "Орташа шешілу уақыты" %}</span>
+    </div>
+    <div class="landing-stat">
+        <strong>{{ stats.points }}</strong>
+        <span>{% translate "Тұрғындарға берілген эко-ұпай" %}</span>
+    </div>
+    </div>
+</section>
+
+<!-- SERVICES for residents -->
+<section id="services" class="landing-inner landing-section" aria-labelledby="servicesTitle">
+
+    <div class="landing-heading">
+        <h2 id="servicesTitle">{% translate "Тұрғындарға арналған қызметтер" %}</h2>
+        <p>{% translate "Тіркелусіз: аты-жөн мен телефон сұралмайды." %}</p>
+    </div>
+
+    <div class="landing-services">
+
+        <a class="landing-service is-main" href="{% url 'resident_home' %}">
+            <span class="landing-service-icon"><svg class="icon" aria-hidden="true"><use href="#i-report"></use></svg></span>
+            <strong>{% translate "Өтініш қалдыру" %}</strong>
+            <span>{% translate "Мәселенің түрін таңдап, орнын картадан белгілеңіз. Бір минуттық іс." %}</span>
+            <svg class="icon landing-service-arrow" aria-hidden="true"><use href="#i-arrow"></use></svg>
+        </a>
+
+        <a class="landing-service" href="{% url 'resident_status' %}">
+            <span class="landing-service-icon"><svg class="icon" aria-hidden="true"><use href="#i-code"></use></svg></span>
+            <strong>{% translate "Өтінішті тексеру" %}</strong>
+            <span>{% translate "Код арқылы мәртебені және жұмыстан кейінгі фотоны көріңіз." %}</span>
+            <svg class="icon landing-service-arrow" aria-hidden="true"><use href="#i-arrow"></use></svg>
+        </a>
+
+        {% if telegram_link %}
+        <a class="landing-service" href="{{ telegram_link }}" target="_blank" rel="noopener">
+            <span class="landing-service-icon"><svg class="icon" aria-hidden="true"><use href="#i-send"></use></svg></span>
+            <strong>{% translate "Telegram-бот" %}</strong>
+            <span>{% translate "Өтінішті ботқа жіберіп, әр өзгеріс туралы хабар алыңыз." %}</span>
+            <svg class="icon landing-service-arrow" aria-hidden="true"><use href="#i-arrow"></use></svg>
+        </a>
+        {% endif %}
+
+        <a class="landing-service" href="{% url 'eco_page' %}">
+            <span class="landing-service-icon"><svg class="icon" aria-hidden="true"><use href="#i-leaf"></use></svg></span>
+            <strong>{% translate "Эко-ұпай мен сыйлықтар" %}</strong>
+            <span>{% translate "Расталған өтініш үшін ұпай жинап, серіктестердің сыйлықтарына айырбастаңыз." %}</span>
+            <svg class="icon landing-service-arrow" aria-hidden="true"><use href="#i-arrow"></use></svg>
+        </a>
+
+        <a class="landing-service" href="{% url 'eco_page' %}">
+            <span class="landing-service-icon"><svg class="icon" aria-hidden="true"><use href="#i-trophy"></use></svg></span>
+            <strong>{% translate "ОСИ рейтингі" %}</strong>
+            <span>{% translate "Үйіңіздің ОСИ-ы қаладағы рейтингте нешінші орында тұрғанын көріңіз." %}</span>
+            <svg class="icon landing-service-arrow" aria-hidden="true"><use href="#i-arrow"></use></svg>
+        </a>
+
+        <a class="landing-service" href="{% url 'login' %}">
+            <span class="landing-service-icon"><svg class="icon" aria-hidden="true"><use href="#i-lock"></use></svg></span>
+            <strong>{% translate "Қызметкерлерге" %}</strong>
+            <span>{% translate "Диспетчер, жұмысшы және әкімші панелі." %}</span>
+            <svg class="icon landing-service-arrow" aria-hidden="true"><use href="#i-arrow"></use></svg>
+        </a>
+
+    </div>
+
+</section>
+
+<!-- HOW IT WORKS -->
+<section id="how" class="landing-inner landing-section" aria-labelledby="howTitle">
+
+    <div class="landing-heading">
+        <h2 id="howTitle">{% translate "Қалай жұмыс істейді" %}</h2>
+        <p>{% translate "Хабарламадан нәтижеге дейін төрт қадам." %}</p>
+    </div>
+
+    <ol class="landing-how">
+        <li>
+            <span class="landing-how-num">1</span>
+            <strong>{% translate "Хабарлайсыз" %}</strong>
+            <span>{% translate "Сайттан немесе Telegram-нан, қаласаңыз фотомен бірге." %}</span>
+        </li>
+        <li>
+            <span class="landing-how-num">2</span>
+            <strong>{% translate "Жүйе тексереді" %}</strong>
+            <span>{% translate "Жақын контейнердің датчигі мен AI фотоны талдайды, бір жердегі өтініштерді біріктіреді." %}</span>
+        </li>
+        <li>
+            <span class="landing-how-num">3</span>
+            <strong>{% translate "Жұмысшы орындайды" %}</strong>
+            <span>{% translate "Диспетчер ең жақын жұмысшыны жібереді, ол нәтижені фотомен растайды." %}</span>
+        </li>
+        <li>
+            <span class="landing-how-num">4</span>
+            <strong>{% translate "Ұпай аласыз" %}</strong>
+            <span>{% translate "Мәселе шешілгенде хабарлама мен эко-ұпай келеді." %}</span>
+        </li>
+    </ol>
+
+</section>
+
+<!-- FOR THE CITY -->
+<section id="city" class="landing-city" aria-labelledby="cityTitle">
+    <div class="landing-inner landing-city-grid">
+
+        <div>
+            <span class="landing-eyebrow">{% translate "Қала мен әкімдік үшін" %}</span>
+            <h2 id="cityTitle">{% translate "Қоқыс шығаруды болжаммен емес, дерекпен басқарыңыз" %}</h2>
+            <p class="landing-lead">{% translate "Контейнерлер, тұрғындардың өтініштері және жұмысшылар бір панельде. Аудан диспетчері өз ауданын, бас диспетчер бүкіл қаланы көреді." %}</p>
+            <a class="landing-button is-primary" href="{% url 'login' %}">
+                {% translate "Қызметкерлер панеліне кіру" %}
+                <svg class="icon" aria-hidden="true"><use href="#i-arrow"></use></svg>
+            </a>
+        </div>
+
+        <ul class="landing-features">
+            <li>
+                <span class="landing-service-icon"><svg class="icon" aria-hidden="true"><use href="#i-sensor"></use></svg></span>
+                <strong>{% translate "Толу деңгейі нақты уақытта" %}</strong>
+                <span>{% translate "Әр контейнердің датчигі толуды, температура мен түтінді жібереді." %}</span>
+            </li>
+            <li>
+                <span class="landing-service-icon"><svg class="icon" aria-hidden="true"><use href="#i-flame"></use></svg></span>
+                <strong>{% translate "Өрт қаупінің белгілері" %}</strong>
+                <span>{% translate "Қызу немесе түтін байқалса, диспетчер бірден ескерту алады." %}</span>
+            </li>
+            <li>
+                <span class="landing-service-icon"><svg class="icon" aria-hidden="true"><use href="#i-route"></use></svg></span>
+                <strong>{% translate "Жұмысшылар картада" %}</strong>
+                <span>{% translate "Диспетчер жұмысшылардың орнын және кімнің қай тапсырмада екенін көреді." %}</span>
+            </li>
+            <li>
+                <span class="landing-service-icon"><svg class="icon" aria-hidden="true"><use href="#i-chart"></use></svg></span>
+                <strong>{% translate "Аудандар бойынша бақылау" %}</strong>
+                <span>{% translate "Қай ауданда өтініш кешігіп жатқаны бірден көрінеді." %}</span>
+            </li>
+        </ul>
+
+    </div>
+</section>
+
+<!-- QUESTIONS -->
+<section class="landing-inner landing-section landing-faq-wrap" aria-labelledby="faqTitle">
+
+    <div class="landing-heading">
+        <h2 id="faqTitle">{% translate "Жиі қойылатын сұрақтар" %}</h2>
+    </div>
+
+    <div class="landing-faq">
+        <details>
+            <summary>{% translate "Өтініш қалдыру тегін бе?" %}</summary>
+            <p>{% translate "Иә. Тіркелу, аты-жөн немесе телефон қажет емес." %}</p>
+        </details>
+        <details>
+            <summary>{% translate "Өтінішім орындалғанын қалай білемін?" %}</summary>
+            <p>{% translate "Өтінішке код беріледі. Сол код арқылы мәртебені тексересіз, ал Telegram-бот әр өзгерісті өзі хабарлайды." %}</p>
+        </details>
+        <details>
+            <summary>{% translate "Эко-ұпай қашан беріледі?" %}</summary>
+            <p>{% translate "Жұмысшы мәселені фотомен растағанда ғана. Жалған өтінішке ұпай берілмейді." %}</p>
+        </details>
+        <details>
+            <summary>{% translate "Фото не үшін керек?" %}</summary>
+            <p>{% translate "AI фотодан қалдықтың түрі мен көлемін анықтайды, сонда диспетчер қажетті бригаданы жібереді. Фото міндетті емес." %}</p>
+        </details>
+    </div>
+
+</section>
+
+<!-- CLOSING CALL -->
+<section class="landing-inner landing-cta-wrap" aria-labelledby="ctaTitle">
+    <div class="landing-cta">
+    <div>
+        <h2 id="ctaTitle">{% translate "Аулаңызда мәселе бар ма?" %}</h2>
+        <p>{% translate "Хабарлаңыз, қалғанын жүйе мен қызметкерлер атқарады." %}</p>
+    </div>
+    <a class="landing-button is-primary" href="{% url 'resident_home' %}">
+        {% translate "Өтініш қалдыру" %}
+        <svg class="icon" aria-hidden="true"><use href="#i-arrow"></use></svg>
+    </a>
+    </div>
+</section>
+
+{% endblock %}
+
+{% block app_tabs %}{% include "app_tabs.html" with active="home" %}{% endblock %}

@@ -1,0 +1,49 @@
+{% extends "manage/base.html" %}
+{% load i18n %}
+
+{% block title %}{% translate "Qaldyq — QR-стикерлер" %}{% endblock %}
+
+{% block manage %}
+
+<section aria-labelledby="stickersTitle">
+
+    {% if single %}
+    <a class="back-link no-print" href="{% url 'manage_container_edit' single.pk %}"><svg class="icon" aria-hidden="true"><use href="#i-caret"></use></svg>{{ single.name }}</a>
+    {% else %}
+    <a class="back-link no-print" href="{% url 'manage_containers' %}"><svg class="icon" aria-hidden="true"><use href="#i-caret"></use></svg>{% translate "Контейнерлер" %}</a>
+    {% endif %}
+
+    <div class="section-header no-print">
+        <h1 id="stickersTitle">{% if single %}{% blocktranslate with name=single.name %}{{ name }}: QR-стикер{% endblocktranslate %}{% else %}{% translate "Контейнерлердің QR-стикерлері" %}{% endif %}</h1>
+        <div class="header-actions">
+            {% if single %}
+            <a class="button-secondary" href="{% url 'manage_container_qr_file' single.pk 'png' %}">PNG</a>
+            <a class="button-secondary" href="{% url 'manage_container_qr_file' single.pk 'svg' %}">SVG</a>
+            {% endif %}
+            <button class="button-primary" type="button" onclick="window.print()">{% translate "Басып шығару" %}</button>
+        </div>
+    </div>
+
+    <p class="field-hint no-print">
+        {% blocktranslate trimmed %}
+        Әр стикерді өз контейнерінің сыртына жапсырыңыз. Тұрғын оны оқығанда өтініш формасы сол контейнердің орнымен ашылады. QR ішінде {{ host }} адресі тұр, сондықтан тұрақты доменмен басып шығарған дұрыс.
+        {% endblocktranslate %}
+    </p>
+
+    <div class="sticker-sheet{% if single %} is-single{% endif %}">
+        {% for sticker in stickers %}
+        <div class="sticker">
+            <span class="sticker-brand">qaldyq</span>
+            <div class="sticker-qr">{{ sticker.qr }}</div>
+            <strong class="sticker-name">{{ sticker.container.name }}</strong>
+            <span class="sticker-place">{{ sticker.container.location }}</span>
+            <span class="sticker-call">{% translate "Толып кетсе, сканерлеп хабарлаңыз" %}</span>
+        </div>
+        {% empty %}
+        <p class="cell-secondary">{% translate "Контейнер әлі жоқ." %}</p>
+        {% endfor %}
+    </div>
+
+</section>
+
+{% endblock %}

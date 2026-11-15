@@ -1,0 +1,2 @@
+{# An event's time span; the end date is shown only when it is another day #}
+{{ event.starts_at|date:"d.m.Y H:i" }} – {% if event.starts_at|date:"Ymd" != event.ends_at|date:"Ymd" %}{{ event.ends_at|date:"d.m.Y H:i" }}{% else %}{{ event.ends_at|date:"H:i" }}{% endif %}

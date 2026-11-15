@@ -386,6 +386,10 @@ def handle_callback(query):
         chat.save()
         return subscribe(chat, data[len("sub:"):])
 
+    if data.startswith("rate:"):
+        chat.save()
+        return rate_callback(chat, data)
+
     if data == "eco" or data.startswith(("rw:", "rwok:", "osi", "top")):
         chat.save()
         return eco_callback(chat, data)
@@ -689,6 +693,16 @@ def deliver(request_pk):
 
         text += "\n\nРахмет! Қаланы бірге таза ұстаймыз 💚"
 
+    # A finished job asks the resident whether the problem is really gone
+    rating_keyboard = None
+
+    if item.status == Status.DONE:
+        text += "\n\nМәселе шешілді ме?"
+        rating_keyboard = {"inline_keyboard": [[
+            {"text": "👍 Иә, шешілді", "callback_data": f"rate:{item.code}:1"},
+            {"text": "👎 Шешілмеді", "callback_data": f"rate:{item.code}:0"},
+        ]]}
+
     try:
 
         if item.status == Status.DONE and item.result_photo:
@@ -696,18 +710,42 @@ def deliver(request_pk):
             with item.result_photo.open("rb") as photo:
                 content = photo.read()
 
-            call("sendPhoto", {
-                "chat_id": item.telegram_chat.chat_id,
-                "caption": text[:1024],
-            }, files={"photo": ("result.jpg", content)}, timeout=60)
+            payload = {"chat_id": item.telegram_chat.chat_id, "caption": text[:1024]}
+            if rating_keyboard:
+                payload["reply_markup"] = rating_keyboard
+
+            call("sendPhoto", payload, files={"photo": ("result.jpg", content)}, timeout=60)
 
         else:
 
-            send(item.telegram_chat, text)
+            send(item.telegram_chat, text, rating_keyboard)
 
     except (TelegramError, OSError) as error:
         # A resident who blocked the bot simply stops hearing from it
         log.warning("Telegram notification for %s failed: %s", item.code, error)
+
+
+def rate_callback(chat, data):
+    """👍 or 👎 under the "done" message; 👎 reopens the request."""
+
+    from . import ratings
+
+    _prefix, code, value = (data.split(":") + ["", ""])[:3]
+    item = ResidentRequest.objects.filter(code=code, telegram_chat=chat).first()
+
+    if item is None or not ratings.owner_may_rate(item, chat=chat):
+        return
+
+    if not ratings.can_rate(item):
+        return send(chat, f"{item.code} өтінішіне баға беріліп қойған немесе бағалау мерзімі өтті.")
+
+    result = ratings.rate(item, value == "1")
+
+    send(chat, {
+        "thanks": "Рахмет! Бағаңыз жұмысшылардың сапасын бағалауға көмектеседі 💚",
+        "reopened": f"{item.code} өтініші қайта ашылды. Диспетчер оны қайта қарап, жұмысшыны жібереді.",
+        "noted": "Бағаңыз сақталды. Өтініш бірнеше рет қайта ашылған, оны диспетчер жеке қарайды.",
+    }[result])
 
 
 # ============================================================

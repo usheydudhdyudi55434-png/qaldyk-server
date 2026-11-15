@@ -16,8 +16,12 @@ def staff_scope(request):
 
     user = request.user
 
+    # The app script is on every page with the shared layout
+    from .views import asset_version
+    app = {"app_js_version": asset_version("sensor/js/app.js")}
+
     if not user.is_authenticated:
-        return {"staff_district": None, "is_head_dispatcher": False}
+        return {"staff_district": None, "is_head_dispatcher": False, **app}
 
     district = staff_district(user)
     dispatcher = is_dispatcher(user)
@@ -31,6 +35,7 @@ def staff_scope(request):
         "nav_current": match.url_name if match else "",
         "nav_role": ROLE_LABELS[role_of(user)],
         "nav_initials": initials(user),
+        **app,
     }
 
     if dispatcher:

@@ -1,0 +1,67 @@
+{% extends "manage/base.html" %}
+{% load i18n %}
+
+{% block title %}Qaldyq — {{ table }}{% if obj %} #{{ obj.pk }}{% endif %}{% endblock %}
+
+{% block manage %}
+
+<section aria-labelledby="rowTitle" class="manage-narrow">
+
+    <a class="back-link" href="{{ back_url }}"><svg class="icon" aria-hidden="true"><use href="#i-caret"></use></svg>{{ title }}</a>
+
+    <div class="section-header">
+        <div>
+            <h1 id="rowTitle">{% if obj %}{{ table }} #{{ obj.pk }}{% else %}{% translate "Жаңа жол" %}{% endif %}</h1>
+            {% if obj %}<span class="section-meta">{{ obj }}</span>{% else %}<code class="db-table-name">{{ table }}</code>{% endif %}
+        </div>
+    </div>
+
+    {% if facts %}
+    <dl class="panel db-facts">
+        {% for fact in facts %}
+        <div>
+            <dt><code>{{ fact.name }}</code></dt>
+            <dd class="db-cell{% if fact.value.kind %} is-{{ fact.value.kind }}{% endif %}">{{ fact.value.text }}</dd>
+        </div>
+        {% endfor %}
+    </dl>
+    {% endif %}
+
+    <form class="panel detail-form" method="post" enctype="multipart/form-data" novalidate>
+
+        {% csrf_token %}
+
+        {% for error in form.non_field_errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+
+        {% for field in form %}
+            {% if field.field.widget.input_type == 'checkbox' %}
+            <label class="check-row">
+                {{ field }}
+                <code class="db-column">{{ field.name }}</code>
+            </label>
+            {% for error in field.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+            {% else %}
+            <div class="field">
+                <label for="{{ field.id_for_label }}">
+                    <code class="db-column">{{ field.name }}</code>
+                    {% if not field.field.required %}<span class="field-optional">{% translate "міндетті емес" %}</span>{% endif %}
+                </label>
+                {% if field.field.widget.input_type == 'file' %}<div class="db-file">{{ field }}</div>{% else %}{{ field }}{% endif %}
+                {% if field.help_text %}<p class="field-hint">{{ field.help_text }}</p>{% endif %}
+                {% for error in field.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+            </div>
+            {% endif %}
+        {% endfor %}
+
+        <div class="form-actions db-actions">
+            <button class="button-primary" type="submit">{% if obj %}{% translate "Сақтау" %}{% else %}{% translate "Қосу" %}{% endif %}</button>
+            {% if obj %}
+            <a class="button-danger" href="{% url 'manage_data_delete' table obj.pk %}">{% translate "Өшіру" %}</a>
+            {% endif %}
+        </div>
+
+    </form>
+
+</section>
+
+{% endblock %}

@@ -62,6 +62,19 @@
     </form>
 
     {% if container %}
+    <div class="panel detail-form container-qr">
+        <div class="container-qr-code">{{ qr }}</div>
+        <div class="container-qr-text">
+            <h2>{% translate "Контейнердің QR-коды" %}</h2>
+            <p class="field-hint">{% translate "Стикерді контейнердің сыртына жапсырыңыз. Тұрғын оны сканерлегенде өтініш формасы осы контейнердің орнымен ашылады." %}</p>
+            <div class="header-actions">
+                <a class="button-primary button-small" href="{% url 'manage_container_sticker' container.pk %}">{% translate "Стикерді басып шығару" %}</a>
+                <a class="button-secondary button-small" href="{% url 'manage_container_qr_file' container.pk 'png' %}">PNG</a>
+                <a class="button-secondary button-small" href="{% url 'manage_container_qr_file' container.pk 'svg' %}">SVG</a>
+            </div>
+        </div>
+    </div>
+
     <div class="panel detail-form manage-danger">
         {% if can_delete %}
         <form method="post" action="{% url 'manage_container_delete' container.pk %}" {% blocktranslate asvar delete_question with name=container.name %}{{ name }} өшірілсін бе?{% endblocktranslate %}onsubmit="return confirm('{{ delete_question|escapejs }}');">

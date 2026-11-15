@@ -6,6 +6,7 @@ The Django admin stays available for rare, technical changes.
 from django.conf import settings
 from django.contrib.auth import get_user_model, update_session_auth_hash
 from django.db.models import Count, Max
+from django.http import Http404, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
@@ -243,9 +244,12 @@ def container_edit(request, pk):
         container = save_container(form)
         return done('manage_containers', _("%(name)s сақталды") % {"name": container.name})
 
+    from .qr import container_path, svg
+
     return render(request, 'manage/container_form.html', {
         'form': form,
         'container': container,
+        'qr': svg(request.build_absolute_uri(container_path(container)), scale=5),
         'device_url': request.build_absolute_uri(f'/api/sensor/{container.pk}/'),
         'can_delete': not container.readings.exists() and not container.requests.exists(),
         'tab': 'containers',
@@ -310,9 +314,9 @@ def eco_overview(request):
         'totals': eco.totals(),
         'rewards': Reward.objects.annotate(taken=Count('redemptions')).order_by('-is_active', 'cost'),
         'osis': Osi.objects.select_related('district').annotate(
-            residents=Count('chats', distinct=True)
+            residents=Count('chats', distinct=True) + Count('wallets', distinct=True)
         ).order_by('-is_active', 'name'),
-        'redemptions': Redemption.objects.select_related('reward', 'chat')[:30],
+        'redemptions': Redemption.objects.select_related('reward', 'chat', 'wallet')[:30],
         'done': request.GET.get('done', ''),
         'tab': 'eco',
         **assets()
@@ -370,3 +374,164 @@ def redemption_use(request, pk):
         redemption.save(update_fields=['used_at'])
 
     return done('manage_eco', _("%(code)s пайдаланылды деп белгіленді") % {"code": redemption.code})
+
+
+# ============================================================
+# QR CODES AND CLEANUP DAYS
+# ============================================================
+
+@admin_required
+def container_stickers(request, pk=None):
+    """A printable sheet of QR stickers: every container, or just one."""
+
+    from .qr import container_path, svg
+
+    containers = Container.objects.select_related('district').order_by('pk')
+
+    if pk is not None:
+        containers = containers.filter(pk=pk)
+        if not containers:
+            raise Http404
+
+    stickers = [
+        {"container": container, "qr": svg(request.build_absolute_uri(container_path(container)), scale=5)}
+        for container in containers
+    ]
+
+    return render(request, 'manage/stickers.html', {
+        'stickers': stickers,
+        'single': stickers[0]['container'] if pk is not None else None,
+        'host': request.get_host(),
+        'tab': 'containers',
+        **assets()
+    })
+
+
+@admin_required
+def container_qr_file(request, pk, kind):
+    """The container's QR as a file to send to a print shop: PNG or SVG."""
+
+    import io
+
+    import segno
+
+    from .qr import container_path
+
+    if kind not in ("png", "svg"):
+        raise Http404
+
+    container = get_object_or_404(Container, pk=pk)
+    code = segno.make(request.build_absolute_uri(container_path(container)), error="m")
+
+    buffer = io.BytesIO()
+    code.save(buffer, kind=kind, scale=20 if kind == "png" else 10, border=4, dark="#0f2a63", light="#ffffff")
+
+    response = HttpResponse(buffer.getvalue(), content_type="image/png" if kind == "png" else "image/svg+xml")
+    response["Content-Disposition"] = f'attachment; filename="qaldyq-container-{container.pk}-qr.{kind}"'
+    return response
+
+
+@admin_required
+def event_list(request):
+
+    from .models import CleanupEvent
+
+    from . import events
+
+    rows = list(CleanupEvent.objects.select_related('osi').annotate(joined=Count('check_ins')))
+    for event in rows:
+        event.state = events.state(event)
+
+    return render(request, 'manage/events.html', {
+        'events': rows,
+        'done': request.GET.get('done', ''),
+        'tab': 'events',
+        **assets()
+    })
+
+
+def edit_event(request, event, title):
+
+    from .manage_forms import EventForm
+
+    form = EventForm(request.POST or None, instance=event)
+
+    if request.method == 'POST' and form.is_valid():
+        from . import events
+
+        saved = form.save()
+        message = _("%(name)s сақталды") % {"name": saved.title}
+
+        # A published event is announced to its association's residents, once
+        told = events.announce(saved)
+        if told:
+            message += ". " + _("Хабарлама жіберілді: %(count)s тұрғын") % {"count": told}
+
+        return done('manage_event_qr', message, pk=saved.pk)
+
+    from .events import RADIUS_METERS
+
+    return render(request, 'manage/event_form.html', {
+        'form': form,
+        'title': title,
+        'radius': RADIUS_METERS,
+        'tab': 'events',
+        **assets()
+    })
+
+
+@admin_required
+def event_create(request):
+    return edit_event(request, None, _("Жаңа сенбілік"))
+
+
+@admin_required
+def event_edit(request, pk):
+    from .models import CleanupEvent
+    event = get_object_or_404(CleanupEvent, pk=pk)
+    return edit_event(request, event, event.title)
+
+
+@admin_required
+@require_POST
+def event_toggle(request, pk):
+    """Switches the event's QR on or off in one click."""
+
+    from .models import CleanupEvent
+
+    from . import events
+
+    event = get_object_or_404(CleanupEvent, pk=pk)
+    event.is_active = not event.is_active
+    event.save(update_fields=['is_active'])
+
+    message = _("QR қосылды") if event.is_active else _("QR өшірілді")
+
+    told = events.announce(event) if event.is_active else 0
+    if told:
+        message += ". " + _("Хабарлама жіберілді: %(count)s тұрғын") % {"count": told}
+    return done('manage_event_qr', message, pk=event.pk)
+
+
+@admin_required
+def event_qr(request, pk):
+    """The event's poster: a big QR to print or show on a screen, and who has come."""
+
+    from . import events
+    from .models import CleanupEvent
+    from .qr import event_path, svg
+
+    event = get_object_or_404(CleanupEvent.objects.select_related('osi'), pk=pk)
+    url = request.build_absolute_uri(event_path(event))
+
+    return render(request, 'manage/event_qr.html', {
+        'event': event,
+        'qr': svg(url, scale=10),
+        'url': url,
+        'state': events.state(event),
+        'audience': sum(query.count() for query in events.audience(event)),
+        'check_ins': event.check_ins.select_related('wallet').order_by('-created_at'),
+        'done': request.GET.get('done', ''),
+        'tab': 'events',
+        **assets()
+    })

@@ -27,6 +27,8 @@
         href="{% static 'sensor/css/dashboard.css' %}?v={{ css_version }}"
     >
 
+    {% include "pwa_head.html" %}
+
 </head>
 
 <body class="login-page">
@@ -36,64 +38,234 @@
         <path d="M8 3h8l5 5v8l-5 5H8l-5-5V8z"/>
         <path d="M12 8v5M12 16.5v.01"/>
     </symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="4"/>
+        <path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5 19 19M5 19l1.5-1.5M17.5 6.5 19 5"/>
+    </symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24">
+        <path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/>
+    </symbol>
+    <symbol id="i-eye" viewBox="0 0 24 24">
+        <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/>
+        <circle cx="12" cy="12" r="3"/>
+    </symbol>
+    <symbol id="i-eye-off" viewBox="0 0 24 24">
+        <path d="M10.6 5.1A10 10 0 0 1 12 5c6.4 0 10 7 10 7a17 17 0 0 1-2.6 3.4M6.6 6.6A17 17 0 0 0 2 12s3.6 7 10 7a9.7 9.7 0 0 0 5.4-1.6"/>
+        <path d="M9.9 9.9a3 3 0 0 0 4.2 4.2M3 3l18 18"/>
+    </symbol>
+    <symbol id="i-sensor" viewBox="0 0 24 24">
+        <path d="M5 8h14l-1.4 12.2a1 1 0 0 1-1 .8H7.4a1 1 0 0 1-1-.8z"/>
+        <path d="M3 8h18M10 4h4M9 12.5a4 4 0 0 1 6 0M10.8 15.2a1.6 1.6 0 0 1 2.4 0"/>
+    </symbol>
+    <symbol id="i-spark" viewBox="0 0 24 24">
+        <path d="M12 3v3M12 18v3M3 12h3M18 12h3"/>
+        <path d="M12 8.5 13.2 11l2.3 1-2.3 1L12 15.5 10.8 13l-2.3-1 2.3-1z"/>
+        <rect x="4" y="4" width="16" height="16" rx="4"/>
+    </symbol>
+    <symbol id="i-people" viewBox="0 0 24 24">
+        <circle cx="9" cy="8" r="3.2"/>
+        <path d="M3 20a6 6 0 0 1 12 0"/>
+        <path d="M16 5.2a3 3 0 0 1 0 5.6M18 14.5a5.6 5.6 0 0 1 3 5.5"/>
+    </symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24">
+        <path d="M5 12h14M13 6l6 6-6 6"/>
+    </symbol>
 </svg>
 
-<div class="login-language">{% include "language_menu.html" %}</div>
+<div class="login-shell">
 
-<main class="login-card">
+    <!-- Who we are: shown beside the form on wide screens -->
+    <aside class="login-showcase" aria-label="Qaldyq">
 
-    <div class="login-brand">
+        <svg class="login-pattern" viewBox="0 0 600 800" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+            <g class="login-pattern-streets">
+                <path d="M-20 140 C 120 160, 240 110, 380 170 S 560 230, 640 190"/>
+                <path d="M-20 360 C 140 330, 260 400, 400 360 S 560 320, 640 380"/>
+                <path d="M-20 600 C 160 620, 280 560, 420 610 S 580 660, 640 620"/>
+                <path d="M120 -20 C 140 160, 90 300, 150 460 S 130 700, 170 820"/>
+                <path d="M330 -20 C 300 180, 360 330, 320 500 S 360 700, 330 820"/>
+                <path d="M520 -20 C 540 200, 480 360, 530 520 S 500 720, 540 820"/>
+            </g>
+            <g class="login-pattern-bins">
+                <circle cx="150" cy="150" r="5"/>
+                <circle cx="378" cy="170" r="5"/>
+                <circle cx="560" cy="430" r="5" class="is-full"/>
+                <circle cx="330" cy="720" r="5"/>
+                <circle cx="525" cy="350" r="5" class="is-half"/>
+                <circle cx="470" cy="640" r="5"/>
+                <circle cx="150" cy="700" r="5" class="is-half"/>
+                <circle cx="520" cy="190" r="5"/>
+            </g>
+        </svg>
 
         <img
-            class="brand-wordmark wordmark-white"
+            class="login-showcase-logo"
             src="{% static 'sensor/img/qaldyq-wordmark-white.png' %}"
             alt="Qaldyq"
-            width="160"
-            height="56"
+            width="120"
+            height="42"
         >
 
-        <img
-            class="brand-wordmark wordmark-navy"
-            src="{% static 'sensor/img/qaldyq-wordmark-navy.png' %}"
-            alt="Qaldyq"
-            width="160"
-            height="56"
-        >
+        <div class="login-showcase-body">
 
-        <div class="brand-note">{% translate "Қалдықтарды бақылау жүйесі" %}</div>
+            <h2>{% translate "Қаланың тазалығы — нақты деректе" %}</h2>
+            <p>{% translate "Датчиктер, тұрғындардың өтініштері және жұмысшылар бір жүйеде." %}</p>
+
+            <ul class="login-features">
+                <li>
+                    <span class="login-feature-icon"><svg class="icon" aria-hidden="true"><use href="#i-sensor"></use></svg></span>
+                    <span>
+                        <strong>{% translate "IoT датчиктер" %}</strong>
+                        {% translate "Контейнердің толуын, температура мен түтінді үздіксіз бақылайды." %}
+                    </span>
+                </li>
+                <li>
+                    <span class="login-feature-icon"><svg class="icon" aria-hidden="true"><use href="#i-spark"></use></svg></span>
+                    <span>
+                        <strong>{% translate "AI фото талдау" %}</strong>
+                        {% translate "Тұрғынның фотосынан қалдық түрі мен қауіпті анықтайды." %}
+                    </span>
+                </li>
+                <li>
+                    <span class="login-feature-icon"><svg class="icon" aria-hidden="true"><use href="#i-people"></use></svg></span>
+                    <span>
+                        <strong>{% translate "Тұрғындар порталы" %}</strong>
+                        {% translate "Сайт пен Telegram арқылы өтініш, ал шешілген мәселе үшін эко-ұпай." %}
+                    </span>
+                </li>
+            </ul>
+
+        </div>
+
+        <p class="login-showcase-foot">{% translate "Qaldyq IoT жүйесі" %}</p>
+
+    </aside>
+
+    <!-- The sign-in form -->
+    <div class="login-panel">
+
+        <div class="login-tools">
+
+            {% include "language_menu.html" %}
+
+            <button
+                id="themeToggle"
+                class="icon-button"
+                type="button"
+                aria-label="{% translate 'Тақырыпты өзгерту' %}"
+            >
+                <svg class="icon"><use id="themeIcon" href="#i-sun"></use></svg>
+            </button>
+
+        </div>
+
+        <main class="login-card">
+
+            <div class="login-brand">
+
+                <img
+                    class="brand-wordmark wordmark-white"
+                    src="{% static 'sensor/img/qaldyq-wordmark-white.png' %}"
+                    alt="Qaldyq"
+                    width="120"
+                    height="42"
+                >
+
+                <img
+                    class="brand-wordmark wordmark-navy"
+                    src="{% static 'sensor/img/qaldyq-wordmark-navy.png' %}"
+                    alt="Qaldyq"
+                    width="120"
+                    height="42"
+                >
+
+            </div>
+
+            <h1>{% translate "Қызметкерлер үшін кіру" %}</h1>
+            <p class="login-lead">{% translate "Диспетчер, жұмысшы немесе әкімші аккаунтымен кіріңіз." %}</p>
+
+            {% if form.non_field_errors %}
+            <div class="login-error level-full" role="alert">
+                <svg class="icon" aria-hidden="true"><use href="#i-full"></use></svg>
+                {{ form.non_field_errors.0 }}
+            </div>
+            {% endif %}
+
+            <form method="post" class="login-form">
+
+                {% csrf_token %}
+
+                <input type="hidden" name="next" value="{{ next }}">
+
+                <div class="login-field">
+                    <label for="{{ form.username.id_for_label }}">{% translate "Логин" %}</label>
+                    {{ form.username }}
+                </div>
+
+                <div class="login-field">
+                    <label for="{{ form.password.id_for_label }}">{% translate "Құпия сөз" %}</label>
+                    <div class="password-wrap">
+                        {{ form.password }}
+                        <button
+                            id="passwordToggle"
+                            class="password-toggle"
+                            type="button"
+                            aria-pressed="false"
+                            aria-label="{% translate 'Құпия сөзді көрсету' %}"
+                            data-show="{% translate 'Құпия сөзді көрсету' %}"
+                            data-hide="{% translate 'Құпия сөзді жасыру' %}"
+                        >
+                            <svg class="icon"><use href="#i-eye"></use></svg>
+                        </button>
+                    </div>
+                </div>
+
+                <button type="submit" class="login-submit">{% translate "Кіру" %}</button>
+
+            </form>
+
+            <a class="login-resident" href="{% url 'resident_home' %}">
+                <span>{% translate "Тұрғынсыз ба?" %} <strong>{% translate "Өтініш қалдыру" %}</strong></span>
+                <svg class="icon" aria-hidden="true"><use href="#i-arrow"></use></svg>
+            </a>
+
+        </main>
 
     </div>
 
-    <h1>{% translate "Диспетчер панеліне кіру" %}</h1>
+</div>
 
-    {% if form.non_field_errors %}
-    <div class="login-error level-full" role="alert">
-        <svg class="icon" aria-hidden="true"><use href="#i-full"></use></svg>
-        {{ form.non_field_errors.0 }}
-    </div>
-    {% endif %}
+<script>
+    (function () {
+        // Theme switch, the same as in the header of other pages
+        const root = document.documentElement;
+        const themeIcon = document.getElementById("themeIcon");
+        const syncTheme = () => themeIcon.setAttribute("href", root.dataset.theme === "light" ? "#i-moon" : "#i-sun");
 
-    <form method="post" class="login-form">
+        syncTheme();
 
-        {% csrf_token %}
+        document.getElementById("themeToggle").addEventListener("click", () => {
+            root.dataset.theme = root.dataset.theme === "light" ? "dark" : "light";
+            try {
+                localStorage.setItem("qaldyk-theme", root.dataset.theme);
+            } catch (error) {}
+            syncTheme();
+        });
 
-        <input type="hidden" name="next" value="{{ next }}">
+        // Show or hide the password while typing on a phone
+        const toggle = document.getElementById("passwordToggle");
+        const input = document.getElementById("{{ form.password.id_for_label }}");
 
-        <label class="login-field">
-            <span>{% translate "Логин" %}</span>
-            {{ form.username }}
-        </label>
-
-        <label class="login-field">
-            <span>{% translate "Құпия сөз" %}</span>
-            {{ form.password }}
-        </label>
-
-        <button type="submit" class="login-submit">{% translate "Кіру" %}</button>
-
-    </form>
-
-</main>
+        toggle.addEventListener("click", () => {
+            const show = input.type === "password";
+            input.type = show ? "text" : "password";
+            toggle.setAttribute("aria-pressed", String(show));
+            toggle.setAttribute("aria-label", show ? toggle.dataset.hide : toggle.dataset.show);
+            toggle.querySelector("use").setAttribute("href", show ? "#i-eye-off" : "#i-eye");
+            input.focus();
+        });
+    })();
+</script>
 
 </body>
 </html>

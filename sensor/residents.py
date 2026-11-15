@@ -259,6 +259,11 @@ def log_event(request, status, actor=None, note="", notify=True):
         from .telegram import notify_status
         transaction.on_commit(lambda: notify_status(request.pk))
 
+    # So does a phone where the resident turned on notifications for this request
+    if notify and previous is not None and previous != status and request.push_subscriptions.exists():
+        from . import webpush
+        transaction.on_commit(lambda: webpush.notify_status(request.pk))
+
     return event
 
 

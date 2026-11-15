@@ -178,6 +178,24 @@
             {% endif %}
         </section>
 
+        {% if ratings %}
+        <section class="history" aria-labelledby="ratingsTitle">
+            <h2 id="ratingsTitle">{% translate "Тұрғынның бағасы" %}</h2>
+            <ul class="rating-list">
+                {% for rating in ratings %}
+                <li class="{% if rating.is_good %}is-good{% else %}is-bad{% endif %}">
+                    <span class="rating-mark" aria-hidden="true">{% if rating.is_good %}👍{% else %}👎{% endif %}</span>
+                    <span>
+                        <strong>{% if rating.is_good %}{% translate "Мәселе шешілді" %}{% else %}{% translate "Мәселе шешілмеді" %}{% endif %}</strong>
+                        {% if rating.comment %}<span class="rating-comment">«{{ rating.comment }}»</span>{% endif %}
+                        <span class="cell-secondary">{{ rating.created_at|date:"d.m.Y H:i" }}{% if rating.worker %} · {{ rating.worker.username }}{% endif %}</span>
+                    </span>
+                </li>
+                {% endfor %}
+            </ul>
+        </section>
+        {% endif %}
+
         <section class="history" aria-labelledby="historyTitle">
             <h2 id="historyTitle">{% translate "Тарихы" %}</h2>
             <ol class="timeline">

@@ -1,0 +1,102 @@
+{% extends "manage/base.html" %}
+{% load i18n %}
+
+{% block title %}Qaldyq — {{ event.title }}{% endblock %}
+
+{% block manage %}
+
+<section aria-labelledby="posterTitle" class="event-admin">
+
+    <a class="back-link no-print" href="{% url 'manage_events' %}"><svg class="icon" aria-hidden="true"><use href="#i-caret"></use></svg>{% translate "Сенбіліктер" %}</a>
+
+    <div class="section-header no-print">
+        <h1 id="posterTitle">{{ event.title }}</h1>
+        <div class="header-actions">
+            <a class="button-secondary" href="{% url 'manage_event_edit' event.pk %}">{% translate "Өңдеу" %}</a>
+            <button class="button-primary" type="button" onclick="window.print()">{% translate "Басып шығару" %}</button>
+        </div>
+    </div>
+
+    {% if state == 'off' %}
+    <div class="notice notice-error no-print event-off" role="alert">
+        <svg class="icon" aria-hidden="true"><use href="#i-full"></use></svg>
+        <div>
+            <strong>{% translate "QR өшірулі: тұрғындар тіркеле алмайды." %}</strong>
+            {% translate "Сенбілік басталғанда немесе қазір қосыңыз." %}
+        </div>
+        <form method="post" action="{% url 'manage_event_toggle' event.pk %}">
+            {% csrf_token %}
+            <button class="button-primary button-small" type="submit">{% translate "QR-ды қосу" %}</button>
+        </form>
+    </div>
+    {% elif state == 'over' %}
+    <p class="notice notice-merged no-print">{% translate "Сенбілік аяқталды: QR енді ұпай бермейді." %}</p>
+    {% elif state == 'soon' %}
+    <p class="notice notice-merged no-print">{% blocktranslate with start=event.starts_at|date:"d.m.Y H:i" %}QR сенбілік басталардан 30 минут бұрын іске қосылады (басталуы: {{ start }}).{% endblocktranslate %}</p>
+    {% else %}
+    <div class="notice notice-success no-print event-off" role="status">
+        <svg class="icon" aria-hidden="true"><use href="#i-normal"></use></svg>
+        <div><strong>{% translate "QR қазір жұмыс істеп тұр." %}</strong></div>
+        <form method="post" action="{% url 'manage_event_toggle' event.pk %}">
+            {% csrf_token %}
+            <button class="button-secondary button-small" type="submit">{% translate "QR-ды өшіру" %}</button>
+        </form>
+    </div>
+    {% endif %}
+
+    <p class="field-hint no-print event-news">
+        <svg class="icon" aria-hidden="true"><use href="#i-bell"></use></svg>
+        {% if event.notified_at %}
+        {% blocktranslate with when=event.notified_at|date:"d.m.Y H:i" count=event.notified_count %}Тұрғындарға хабарлама {{ when }} жіберілді: {{ count }} алушы.{% endblocktranslate %}
+        {% else %}
+        {% blocktranslate %}QR қосулы кезде сақталғанда, қаланың барлық тұрғынына хабарлама өзі жіберіледі (қазір {{ audience }} алушы: қосымша мен Telegram).{% endblocktranslate %}
+        {% endif %}
+    </p>
+
+    <!-- The poster: this part is what gets printed -->
+    <div class="panel event-poster">
+        <span class="event-poster-brand">qaldyq · {% translate "Сенбілік" %}</span>
+        <h2>{{ event.title }}</h2>
+        <p class="event-poster-meta">{% include "event_time.html" %} · {{ event.address }}</p>
+        <div class="event-poster-qr">{{ qr }}</div>
+        <p class="event-poster-call">{% blocktranslate with points=event.points %}Qaldyq қосымшасындағы сканермен оқып, +{{ points }} эко-ұпай алыңыз{% endblocktranslate %}</p>
+        <p class="event-poster-url">{{ url }}</p>
+    </div>
+
+    <p class="field-hint no-print">
+        {% blocktranslate trimmed %}
+        QR ішінде қазіргі сайт адресі тұр. Сайт адресі ауысса (мысалы, жаңа туннель), QR-ды қайта басып шығарыңыз. Қосымшадағы сканер ескі адресті де таниды.
+        {% endblocktranslate %}
+    </p>
+
+    <section class="no-print" aria-labelledby="joinedTitle">
+        <div class="section-header manage-subhead">
+            <h2 id="joinedTitle">{% blocktranslate count count=check_ins|length %}Қатысты: {{ count }}{% plural %}Қатысты: {{ count }}{% endblocktranslate %}</h2>
+        </div>
+        <div class="panel table-scroll">
+            <table class="data-table stack-table">
+                <thead>
+                    <tr>
+                        <th scope="col">{% translate "Әмиян" %}</th>
+                        <th scope="col">{% translate "Уақыты" %}</th>
+                        <th scope="col" class="align-end">{% translate "Шара орнынан" %}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for check_in in check_ins %}
+                    <tr>
+                        <td class="request-code">{{ check_in.wallet }}</td>
+                        <td>{{ check_in.created_at|date:"d.m.Y H:i" }}</td>
+                        <td class="align-end numeric">{% if check_in.distance is not None %}{{ check_in.distance|floatformat:0 }} м{% else %}—{% endif %}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="3" class="cell-secondary">{% translate "Әзірге ешкім тіркелмеген." %}</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+</section>
+
+{% endblock %}

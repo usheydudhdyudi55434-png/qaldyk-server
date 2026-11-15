@@ -1,0 +1,63 @@
+{% extends "layout.html" %}
+{% load i18n static %}
+
+{% block title %}{% translate "Qaldyq — QR сканер" %}{% endblock %}
+
+{% block brand_note %}{% translate "Тұрғындарға арналған" %}{% endblock %}
+
+{% block nav %}{% endblock %}
+
+{% block main_class %}resident-page scan-page{% endblock %}
+
+{% block content %}
+
+<section class="scan" aria-labelledby="scanTitle">
+
+    <div class="section-header">
+        <h1 id="scanTitle">{% translate "QR сканер" %}</h1>
+    </div>
+
+    <p class="field-hint scan-hint">{% translate "Контейнердегі немесе сенбіліктегі QR-кодты рамкаға түсіріңіз." %}</p>
+
+    <div class="scan-view" id="scanView">
+        <video id="scanVideo" playsinline muted></video>
+        <div class="scan-frame" aria-hidden="true"><span></span></div>
+        <div class="scan-idle" id="scanIdle">
+            <svg class="icon" aria-hidden="true"><use href="#i-qr"></use></svg>
+            <button class="button-primary" type="button" id="scanStart">{% translate "Камераны қосу" %}</button>
+        </div>
+    </div>
+
+    <p class="scan-status" id="scanStatus" role="status" aria-live="polite"></p>
+
+    <label class="button-secondary scan-photo">
+        <input type="file" accept="image/*" capture="environment" id="scanFile" hidden>
+        {% translate "Фотодан оқу" %}
+    </label>
+
+    <div class="scan-kinds">
+        <div class="panel scan-kind">
+            <span class="scan-kind-icon"><svg class="icon" aria-hidden="true"><use href="#i-full"></use></svg></span>
+            <span>
+                <strong>{% translate "Контейнердегі QR" %}</strong>
+                <span class="field-hint">{% translate "Өтініш формасы сол контейнердің орнымен ашылады, бір батырма басу жеткілікті." %}</span>
+            </span>
+        </div>
+        <div class="panel scan-kind">
+            <span class="scan-kind-icon is-green"><svg class="icon" aria-hidden="true"><use href="#i-leaf"></use></svg></span>
+            <span>
+                <strong>{% translate "Сенбіліктегі QR" %}</strong>
+                <span class="field-hint">{% translate "Шараға қатысуыңыз тіркеліп, әмияныңызға эко-ұпай түседі." %}</span>
+            </span>
+        </div>
+    </div>
+
+</section>
+
+{% endblock %}
+
+{% block app_tabs %}{% include "app_tabs.html" with active="scan" %}{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'sensor/js/scan.js' %}?v={{ app_js_version }}"></script>
+{% endblock %}

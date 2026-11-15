@@ -1,0 +1,43 @@
+{% extends "manage/base.html" %}
+{% load i18n %}
+
+{% block title %}{% translate "Qaldyq — Деректер" %}{% endblock %}
+
+{% block manage %}
+
+<section aria-labelledby="dataTitle">
+
+    <div class="section-header">
+        <h1 id="dataTitle">{% translate "Деректер базасы" %}</h1>
+        <span class="section-meta">PostgreSQL · {% translate "кестені ашып, жолдарды қарап, өзгертіңіз" %}</span>
+    </div>
+
+    <div class="notice notice-warning">
+        <svg class="icon" aria-hidden="true"><use href="#i-full"></use></svg>
+        <div>
+            {% blocktranslate trimmed %}
+            Бұл бөлім деректерді тікелей өзгертеді. Мысалы, өтініш мәртебесін осы жерде ауыстырсаңыз,
+            тұрғынға хабарлама барамайды және эко-ұпай берілмейді. Күнделікті жұмысты тиісті бөлімдерде жасаңыз.
+            {% endblocktranslate %}
+        </div>
+    </div>
+
+    {% for group in groups %}
+    <h2 class="db-group-title">{{ group.title }}</h2>
+    <div class="db-tables">
+        {% for table in group.tables %}
+        <a class="panel db-table-card" href="{% url 'manage_data_table' table.name %}">
+            <span class="db-table-title">{{ table.title }}</span>
+            <code class="db-table-name">{{ table.name }}</code>
+            <span class="db-table-stats">
+                <span>{% blocktranslate count rows=table.rows %}{{ rows }} жол{% plural %}{{ rows }} жол{% endblocktranslate %}</span>
+                <span>{{ table.size }}</span>
+            </span>
+        </a>
+        {% endfor %}
+    </div>
+    {% endfor %}
+
+</section>
+
+{% endblock %}

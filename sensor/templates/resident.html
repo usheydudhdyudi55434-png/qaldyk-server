@@ -36,6 +36,16 @@
     {% endif %}
 </section>
 
+{% if qr_container %}
+<div class="notice notice-success qr-container-notice" role="status">
+    <svg class="icon" aria-hidden="true"><use href="#i-qr"></use></svg>
+    <div>
+        <strong>{% blocktranslate with name=qr_container.name %}{{ name }} контейнерінің QR-коды{% endblocktranslate %}</strong>
+        {% translate "Мекенжай мен орны толтырылды. Мәселенің түрін тексеріп, «Өтінішті жіберу» батырмасын басыңыз." %}
+    </div>
+</div>
+{% endif %}
+
 <form class="panel resident-form" method="post" enctype="multipart/form-data" novalidate>
 
     {% csrf_token %}
@@ -110,3 +120,5 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="{% static 'sensor/js/resident.js' %}?v={{ resident_js_version }}"></script>
 {% endblock %}
+
+{% block app_tabs %}{% include "app_tabs.html" with active="report" %}{% endblock %}

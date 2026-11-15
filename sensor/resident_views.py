@@ -1,4 +1,6 @@
 import json
+
+from django.conf import settings
 from datetime import timedelta
 
 from django.contrib.auth import get_user_model
@@ -59,19 +61,86 @@ def assets():
 # RESIDENTS (public, no login)
 # ============================================================
 
+def push_key():
+    from . import webpush
+    return settings.VAPID_PUBLIC_KEY if webpush.enabled() else ''
+
+
+def landing(request):
+    """The front page: what Qaldyq is, the services for residents, live numbers."""
+
+    from . import eco
+    from .models import Container, RequestEvent
+
+    solved = ResidentRequest.objects.filter(parent__isnull=True, status=Status.DONE)
+
+    # How long a solved request took, from sending to the photo of the result
+    finished = dict(
+        RequestEvent.objects.filter(request__in=solved, status=Status.DONE)
+        .order_by('request_id', 'created_at')
+        .values_list('request_id', 'created_at')
+    )
+    durations = [
+        (finished[pk] - created).total_seconds() / 60
+        for pk, created in solved.filter(pk__in=finished).values_list('pk', 'created_at')
+        if finished[pk] > created
+    ]
+
+    return render(request, 'landing.html', {
+        'stats': {
+            'containers': Container.objects.count(),
+            'solved': solved.count(),
+            'resolve_time': minutes_label(round(sum(durations) / len(durations))) if durations else None,
+            'points': eco.totals()['awarded'],
+        },
+        'telegram_link': bot_link(),
+        **assets()
+    })
+
+
 def resident_home(request):
 
-    form = ResidentRequestForm(request.POST or None, request.FILES or None)
+    # A container's QR sticker opens the form already filled for that container
+    from .models import Container
+
+    qr_container = None
+    initial = {}
+
+    if request.method == 'GET' and request.GET.get('container', '').isdigit():
+        qr_container = Container.objects.filter(pk=int(request.GET['container'])).first()
+
+    if qr_container:
+        initial = {
+            'category': ResidentRequest.Category.OVERFLOW,
+            'address': qr_container.location,
+            'latitude': qr_container.latitude,
+            'longitude': qr_container.longitude,
+        }
+
+    form = ResidentRequestForm(request.POST or None, request.FILES or None, initial=initial)
 
     if request.method == 'POST' and form.is_valid():
 
-        resident_request = submit_request(form.save(commit=False))
+        # The request is tied to this phone's eco-wallet, which opens with the first one
+        from .wallet_views import remember, wallet_for
 
-        return redirect(
-            f"{reverse('resident_status')}?code={resident_request.code}&new=1"
+        wallet = wallet_for(request)
+        resident_request = form.save(commit=False)
+        resident_request.wallet = wallet
+        resident_request = submit_request(resident_request)
+
+        return remember(
+            redirect(f"{reverse('resident_status')}?code={resident_request.code}&new=1"),
+            wallet,
+            request
         )
 
-    return render(request, 'resident.html', {'form': form, 'telegram_link': bot_link(), **assets()})
+    return render(request, 'resident.html', {
+        'form': form,
+        'qr_container': qr_container,
+        'telegram_link': bot_link(),
+        **assets()
+    })
 
 
 def resident_status(request):
@@ -83,15 +152,48 @@ def resident_status(request):
     if code:
         resident_request = ResidentRequest.objects.filter(code=code).first()
 
+    # The resident who sent it says whether the job really solved the problem
+    from . import ratings
+    from .wallet_views import current_wallet
+
+    rating_open = bool(
+        resident_request
+        and ratings.can_rate(resident_request)
+        and ratings.owner_may_rate(resident_request, wallet=current_wallet(request))
+    )
+
     return render(request, 'resident_status.html', {
         'code': code,
         'resident_request': resident_request,
+        'rating_open': rating_open,
+        'rating': ratings.current_rating(resident_request) if resident_request else None,
+        'rated': request.GET.get('rated', ''),
         'is_new': request.GET.get('new') == '1',
         'steps': status_steps(resident_request),
         'telegram_link': bot_link(resident_request.code) if resident_request else '',
         'eco_points': resident_request.eco_points.filter(amount__gt=0).first() if resident_request else None,
+        'push_key': push_key(),
         **assets()
     })
+
+
+@require_POST
+def rate_request(request):
+    """👍 or 👎 from the status page; 👎 reopens the request."""
+
+    from . import ratings
+    from .wallet_views import current_wallet
+
+    code = request.POST.get('code', '').strip().upper()
+    item = get_object_or_404(ResidentRequest, code=code)
+    back = f"{reverse('resident_status')}?code={item.code}"
+
+    if not (ratings.can_rate(item) and ratings.owner_may_rate(item, wallet=current_wallet(request))):
+        return redirect(back)
+
+    result = ratings.rate(item, request.POST.get('value') == 'good', request.POST.get('comment', ''))
+
+    return redirect(f"{back}&rated={result}")
 
 
 def status_steps(resident_request):
@@ -244,6 +346,7 @@ def request_detail(request, pk):
             else None
         ),
         'latest': latest,
+        'ratings': (resident_request.parent or resident_request).ratings.select_related('worker'),
         'saved': request.GET.get('saved') == '1',
         **assets()
     })
@@ -340,8 +443,18 @@ def supervision(request):
             ),
         })
 
+    # How residents rate each worker's finished jobs
+    from . import ratings
+
+    quality = ratings.worker_quality(
+        get_user_model().objects.filter(groups__name=WORKERS, is_active=True)
+        .select_related('staff_profile__district').distinct()
+    )
+
     return render(request, 'supervision.html', {
         'rows': rows,
+        'quality': quality,
+        'quality_days': ratings.QUALITY_DAYS,
         'late_minutes': SUPERVISION_LATE_MINUTES,
         **assets()
     })

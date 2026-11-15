@@ -29,6 +29,8 @@
         href="{% static 'sensor/css/dashboard.css' %}?v={{ css_version }}"
     >
 
+    {% include "pwa_head.html" %}
+
 </head>
 
 <body class="{% block body_class %}{% endblock %}">
@@ -67,6 +69,34 @@
     <symbol id="i-full" viewBox="0 0 24 24">
         <path d="M8 3h8l5 5v8l-5 5H8l-5-5V8z"/>
         <path d="M12 8v5M12 16.5v.01"/>
+    </symbol>
+    <symbol id="i-home" viewBox="0 0 24 24">
+        <path d="M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1h-4.5v-6h-5v6H5a1 1 0 0 1-1-1z"/>
+    </symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="9"/>
+        <path d="M12 8v8M8 12h8"/>
+    </symbol>
+    <symbol id="i-list" viewBox="0 0 24 24">
+        <path d="M9 6h11M9 12h11M9 18h11"/>
+        <circle cx="4.5" cy="6" r="1"/>
+        <circle cx="4.5" cy="12" r="1"/>
+        <circle cx="4.5" cy="18" r="1"/>
+    </symbol>
+    <symbol id="i-qr" viewBox="0 0 24 24">
+        <path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3"/>
+        <rect x="8" y="8" width="3" height="3" rx=".5"/>
+        <rect x="13" y="8" width="3" height="3" rx=".5"/>
+        <rect x="8" y="13" width="3" height="3" rx=".5"/>
+        <path d="M13 13h3v3M13 16h.01"/>
+    </symbol>
+    <symbol id="i-bell" viewBox="0 0 24 24">
+        <path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/>
+        <path d="M10 20.5a2 2 0 0 0 4 0"/>
+    </symbol>
+    <symbol id="i-search" viewBox="0 0 24 24">
+        <circle cx="11" cy="11" r="7"/>
+        <path d="m20 20-3.5-3.5"/>
     </symbol>
     <symbol id="i-none" viewBox="0 0 24 24">
         <circle cx="12" cy="12" r="9"/>
@@ -131,6 +161,8 @@
 
 </main>
 
+{% block app_tabs %}{% endblock %}
+
 <footer class="footer">
     <span>Qaldyq</span>
     <span>{% translate "Қалдықтарды бақылау жүйесі" %}</span>
@@ -167,6 +199,8 @@
 </script>
 
 <script src="{% url 'javascript-catalog' %}"></script>
+
+<script src="{% static 'sensor/js/app.js' %}?v={{ app_js_version }}"></script>
 
 {% block scripts %}{% endblock %}
 

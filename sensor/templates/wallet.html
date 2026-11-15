@@ -1,0 +1,318 @@
+{% extends "layout.html" %}
+{% load i18n %}
+
+{% block title %}{% translate "Qaldyq — Эко-ұпай" %}{% endblock %}
+
+{% block brand_note %}{% translate "Тұрғындарға арналған" %}{% endblock %}
+
+{% block nav %}
+    <a class="header-link" href="{% url 'resident_home' %}">{% translate "Өтініш қалдыру" %}</a>
+    <a class="header-link" href="{% url 'eco_page' %}">{% translate "Рейтинг" %}</a>
+{% endblock %}
+
+{% block main_class %}resident-page wallet-page{% endblock %}
+
+{% block content %}
+
+<svg class="icon-sprite" aria-hidden="true" focusable="false">
+    <symbol id="i-gift" viewBox="0 0 24 24">
+        <rect x="3" y="8" width="18" height="4" rx="1"/>
+        <path d="M5 12v8a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-8M12 8v13"/>
+        <path d="M12 8S10.5 3 8 3a2.5 2.5 0 0 0 0 5M12 8s1.5-5 4-5a2.5 2.5 0 0 1 0 5"/>
+    </symbol>
+    <symbol id="i-ticket" viewBox="0 0 24 24">
+        <path d="M3 8a2 2 0 0 0 2-2h14a2 2 0 0 0 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 0-2 2H5a2 2 0 0 0-2-2v-2a2 2 0 0 0 0-4z"/>
+        <path d="M14 6v12" stroke-dasharray="2 2"/>
+    </symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="9"/>
+        <path d="M12 7v5l3 2"/>
+    </symbol>
+    <symbol id="i-gear" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="3"/>
+        <path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1"/>
+    </symbol>
+</svg>
+
+{% if voucher %}
+<div class="notice notice-success wallet-voucher-new" role="status">
+    <svg class="icon" aria-hidden="true"><use href="#i-normal"></use></svg>
+    <div>
+        <strong>{% translate "Сыйлық алынды!" %}</strong>
+        {% blocktranslate trimmed %}Ваучер коды: <span class="request-code">{{ voucher }}</span>. Оны серіктеске көрсетіңіз, код төмендегі «Менің ваучерлерім» тізімінде сақталады.{% endblocktranslate %}
+    </div>
+</div>
+{% endif %}
+
+{% if error %}
+<div class="notice notice-error" role="alert">
+    <svg class="icon" aria-hidden="true"><use href="#i-full"></use></svg>
+    {{ error }}
+</div>
+{% endif %}
+
+{% if done %}
+<div class="notice notice-success" role="status">
+    <svg class="icon" aria-hidden="true"><use href="#i-normal"></use></svg>
+    {{ done }}
+</div>
+{% endif %}
+
+{% if not wallet %}
+
+<!-- No wallet yet: how it works, in three steps -->
+<section class="wallet-card is-empty" aria-labelledby="walletIntro">
+    <span class="wallet-card-brand">qaldyq · {% translate "эко-әмиян" %}</span>
+    <h1 id="walletIntro">{% translate "Эко-әмияныңыз әлі ашылмаған" %}</h1>
+    <p>{% translate "Әмиян осы телефоннан алғашқы өтінішті жібергенде өзі ашылады. Жұмысшы мәселені фотомен растағанда ұпай осында түседі, ал ұпайды серіктестердің сыйлықтарына айырбастайсыз." %}</p>
+    <ol class="wallet-steps">
+        <li><span>1</span>{% translate "Хабарлайсыз" %}</li>
+        <li><span>2</span>{% translate "Жұмысшы орындайды" %}</li>
+        <li><span>3</span>{% translate "Ұпай аласыз" %}</li>
+    </ol>
+    <a class="wallet-card-button" href="{% url 'resident_home' %}">{% translate "Өтініш қалдыру" %}</a>
+</section>
+
+{% else %}
+
+<!-- The card: balance, the next goal, the association -->
+<section class="wallet-card" aria-label="{% translate 'Балансыңыз' %}">
+    <div class="wallet-card-top">
+        <span class="wallet-card-brand">qaldyq · {% translate "эко-әмиян" %}</span>
+        <span class="wallet-card-code">{{ masked_code }}</span>
+    </div>
+
+    <span class="wallet-card-label">{% translate "Балансыңыз" %}</span>
+    <strong class="wallet-card-balance">{{ balance }}<span>{% translate "ұпай" %}</span></strong>
+
+    {% if goal %}
+    <div class="wallet-goal">
+        <div class="wallet-goal-text">
+            <span>{% blocktranslate with title=goal.title %}Келесі сыйлық: {{ title }}{% endblocktranslate %}</span>
+            <strong>{{ balance }} / {{ goal.cost }}</strong>
+        </div>
+        <div class="wallet-bar" role="progressbar" aria-valuemin="0" aria-valuemax="{{ goal.cost }}" aria-valuenow="{{ balance }}"><span style="width: {{ goal.progress }}%"></span></div>
+    </div>
+    {% elif rewards %}
+    <p class="wallet-goal-ready">{% translate "Ұпайыңыз кез келген сыйлыққа жетеді!" %}</p>
+    {% endif %}
+
+    <div class="wallet-card-bottom">
+        {% if wallet.osi %}
+        <span class="wallet-chip">{{ wallet.osi.name }}</span>
+        {% endif %}
+        {% if pending %}
+        <span class="wallet-chip is-muted">{% blocktranslate count count=pending %}{{ count }} өтініш орындалуын күтуде{% plural %}{{ count }} өтініш орындалуын күтуде{% endblocktranslate %}</span>
+        {% endif %}
+    </div>
+</section>
+
+<!-- Quick actions -->
+<nav class="wallet-actions" aria-label="{% translate 'Жылдам әрекеттер' %}">
+    <a href="{% url 'scanner' %}"><span><svg class="icon" aria-hidden="true"><use href="#i-qr"></use></svg></span>{% translate "Сканер" %}</a>
+    <a href="{% url 'resident_home' %}"><span><svg class="icon" aria-hidden="true"><use href="#i-plus"></use></svg></span>{% translate "Өтініш" %}</a>
+    <a href="#vouchers"><span><svg class="icon" aria-hidden="true"><use href="#i-ticket"></use></svg>{% if active_vouchers %}<em>{{ active_vouchers }}</em>{% endif %}</span>{% translate "Ваучерлер" %}</a>
+    <a href="#history"><span><svg class="icon" aria-hidden="true"><use href="#i-clock"></use></svg></span>{% translate "Тарих" %}</a>
+</nav>
+
+{% if push_key %}
+<div class="panel push-cta" data-push-card hidden>
+    {% csrf_token %}
+    <span class="push-cta-icon"><svg class="icon" aria-hidden="true"><use href="#i-bell"></use></svg></span>
+    <span class="push-cta-text">
+        <strong>{% translate "Сенбіліктер туралы хабарлама" %}</strong>
+        <span class="field-hint">{% translate "ОСИ-ыңызда сенбілік жарияланғанда, телефонға хабарлама келеді." %}</span>
+        <span class="field-error" data-push-note hidden></span>
+    </span>
+    <button class="button-primary" type="button" data-push-code="" data-push-key="{{ push_key }}">{% translate "Хабарламаны қосу" %}</button>
+</div>
+{% endif %}
+
+<!-- In numbers -->
+<div class="wallet-stats">
+    <div><strong>{{ earned }}</strong><span>{% translate "Жиналды" %}</span></div>
+    <div><strong>{{ spent }}</strong><span>{% translate "Жұмсалды" %}</span></div>
+    <div><strong>{{ vouchers|length }}</strong><span>{% translate "Ваучер" %}</span></div>
+    <div><strong>{{ events_joined }}</strong><span>{% translate "Сенбілік" %}</span></div>
+</div>
+
+{% endif %}
+
+<!-- Cleanup days -->
+{% if events %}
+<section aria-labelledby="eventsTitle">
+    <div class="section-header">
+        <h2 id="eventsTitle">{% translate "Жақындағы сенбіліктер" %}</h2>
+        <a class="header-link" href="{% url 'scanner' %}">{% translate "QR сканер" %}</a>
+    </div>
+    <div class="wallet-list">
+        {% for event in events %}
+        <a class="panel wallet-event" href="{% url 'event_info' event.pk %}">
+            <span class="wallet-event-date">
+                <strong>{{ event.starts_at|date:"d" }}</strong>
+                <span>{{ event.starts_at|date:"M" }}</span>
+            </span>
+            <span class="wallet-event-text">
+                <strong>{{ event.title }}</strong>
+                <span class="cell-secondary">{{ event.starts_at|date:"H:i" }} · {{ event.address }}</span>
+                <span class="field-hint">{% translate "Орнын картадан қарау" %} →</span>
+            </span>
+            <span class="wallet-pill is-green">+{{ event.points }}</span>
+        </a>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+<!-- Rewards -->
+<section aria-labelledby="rewardsTitle">
+    <div class="section-header">
+        <h2 id="rewardsTitle">{% translate "Сыйлықтар" %}</h2>
+    </div>
+
+    <div class="wallet-rewards">
+        {% for reward in rewards %}
+        <div class="panel wallet-reward{% if wallet and not reward.need %} is-ready{% endif %}">
+            <div class="wallet-reward-head">
+                <span class="wallet-reward-logo" aria-hidden="true">{{ reward.partner|cut:"«"|slice:":1"|upper }}</span>
+                <span class="wallet-pill">{% blocktranslate with cost=reward.cost %}{{ cost }} ұпай{% endblocktranslate %}</span>
+            </div>
+            <strong class="wallet-reward-title">{{ reward.title }}</strong>
+            <span class="cell-secondary">{{ reward.partner }}</span>
+            {% if reward.description %}<span class="field-hint">{{ reward.description }}</span>{% endif %}
+
+            <div class="wallet-reward-foot">
+                {% if wallet and not reward.need %}
+                <form method="post" action="{% url 'wallet_redeem' reward.pk %}" {% blocktranslate asvar question with title=reward.title cost=reward.cost %}«{{ title }}» сыйлығын {{ cost }} ұпайға аласыз ба?{% endblocktranslate %}onsubmit="return confirm('{{ question|escapejs }}');">
+                    {% csrf_token %}
+                    <button class="wallet-claim" type="submit">
+                        <svg class="icon" aria-hidden="true"><use href="#i-gift"></use></svg>
+                        {% translate "Алу" %}
+                    </button>
+                </form>
+                {% elif wallet %}
+                <div class="wallet-bar is-small"><span style="width: {{ reward.progress }}%"></span></div>
+                <span class="field-hint">{% blocktranslate with count=reward.need %}Тағы {{ count }} ұпай керек{% endblocktranslate %}</span>
+                {% endif %}
+                {% if reward.stock is not None %}<span class="field-hint">{% blocktranslate with count=reward.stock %}Қалғаны: {{ count }}{% endblocktranslate %}</span>{% endif %}
+            </div>
+        </div>
+        {% empty %}
+        <p class="cell-secondary">{% translate "Серіктестердің сыйлықтары жақында қосылады." %}</p>
+        {% endfor %}
+    </div>
+</section>
+
+{% if wallet %}
+
+<!-- Vouchers, cut like tickets -->
+<section id="vouchers" aria-labelledby="vouchersTitle">
+    <div class="section-header">
+        <h2 id="vouchersTitle">{% translate "Менің ваучерлерім" %}</h2>
+    </div>
+    <div class="wallet-list">
+        {% for voucher in vouchers %}
+        <div class="wallet-ticket{% if voucher.used_at %} is-used{% endif %}">
+            <div class="wallet-ticket-main">
+                <strong>{{ voucher.reward.title }}</strong>
+                <span class="cell-secondary">{{ voucher.reward.partner }} · {{ voucher.created_at|date:"d.m.Y" }}</span>
+                {% if voucher.used_at %}
+                <span class="wallet-pill is-muted">{% blocktranslate with day=voucher.used_at|date:"d.m" %}Пайдаланылды {{ day }}{% endblocktranslate %}</span>
+                {% else %}
+                <span class="wallet-pill is-green">{% translate "Белсенді" %}</span>
+                {% endif %}
+            </div>
+            <div class="wallet-ticket-stub">
+                <span class="field-hint">{% translate "Код" %}</span>
+                <span class="request-code">{{ voucher.code }}</span>
+            </div>
+        </div>
+        {% empty %}
+        <p class="cell-secondary wallet-empty">{% translate "Ваучер әлі алынбаған." %}</p>
+        {% endfor %}
+    </div>
+</section>
+
+<!-- History -->
+<section id="history" aria-labelledby="historyTitle">
+    <div class="section-header">
+        <h2 id="historyTitle">{% translate "Ұпай тарихы" %}</h2>
+    </div>
+    <div class="panel wallet-history">
+        {% for line in history %}
+        <div class="wallet-line">
+            <span class="wallet-line-icon is-{{ line.kind }}" aria-hidden="true">
+                <svg class="icon"><use href="{% if line.kind == 'reward' %}#i-gift{% elif line.kind == 'event' %}#i-leaf{% else %}#i-normal{% endif %}"></use></svg>
+            </span>
+            <span class="wallet-line-text">
+                <span>{{ line.reason|capfirst }}</span>
+                <span class="field-hint">
+                    {{ line.created_at|date:"d.m.Y H:i" }}
+                    {% if line.request %} · <a href="{% url 'resident_status' %}?code={{ line.request.code }}">{{ line.request.code }}</a>{% endif %}
+                </span>
+            </span>
+            <strong class="wallet-line-amount{% if line.amount < 0 %} is-spent{% endif %}">{% if line.amount > 0 %}+{% endif %}{{ line.amount }}</strong>
+        </div>
+        {% empty %}
+        <p class="cell-secondary wallet-empty">{% translate "Өтінішіңіз орындалып, жұмысшы оны фотомен растағанда ұпай осында көрінеді." %}</p>
+        {% endfor %}
+    </div>
+</section>
+
+{% endif %}
+
+<!-- Settings: association, wallet code, rules -->
+<details class="panel wallet-settings"{% if not wallet %} open{% endif %}>
+    <summary>
+        <svg class="icon" aria-hidden="true"><use href="#i-gear"></use></svg>
+        {% if wallet %}{% translate "ОСИ, әмиян коды және ережелер" %}{% else %}{% translate "Әмиян кодыңыз бар ма?" %}{% endif %}
+    </summary>
+
+    {% if wallet %}
+    <form class="status-lookup" method="post" action="{% url 'wallet_osi' %}">
+        {% csrf_token %}
+        <label for="walletOsi">{% translate "Ұпайыңыз қай ОСИ рейтингіне қосылсын?" %}</label>
+        <div class="status-lookup-row">
+            <select id="walletOsi" name="osi">
+                <option value="">—</option>
+                {% for osi in osis %}
+                <option value="{{ osi.pk }}" {% if wallet.osi_id == osi.pk %}selected{% endif %}>{{ osi.name }}{% if osi.district %} · {{ osi.district.name }}{% endif %}</option>
+                {% endfor %}
+            </select>
+            <button class="button-secondary" type="submit">{% translate "Сақтау" %}</button>
+        </div>
+    </form>
+
+    <div class="wallet-code-block">
+        <span class="field-label">{% translate "Әмиян коды" %}</span>
+        <p class="field-hint">{% translate "Телефон ауыссаңыз немесе браузер тазартылса, әмиянды осы кодпен қалпына келтіресіз. Кодты ешкімге бермеңіз: ол ұпайыңызға кілт." %}</p>
+        <div class="wallet-code-row">
+            <span class="request-code wallet-code-value">{{ wallet.code }}</span>
+            <button class="button-secondary button-small" type="button" data-copy="{{ wallet.code }}" data-copied="{% translate 'Көшірілді' %}">{% translate "Көшіру" %}</button>
+        </div>
+    </div>
+    {% endif %}
+
+    <form class="status-lookup" method="post" action="{% url 'wallet_restore' %}" autocomplete="off">
+        {% csrf_token %}
+        <label for="walletRestore">{% if wallet %}{% translate "Басқа әмиянды ашу" %}{% else %}{% translate "Басқа телефонда ашылған әмиянның коды" %}{% endif %}</label>
+        <div class="status-lookup-row">
+            <input id="walletRestore" name="code" type="text" placeholder="W-XXXX-XXXX" spellcheck="false" maxlength="11">
+            <button class="button-secondary" type="submit">{% translate "Ашу" %}</button>
+        </div>
+    </form>
+
+    <div class="wallet-rules-block">
+        <span class="field-label">{% translate "Ұпай қалай беріледі" %}</span>
+        <ul class="eco-rules">
+            {% for points, text in rules %}
+            <li><strong>{{ points }}</strong> {{ text }}</li>
+            {% endfor %}
+        </ul>
+        <p class="field-hint">{% blocktranslate %}Бір күнде {{ daily_cap }} ұпайдан артық жинауға болмайды.{% endblocktranslate %}</p>
+    </div>
+</details>
+
+{% endblock %}
+
+{% block app_tabs %}{% include "app_tabs.html" with active="eco" %}{% endblock %}

@@ -5,12 +5,13 @@ report earns nothing. The sensor and the photo analysis add bonuses.
 """
 
 from django.db import IntegrityError, transaction
-from django.db.models import Count, F, Q, Sum
+from django.db.models import Count, F, IntegerField, OuterRef, Q, Subquery, Sum
 from django.db.models.functions import Coalesce
 from django.utils import timezone
+from django.utils.translation import gettext
 from django.utils.translation import gettext_lazy as _
 
-from .models import District, EcoPoints, Osi, Redemption, ResidentRequest, Reward, TelegramChat
+from .models import District, EcoPoints, EcoWallet, Osi, Redemption, ResidentRequest, Reward, TelegramChat
 from .residents import CONFIRM_FILL_LEVEL
 
 POINTS_CONFIRMED = 10
@@ -34,12 +35,24 @@ class EcoError(Exception):
     pass
 
 
-def balance(chat):
-    return chat.points.aggregate(total=Coalesce(Sum("amount"), 0))["total"]
+# A resident's points live with their Telegram chat or with their app wallet;
+# both have .points and .redemptions, so the rest of the code treats them alike.
+
+def owner_of(request):
+    return request.telegram_chat or request.wallet
 
 
-def earned(chat):
-    return chat.points.filter(amount__gt=0).aggregate(total=Coalesce(Sum("amount"), 0))["total"]
+def owned_by(owner):
+    """The field that points an eco-points line or a voucher at this owner."""
+    return {"chat": owner} if isinstance(owner, TelegramChat) else {"wallet": owner}
+
+
+def balance(owner):
+    return owner.points.aggregate(total=Coalesce(Sum("amount"), 0))["total"]
+
+
+def earned(owner):
+    return owner.points.filter(amount__gt=0).aggregate(total=Coalesce(Sum("amount"), 0))["total"]
 
 
 def award_for(request):
@@ -67,11 +80,11 @@ def award_for(request):
 
 
 def award(request):
-    """Credits the resident's chat once per request; returns the entry or None."""
+    """Credits the resident's chat or wallet once per request; returns the entry or None."""
 
-    chat = request.telegram_chat
+    owner = owner_of(request)
 
-    if chat is None:
+    if owner is None:
         return None
 
     amount, reasons = award_for(request)
@@ -81,7 +94,7 @@ def award(request):
 
     today = timezone.localtime().replace(hour=0, minute=0, second=0, microsecond=0)
 
-    earned_today = chat.points.filter(amount__gt=0, created_at__gte=today).aggregate(
+    earned_today = owner.points.filter(amount__gt=0, created_at__gte=today).aggregate(
         total=Coalesce(Sum("amount"), 0)
     )["total"]
 
@@ -96,7 +109,7 @@ def award(request):
     try:
         with transaction.atomic():
             return EcoPoints.objects.create(
-                chat=chat, request=request, amount=amount, reason=", ".join(reasons)
+                request=request, amount=amount, reason=", ".join(reasons), **owned_by(owner)
             )
     except IntegrityError:
         # Already paid for this request
@@ -107,30 +120,30 @@ def available_rewards():
     return Reward.objects.filter(is_active=True).filter(Q(stock__isnull=True) | Q(stock__gt=0))
 
 
-def redeem(chat, reward_id):
+def redeem(owner, reward_id):
     """Spends points on a reward and returns the voucher; raises EcoError with a reason."""
 
     with transaction.atomic():
 
-        # Locking the chat stops two taps from spending the same points twice
-        chat = TelegramChat.objects.select_for_update().get(pk=chat.pk)
+        # Locking the owner stops two taps from spending the same points twice
+        owner = type(owner).objects.select_for_update().get(pk=owner.pk)
 
         reward = Reward.objects.select_for_update().filter(pk=reward_id).first()
 
         if reward is None or not reward.is_active:
-            raise EcoError("Бұл сыйлық енді қолжетімсіз.")
+            raise EcoError(gettext("Бұл сыйлық енді қолжетімсіз."))
 
         if reward.stock is not None and reward.stock <= 0:
-            raise EcoError("Бұл сыйлық таусылды.")
+            raise EcoError(gettext("Бұл сыйлық таусылды."))
 
-        have = balance(chat)
+        have = balance(owner)
 
         if have < reward.cost:
-            raise EcoError(f"Ұпай жетпейді: керегі {reward.cost}, сізде {have}.")
+            raise EcoError(gettext("Ұпай жетпейді: керегі %(cost)s, сізде %(have)s.") % {"cost": reward.cost, "have": have})
 
-        redemption = Redemption.objects.create(chat=chat, reward=reward, cost=reward.cost)
+        redemption = Redemption.objects.create(reward=reward, cost=reward.cost, **owned_by(owner))
 
-        EcoPoints.objects.create(chat=chat, amount=-reward.cost, reason=f"Сыйлық: {reward.title}")
+        EcoPoints.objects.create(amount=-reward.cost, reason=f"Сыйлық: {reward.title}", **owned_by(owner))
 
         if reward.stock is not None:
             Reward.objects.filter(pk=reward.pk).update(stock=F("stock") - 1)
@@ -138,12 +151,29 @@ def redeem(chat, reward_id):
     return redemption
 
 
+class SubquerySum(Subquery):
+    """SUM over the rows of a subquery, so two kinds of owner do not multiply each other's rows."""
+
+    template = "(SELECT SUM(amount) FROM (%(subquery)s) AS lines)"
+    output_field = IntegerField()
+
+
+def osi_points():
+    """Points earned by an association's residents, from Telegram and from the app."""
+
+    lines = EcoPoints.objects.filter(amount__gt=0).filter(
+        Q(chat__osi=OuterRef("pk")) | Q(wallet__osi=OuterRef("pk"))
+    ).order_by().values("amount")
+
+    return Coalesce(SubquerySum(lines), 0)
+
+
 def osi_ranking(limit=10):
     """Associations by the eco-points their residents earned (spending does not lower it)."""
 
     return Osi.objects.filter(is_active=True).annotate(
-        score=Coalesce(Sum("chats__points__amount", filter=Q(chats__points__amount__gt=0)), 0),
-        residents=Count("chats", distinct=True),
+        score=osi_points(),
+        residents=Count("chats", distinct=True) + Count("wallets", distinct=True),
     ).order_by("-score", "name")[:limit]
 
 
@@ -162,6 +192,9 @@ def totals():
     return {
         "awarded": positive.aggregate(total=Coalesce(Sum("amount"), 0))["total"],
         "spent": -EcoPoints.objects.filter(amount__lt=0).aggregate(total=Coalesce(Sum("amount"), 0))["total"],
-        "residents": positive.values("chat").distinct().count(),
+        "residents": (
+            positive.filter(chat__isnull=False).values("chat").distinct().count()
+            + positive.filter(wallet__isnull=False).values("wallet").distinct().count()
+        ),
         "vouchers": Redemption.objects.count(),
     }

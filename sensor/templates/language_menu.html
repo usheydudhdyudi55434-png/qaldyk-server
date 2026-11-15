@@ -23,7 +23,8 @@
             lang="{{ code }}"
             {% if code == current_language %}aria-current="true"{% endif %}
         >
-            {{ name }}
+            {# Each language is named in itself, whatever the page's language #}
+            {% if code == 'kk' %}Қазақша{% elif code == 'ru' %}Русский{% else %}English{% endif %}
             {% if code == current_language %}<svg class="icon language-check" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg>{% endif %}
         </button>
         {% endfor %}

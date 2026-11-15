@@ -1,0 +1,23 @@
+{% load i18n %}
+<nav class="app-tabs" aria-label="{% translate 'Қосымша бөлімдері' %}">
+    <a href="{% url 'home' %}" {% if active == 'home' %}aria-current="page"{% endif %}>
+        <svg class="icon" aria-hidden="true"><use href="#i-home"></use></svg>
+        <span>{% translate "Басты" %}</span>
+    </a>
+    <a href="{% url 'resident_home' %}" {% if active == 'report' %}aria-current="page"{% endif %}>
+        <svg class="icon" aria-hidden="true"><use href="#i-plus"></use></svg>
+        <span>{% translate "Өтініш" %}</span>
+    </a>
+    <a class="app-tabs-scan" href="{% url 'scanner' %}" {% if active == 'scan' %}aria-current="page"{% endif %}>
+        <span class="app-tabs-scan-button"><svg class="icon" aria-hidden="true"><use href="#i-qr"></use></svg></span>
+        <span>{% translate "Сканер" %}</span>
+    </a>
+    <a href="{% url 'my_requests' %}" {% if active == 'my' %}aria-current="page"{% endif %}>
+        <svg class="icon" aria-hidden="true"><use href="#i-list"></use></svg>
+        <span>{% translate "Менің" %}</span>
+    </a>
+    <a href="{% url 'wallet' %}" {% if active == 'eco' %}aria-current="page"{% endif %}>
+        <svg class="icon" aria-hidden="true"><use href="#i-leaf"></use></svg>
+        <span>{% translate "Эко-ұпай" %}</span>
+    </a>
+</nav>

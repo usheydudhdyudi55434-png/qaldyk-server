@@ -451,10 +451,10 @@ class ResidentRequestTests(TestCase):
             "description": "Контейнер толып кеткен",
             **fields
         }
-        return self.client.post('/', data)
+        return self.client.post('/report/', data)
 
     def test_resident_page_is_public(self):
-        response = self.client.get('/')
+        response = self.client.get('/report/')
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Өтінішті жіберу")
@@ -674,7 +674,7 @@ class WorkerTaskTests(TestCase):
 class RequestHistoryTests(TestCase):
 
     def test_creation_and_dispatcher_changes_are_logged(self):
-        self.client.post('/', {
+        self.client.post('/report/', {
             "category": ResidentRequest.Category.LITTERED,
             "address": "Сайран"
         })
@@ -837,7 +837,7 @@ class AiAnalysisTests(TestCase):
 
     def submit(self, **fields):
         with self.captureOnCommitCallbacks(execute=True):
-            self.client.post('/', {
+            self.client.post('/report/', {
                 "category": ResidentRequest.Category.OVERFLOW,
                 "address": "Абай даңғылы",
                 "photo": photo_upload(),
@@ -915,7 +915,7 @@ class AiAnalysisTests(TestCase):
 
     def test_request_without_a_photo_is_not_sent_to_the_model(self):
         with mock.patch("sensor.ai.ask_model") as ask, self.captureOnCommitCallbacks(execute=True):
-            self.client.post('/', {
+            self.client.post('/report/', {
                 "category": ResidentRequest.Category.LITTERED,
                 "address": "Сайран"
             })
@@ -1021,7 +1021,7 @@ class DuplicateRequestTests(TestCase):
     FAR = {"latitude": "43.241900", "longitude": "76.889700"}
 
     def report(self, category=ResidentRequest.Category.OVERFLOW, **point):
-        self.client.post('/', {"category": category, "address": "Абай даңғылы", **point})
+        self.client.post('/report/', {"category": category, "address": "Абай даңғылы", **point})
         return ResidentRequest.objects.order_by('-id').first()
 
     def test_a_nearby_report_of_the_same_problem_is_merged(self):
@@ -1121,7 +1121,7 @@ class DistrictTests(TestCase):
     MEDEU = {"latitude": "43.263680", "longitude": "76.955200"}
 
     def report(self, **point):
-        self.client.post('/', {
+        self.client.post('/report/', {
             "category": ResidentRequest.Category.LITTERED,
             "address": "Алматы",
             **point
@@ -1898,7 +1898,7 @@ class LanguageTests(TestCase):
         return self.client.post("/i18n/setlang/", {"language": language, "next": "/"})
 
     def test_kazakh_by_default_even_for_a_russian_browser(self):
-        response = self.client.get("/", HTTP_ACCEPT_LANGUAGE="ru-RU,ru;q=0.9")
+        response = self.client.get("/report/", HTTP_ACCEPT_LANGUAGE="ru-RU,ru;q=0.9")
         self.assertContains(response, '<html lang="kk">')
         self.assertContains(response, "Өтінішті жіберу")
 
@@ -1910,7 +1910,7 @@ class LanguageTests(TestCase):
             with self.subTest(language=language):
                 response = self.pick(language)
                 self.assertRedirects(response, "/", fetch_redirect_response=False)
-                page = self.client.get("/")
+                page = self.client.get("/report/")
                 self.assertContains(page, f'<html lang="{html_lang}">')
                 self.assertContains(page, label)
                 self.assertNotContains(page, "Өтінішті жіберу")
@@ -1918,7 +1918,14 @@ class LanguageTests(TestCase):
     def test_switch_back_to_kazakh(self):
         self.pick("en")
         self.pick("kk")
-        self.assertContains(self.client.get("/"), "Өтінішті жіберу")
+        self.assertContains(self.client.get("/report/"), "Өтінішті жіберу")
+
+    def test_each_language_is_named_in_itself(self):
+        for language in ("kk", "ru", "en"):
+            self.client.cookies["qaldyq_language"] = language
+            page = self.client.get("/")
+            for name in ("Қазақша", "Русский", "English"):
+                self.assertContains(page, name)
 
     def test_unknown_language_falls_back_to_kazakh(self):
         self.client.cookies["qaldyq_language"] = "de"
@@ -1938,3 +1945,732 @@ class LanguageTests(TestCase):
         self.assertEqual(catalog.status_code, 200)
         # The catalog escapes non-ASCII text as \uXXXX
         self.assertContains(catalog, json.dumps("Нет связи с сервером"))
+
+
+class DataBrowserTests(TestCase):
+    """The admin's database browser: list, search, sort, edit and delete rows."""
+
+    def setUp(self):
+        from .models import Redemption, Reward, TelegramChat
+        self.Reward, self.Redemption, self.TelegramChat = Reward, Redemption, TelegramChat
+        self.admin = create_admin()
+        self.client.force_login(self.admin)
+        self.container = Container.objects.create(name="Container #1", location="Абай даңғылы")
+        add_reading(self.container, 40)
+        add_reading(self.container, 85)
+
+    def test_only_superusers_open_it(self):
+        self.client.force_login(create_user())
+        self.assertRedirects(self.client.get("/manage/data/"), "/dashboard/", fetch_redirect_response=False)
+        self.assertNotEqual(self.client.get("/manage/data/sensor_container/").status_code, 200)
+
+    def test_index_lists_tables_with_row_counts(self):
+        response = self.client.get("/manage/data/")
+        self.assertContains(response, "sensor_sensorreading")
+        self.assertContains(response, "auth_user")
+        self.assertNotContains(response, "django_session")
+
+    def test_unknown_table_is_not_found(self):
+        self.assertEqual(self.client.get("/manage/data/django_session/").status_code, 404)
+
+    def test_table_search_and_sort(self):
+        Container.objects.create(name="Container #2", location="Достық даңғылы")
+
+        response = self.client.get("/manage/data/sensor_container/", {"q": "Достық"})
+        self.assertContains(response, "Container #2")
+        self.assertNotContains(response, "Абай даңғылы")
+
+        response = self.client.get("/manage/data/sensor_sensorreading/", {"o": "fill_level"})
+        body = response.content.decode()
+        self.assertLess(body.index("40.0"), body.index("85.0"))
+
+        # An unknown column falls back to the newest rows first
+        self.assertEqual(self.client.get("/manage/data/sensor_container/", {"o": "nope"}).status_code, 200)
+
+    def test_password_hash_is_never_shown(self):
+        response = self.client.get("/manage/data/auth_user/")
+        self.assertNotContains(response, "pbkdf2")
+        self.assertNotContains(self.client.get(f"/manage/data/auth_user/{self.admin.pk}/"), "pbkdf2")
+
+    def test_edit_a_row(self):
+        response = self.client.post(f"/manage/data/sensor_container/{self.container.pk}/", {
+            "name": "Container #1A", "location": "Абай даңғылы, 1", "district": "", "latitude": "", "longitude": "",
+        })
+        self.assertEqual(response.status_code, 302)
+        self.container.refresh_from_db()
+        self.assertEqual(self.container.name, "Container #1A")
+
+    def test_add_a_row(self):
+        response = self.client.post("/manage/data/sensor_reward/new/", {
+            "title": "Кофе", "partner": "Жасыл", "description": "", "cost": "30", "stock": "", "is_active": "on",
+        })
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(self.Reward.objects.filter(title="Кофе", cost=30).exists())
+
+    def test_new_accounts_go_through_the_staff_form(self):
+        self.assertRedirects(
+            self.client.get("/manage/data/auth_user/new/"), "/manage/staff/new/", fetch_redirect_response=False
+        )
+
+    def test_delete_shows_what_goes_with_the_row(self):
+        response = self.client.get(f"/manage/data/sensor_container/{self.container.pk}/delete/")
+        self.assertContains(response, "sensor_sensorreading")
+
+        self.client.post(f"/manage/data/sensor_container/{self.container.pk}/delete/")
+        self.assertFalse(Container.objects.exists())
+        self.assertFalse(SensorReading.objects.exists())
+
+    def test_protected_rows_are_not_deleted(self):
+        reward = self.Reward.objects.create(title="Кофе", partner="Жасыл", cost=30)
+        chat = self.TelegramChat.objects.create(chat_id=42)
+        self.Redemption.objects.create(chat=chat, reward=reward, cost=30)
+
+        response = self.client.post(f"/manage/data/sensor_reward/{reward.pk}/delete/")
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "sensor_redemption")
+        self.assertTrue(self.Reward.objects.filter(pk=reward.pk).exists())
+
+    def test_admin_cannot_delete_own_account(self):
+        self.client.post(f"/manage/data/auth_user/{self.admin.pk}/delete/")
+        self.assertTrue(get_user_model().objects.filter(pk=self.admin.pk).exists())
+
+
+class LandingTests(TestCase):
+    """The front page presents the system and leads residents to its services."""
+
+    def test_front_page_links_to_every_service(self):
+        response = self.client.get("/")
+        self.assertEqual(response.status_code, 200)
+        for url in ("/report/", "/otinish/", "/eco/", "/login/"):
+            self.assertContains(response, f'href="{url}')
+
+    def test_numbers_come_from_the_database(self):
+        Container.objects.create(name="Container #1", location="Абай даңғылы")
+        Container.objects.create(name="Container #2", location="Достық даңғылы")
+        request = ResidentRequest.objects.create(category="overflow", address="Абай", status="done")
+
+        from .models import RequestEvent
+        RequestEvent.objects.create(request=request, status="done")
+        RequestEvent.objects.filter(request=request).update(created_at=request.created_at + timedelta(minutes=90))
+
+        stats = self.client.get("/").context["stats"]
+        self.assertEqual(stats["containers"], 2)
+        self.assertEqual(stats["solved"], 1)
+        self.assertEqual(stats["resolve_time"], "1 сағ 30 мин")
+
+    def test_status_check_goes_to_the_status_page(self):
+        response = self.client.get("/")
+        self.assertContains(response, 'action="/otinish/"')
+        self.assertContains(response, 'name="code"')
+
+    def test_staff_sign_in_button_for_visitors(self):
+        self.assertContains(self.client.get("/"), 'class="button-secondary landing-login"')
+        self.client.force_login(create_user())
+        self.assertNotContains(self.client.get("/"), 'class="button-secondary landing-login"')
+
+
+@override_settings(VAPID_PUBLIC_KEY="BPublicKeyForTests", VAPID_PRIVATE_KEY="private-key-for-tests", PUSH_SYNC=True)
+class InstallableAppTests(TestCase):
+    """The PWA: manifest, service worker, the resident's own requests and web push."""
+
+    SUBSCRIPTION = {
+        "endpoint": "https://push.example.com/send/abc",
+        "keys": {"p256dh": "BKeyP256dh", "auth": "authsecret"},
+    }
+
+    def setUp(self):
+        self.item = ResidentRequest.objects.create(category="overflow", address="Абай даңғылы 12")
+
+    def subscribe(self, code=None, subscription=None, language=None):
+        if language:
+            self.client.cookies["qaldyq_language"] = language
+        return self.client.post(
+            "/push/subscribe/",
+            data=json.dumps({"code": code or self.item.code, "subscription": subscription or self.SUBSCRIPTION}),
+            content_type="application/json",
+        )
+
+    def test_manifest_and_service_worker(self):
+        manifest = self.client.get("/manifest.webmanifest")
+        self.assertEqual(manifest["Content-Type"], "application/manifest+json")
+        data = json.loads(manifest.content)
+        self.assertEqual(data["display"], "standalone")
+        self.assertEqual(data["start_url"], "/?source=app")
+        self.assertTrue(any(icon["purpose"] == "maskable" for icon in data["icons"]))
+
+        worker = self.client.get("/sw.js")
+        self.assertEqual(worker["Content-Type"], "application/javascript")
+        self.assertEqual(worker["Service-Worker-Allowed"], "/")
+        self.assertContains(worker, 'addEventListener("push"')
+
+    def test_pages_link_the_manifest(self):
+        for url in ("/", "/report/", "/my/", "/login/"):
+            with self.subTest(url=url):
+                self.assertContains(self.client.get(url), 'rel="manifest"')
+
+    def test_my_status_returns_only_the_asked_codes(self):
+        other = ResidentRequest.objects.create(category="littered", address="Достық 5")
+        response = self.client.get("/my/status/", {"codes": f"{self.item.code},Q-ZZZZZZ,not-a-code"})
+        rows = response.json()["requests"]
+        self.assertEqual([row["code"] for row in rows], [self.item.code, "Q-ZZZZZZ"])
+        self.assertTrue(rows[0]["found"])
+        self.assertFalse(rows[1]["found"])
+        self.assertNotIn(other.code, response.content.decode())
+
+    def test_merged_request_shows_its_main_status(self):
+        main = ResidentRequest.objects.create(category="overflow", address="Абай", status="in_progress")
+        self.item.parent = main
+        self.item.save()
+        row = self.client.get("/my/status/", {"codes": self.item.code}).json()["requests"][0]
+        self.assertEqual(row["status"], "in_progress")
+
+    def test_subscribe_links_the_phone_to_the_request(self):
+        from .models import PushSubscription
+        self.assertEqual(self.subscribe(language="ru").status_code, 200)
+        subscription = PushSubscription.objects.get()
+        self.assertEqual(subscription.language, "ru")
+        self.assertEqual(list(subscription.requests.all()), [self.item])
+
+        # The same phone asking about a second request reuses its subscription
+        second = ResidentRequest.objects.create(category="littered", address="Достық 5")
+        self.subscribe(code=second.code)
+        self.assertEqual(PushSubscription.objects.count(), 1)
+        self.assertEqual(subscription.requests.count(), 2)
+
+    def test_subscribe_rejects_bad_input(self):
+        self.assertEqual(self.subscribe(code="Q-ZZZZZZ").status_code, 404)
+        self.assertEqual(self.subscribe(subscription={"endpoint": "http://x", "keys": {}}).status_code, 400)
+
+    @override_settings(VAPID_PRIVATE_KEY="")
+    def test_subscribe_without_keys_is_unavailable(self):
+        self.assertEqual(self.subscribe().status_code, 503)
+
+    def test_status_change_sends_a_push_in_the_residents_language(self):
+        from .residents import log_event
+        self.subscribe(language="en")
+        log_event(self.item, ResidentRequest.Status.NEW)
+
+        with mock.patch("pywebpush.webpush") as push, self.captureOnCommitCallbacks(execute=True):
+            self.item.status = ResidentRequest.Status.ACCEPTED
+            self.item.save()
+            log_event(self.item, ResidentRequest.Status.ACCEPTED)
+
+        self.assertEqual(push.call_count, 1)
+        payload = json.loads(push.call_args.kwargs["data"])
+        self.assertEqual(payload["title"], f"Request {self.item.code}")
+        self.assertIn("Accepted", payload["body"])
+        self.assertEqual(payload["url"], f"/otinish/?code={self.item.code}")
+
+    def test_a_dropped_subscription_is_forgotten(self):
+        from pywebpush import WebPushException
+        from .models import PushSubscription
+        from .residents import log_event
+        self.subscribe()
+        log_event(self.item, ResidentRequest.Status.NEW)
+
+        gone = WebPushException("gone", response=mock.Mock(status_code=410))
+        with mock.patch("pywebpush.webpush", side_effect=gone), self.captureOnCommitCallbacks(execute=True):
+            log_event(self.item, ResidentRequest.Status.ACCEPTED)
+
+        self.assertFalse(PushSubscription.objects.exists())
+
+    def test_status_page_offers_push_and_remembers_the_code(self):
+        response = self.client.get("/otinish/", {"code": self.item.code})
+        self.assertContains(response, f'data-save-code="{self.item.code}"')
+        self.assertContains(response, "data-push-card")
+
+    def test_resident_pages_have_the_bottom_tabs(self):
+        self.assertContains(self.client.get("/my/"), 'class="app-tabs"')
+        self.client.force_login(create_user())
+        self.assertNotContains(self.client.get("/dashboard/"), 'class="app-tabs"')
+
+
+class EcoWalletTests(TestCase):
+    """Residents who report from the website or the app get points in a wallet on their phone."""
+
+    def submit(self):
+        return self.client.post("/report/", {
+            "category": ResidentRequest.Category.OVERFLOW,
+            "address": "Розыбакиев көшесі",
+            "description": "Контейнер толып кеткен",
+        })
+
+    def finish(self, item):
+        from .residents import log_event
+        log_event(item, "new")
+        item.status = "done"
+        item.save()
+        log_event(item, "done")
+
+    def wallet(self):
+        from .models import EcoWallet
+        return EcoWallet.objects.get()
+
+    def test_first_report_opens_a_wallet_on_the_phone(self):
+        self.submit()
+        wallet = self.wallet()
+        self.assertRegex(wallet.code, r"^W-[A-HJ-NP-Z2-9]{4}-[A-HJ-NP-Z2-9]{4}$")
+        self.assertEqual(self.client.cookies["qaldyq_wallet"].value, wallet.code)
+        self.assertEqual(ResidentRequest.objects.get().wallet, wallet)
+
+        # The next report from the same phone uses the same wallet
+        self.submit()
+        self.assertEqual(wallet.requests.count(), 2)
+
+    def test_confirmed_request_pays_into_the_wallet(self):
+        from . import eco
+        self.submit()
+        self.finish(ResidentRequest.objects.get())
+        self.assertEqual(eco.balance(self.wallet()), eco.POINTS_CONFIRMED)
+
+        page = self.client.get("/wallet/")
+        self.assertEqual(page.context["balance"], eco.POINTS_CONFIRMED)
+        self.assertContains(page, "+10")
+
+    def test_page_without_a_wallet_explains_how_it_opens(self):
+        response = self.client.get("/wallet/")
+        self.assertIsNone(response.context["wallet"])
+        self.assertContains(response, 'href="/report/"')
+
+    def test_redeem_a_reward(self):
+        from . import eco
+        from .models import EcoPoints, Reward
+        self.submit()
+        wallet = self.wallet()
+        EcoPoints.objects.create(wallet=wallet, amount=40, reason="test")
+        coffee = Reward.objects.create(title="Кофе", partner="Жасыл", cost=30, stock=2)
+        ticket = Reward.objects.create(title="Билет", partner="Кино", cost=500)
+
+        response = self.client.post(f"/wallet/redeem/{coffee.pk}/")
+        voucher = wallet.redemptions.get()
+        self.assertRedirects(response, f"/wallet/?voucher={voucher.code}", fetch_redirect_response=False)
+        self.assertEqual(eco.balance(wallet), 10)
+        coffee.refresh_from_db()
+        self.assertEqual(coffee.stock, 1)
+
+        # Not enough points: nothing is spent and the reason is shown
+        response = self.client.post(f"/wallet/redeem/{ticket.pk}/", follow=True)
+        self.assertEqual(eco.balance(wallet), 10)
+        self.assertEqual(wallet.redemptions.count(), 1)
+        self.assertIn("error", response.redirect_chain[0][0])
+
+    def test_redeem_needs_a_wallet(self):
+        from .models import Redemption, Reward
+        coffee = Reward.objects.create(title="Кофе", partner="Жасыл", cost=0)
+        self.client.post(f"/wallet/redeem/{coffee.pk}/")
+        self.assertFalse(Redemption.objects.exists())
+
+    def test_restore_on_another_phone(self):
+        self.submit()
+        code = self.wallet().code
+
+        other = self.client_class()
+        response = other.post("/wallet/restore/", {"code": code.lower()})
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(other.cookies["qaldyq_wallet"].value, code)
+        self.assertEqual(other.get("/wallet/").context["wallet"].code, code)
+
+        wrong = self.client_class().post("/wallet/restore/", {"code": "W-AAAA-AAAA"})
+        self.assertNotIn("qaldyq_wallet", wrong.cookies)
+
+    def test_points_count_for_the_chosen_osi(self):
+        from . import eco
+        from .models import Osi
+        osi = Osi.objects.create(name="ОСИ «Самал-2, 15»")
+        self.submit()
+        self.client.post("/wallet/osi/", {"osi": osi.pk})
+        self.assertEqual(self.wallet().osi, osi)
+
+        self.finish(ResidentRequest.objects.get())
+        ranked = next(item for item in eco.osi_ranking() if item.pk == osi.pk)
+        self.assertEqual(ranked.score, eco.POINTS_CONFIRMED)
+        self.assertEqual(ranked.residents, 1)
+
+
+class QrCodeTests(TestCase):
+    """QR codes on containers and at cleanup days, read by the app's scanner."""
+
+    def setUp(self):
+        self.container = Container.objects.create(
+            name="Container #7", location="Түрксіб ауданы, Алматы-1 вокзалы", latitude=43.3409, longitude=76.9496
+        )
+
+    def make_event(self, starts_in=timedelta(minutes=-10), hours=2, near=True, **fields):
+        from .models import CleanupEvent
+        start = timezone.now() + starts_in
+        return CleanupEvent.objects.create(
+            title="Самал-2 ауласындағы сенбілік", address="Самал-2, 15",
+            starts_at=start, ends_at=start + timedelta(hours=hours), points=15,
+            latitude=43.2330 if near else None, longitude=76.9550 if near else None, **fields
+        )
+
+    def join(self, event, latitude="43.2331", longitude="76.9551"):
+        return self.client.post(f"/e/{event.token}/", {"latitude": latitude, "longitude": longitude})
+
+    def test_container_sticker_opens_a_filled_report(self):
+        response = self.client.get(f"/c/{self.container.pk}/")
+        self.assertRedirects(response, f"/report/?container={self.container.pk}")
+
+        page = self.client.get(response.url)
+        self.assertContains(page, "Container #7")
+        self.assertContains(page, 'value="Түрксіб ауданы, Алматы-1 вокзалы"')
+        self.assertRegex(page.content.decode(), r'value="overflow"[^>]*checked')
+        self.assertContains(page, 'value="43.3409"')
+
+        self.assertEqual(self.client.get("/c/9999/").status_code, 404)
+
+    def test_scanner_page_and_tab(self):
+        response = self.client.get("/scan/")
+        self.assertContains(response, 'id="scanVideo"')
+        self.assertContains(response, "sensor/js/scan.js")
+        self.assertContains(response, 'href="/scan/"')
+
+    def test_check_in_on_the_spot_pays_once(self):
+        from . import eco
+        from .models import EcoWallet
+        event = self.make_event()
+
+        response = self.join(event)
+        self.assertEqual(response.status_code, 302)
+        wallet = EcoWallet.objects.get()
+        self.assertEqual(self.client.cookies["qaldyq_wallet"].value, wallet.code)
+        self.assertEqual(eco.balance(wallet), 15)
+
+        again = self.join(event)
+        self.assertEqual(again.status_code, 200)
+        self.assertEqual(eco.balance(wallet), 15)
+        self.assertEqual(event.check_ins.count(), 1)
+
+    def test_check_in_far_away_or_without_location_is_refused(self):
+        event = self.make_event()
+        self.assertContains(self.join(event, latitude="43.30", longitude="76.90"), "м қашықтасыз")
+        self.assertContains(self.join(event, latitude="", longitude=""), "рұқсат беріңіз")
+        self.assertFalse(event.check_ins.exists())
+
+    def test_check_in_only_while_the_event_runs(self):
+        soon = self.make_event(starts_in=timedelta(hours=5))
+        over = self.make_event(starts_in=timedelta(hours=-6))
+        self.assertContains(self.join(soon), "басталған жоқ")
+        self.assertContains(self.join(over), "аяқталды")
+        off = self.make_event(is_active=False)
+        response = self.join(off)
+        self.assertContains(response, "өшірулі")
+        self.assertNotContains(response, "аяқталды")
+
+    def test_event_without_a_point_needs_no_location(self):
+        event = self.make_event(near=False)
+        self.assertEqual(self.join(event, latitude="", longitude="").status_code, 302)
+        self.assertEqual(event.check_ins.count(), 1)
+
+    def test_admin_prints_stickers_and_runs_events(self):
+        self.client.force_login(create_user())
+        self.assertNotEqual(self.client.get("/manage/events/").status_code, 200)
+
+        self.client.force_login(create_admin())
+        stickers = self.client.get("/manage/containers/stickers/")
+        self.assertContains(stickers, "<svg")
+        self.assertContains(stickers, "Container #7")
+
+        start = timezone.localtime() + timedelta(days=1)
+        response = self.client.post("/manage/events/new/", {
+            "title": "Сенбілік", "address": "Абай 150", "points": 20, "is_active": "on",
+            "starts_at": start.strftime("%Y-%m-%dT%H:%M"),
+            "ends_at": (start + timedelta(hours=3)).strftime("%Y-%m-%dT%H:%M"),
+        })
+        from .models import CleanupEvent
+        event = CleanupEvent.objects.get()
+        self.assertRedirects(response, f"/manage/events/{event.pk}/qr/?done=%D0%A1%D0%B5%D0%BD%D0%B1%D1%96%D0%BB%D1%96%D0%BA+%D1%81%D0%B0%D2%9B%D1%82%D0%B0%D0%BB%D0%B4%D1%8B", fetch_redirect_response=False)
+        poster = self.client.get(f"/manage/events/{event.pk}/qr/")
+        self.assertContains(poster, f"/e/{event.token}/")
+
+        bad = self.client.post("/manage/events/new/", {
+            "title": "X", "address": "Y", "points": 5,
+            "starts_at": start.strftime("%Y-%m-%dT%H:%M"), "ends_at": start.strftime("%Y-%m-%dT%H:%M"),
+        })
+        self.assertContains(bad, "басталудан кейін")
+
+
+class EventSwitchTests(TestCase):
+    """A switched-off event says so, and the admin turns its QR on in one click."""
+
+    def test_switch_on_from_the_poster(self):
+        from .models import CleanupEvent
+        start = timezone.now() - timedelta(minutes=5)
+        event = CleanupEvent.objects.create(
+            title="Сенбілік", address="Жәпек батыр", starts_at=start, ends_at=start + timedelta(days=2),
+            points=10, is_active=False,
+        )
+        self.assertContains(self.client.get(f"/e/{event.token}/"), "өшірулі")
+
+        self.client.force_login(create_admin())
+        poster = self.client.get(f"/manage/events/{event.pk}/qr/")
+        self.assertContains(poster, f"/manage/events/{event.pk}/toggle/")
+        self.assertContains(poster, event.ends_at.astimezone(timezone.get_current_timezone()).strftime("%d.%m.%Y"))
+
+        self.client.post(f"/manage/events/{event.pk}/toggle/")
+        event.refresh_from_db()
+        self.assertTrue(event.is_active)
+        self.assertContains(self.client.get(f"/e/{event.token}/"), "Қатысуды растау")
+
+
+class MapAndContainerQrTests(TestCase):
+    """The admin marks a cleanup day on a map, and each container has its own QR."""
+
+    def setUp(self):
+        self.client.force_login(create_admin())
+        self.container = Container.objects.create(name="Container #3", location="Мыңбаев көшесі", latitude=43.21, longitude=76.9)
+
+    def test_event_place_is_picked_on_the_map(self):
+        from .models import CleanupEvent
+        page = self.client.get("/manage/events/new/")
+        self.assertContains(page, 'id="pickMap"')
+        self.assertContains(page, 'data-radius="300"')
+        self.assertContains(page, 'type="hidden" name="latitude"')
+
+        start = timezone.localtime() + timedelta(hours=1)
+        self.client.post("/manage/events/new/", {
+            "title": "Сенбілік", "address": "Жәпек батыр", "points": 10, "is_active": "on",
+            "starts_at": start.strftime("%Y-%m-%dT%H:%M"),
+            "ends_at": (start + timedelta(hours=2)).strftime("%Y-%m-%dT%H:%M"),
+            "latitude": "43.2567", "longitude": "76.9286",
+        })
+        event = CleanupEvent.objects.get()
+        self.assertAlmostEqual(event.latitude, 43.2567)
+        self.assertEqual(event.starts_at.astimezone(timezone.get_current_timezone()).hour, start.hour)
+
+    def test_each_container_has_its_qr(self):
+        page = self.client.get(f"/manage/containers/{self.container.pk}/")
+        self.assertContains(page, "<svg")
+        self.assertContains(page, f"/manage/containers/{self.container.pk}/sticker/")
+
+        sticker = self.client.get(f"/manage/containers/{self.container.pk}/sticker/")
+        self.assertContains(sticker, "Container #3")
+        self.assertEqual(sticker.context["stickers"][0]["container"], self.container)
+
+        png = self.client.get(f"/manage/containers/{self.container.pk}/qr.png")
+        self.assertEqual(png["Content-Type"], "image/png")
+        self.assertTrue(png.content.startswith(b"\x89PNG"))
+        svg = self.client.get(f"/manage/containers/{self.container.pk}/qr.svg")
+        self.assertIn(b"<svg", svg.content)
+
+        self.assertEqual(self.client.get(f"/manage/containers/{self.container.pk}/qr.pdf").status_code, 404)
+        self.assertEqual(self.client.get("/manage/containers/9999/sticker/").status_code, 404)
+        self.assertContains(self.client.get("/manage/containers/"), "QR-стикер")
+
+
+class RatingTests(TestCase):
+    """The resident rates a finished request; a bad answer reopens it and counts against the worker."""
+
+    def setUp(self):
+        self.client.post("/report/", {"category": "overflow", "address": "Абай 12"})
+        self.item = ResidentRequest.objects.get()
+        self.worker = create_worker("worker1")
+        self.finish()
+
+    def finish(self):
+        from .residents import log_event
+        if not self.item.events.exists():
+            log_event(self.item, "new")
+        self.item.status = "done"
+        self.item.assignee = self.worker
+        self.item.save()
+        log_event(self.item, "done")
+
+    def rate(self, value, client=None, comment=""):
+        return (client or self.client).post("/otinish/rate/", {"code": self.item.code, "value": value, "comment": comment})
+
+    def test_owner_sees_the_question_and_says_good(self):
+        page = self.client.get("/otinish/", {"code": self.item.code})
+        self.assertContains(page, "Мәселе шешілді ме?")
+
+        response = self.rate("good")
+        self.assertRedirects(response, f"/otinish/?code={self.item.code}&rated=thanks", fetch_redirect_response=False)
+        rating = self.item.ratings.get()
+        self.assertTrue(rating.is_good)
+        self.assertEqual(rating.worker, self.worker)
+
+        # Once per completion
+        self.assertNotContains(self.client.get("/otinish/", {"code": self.item.code}), "Мәселе шешілді ме?")
+        self.rate("bad")
+        self.assertEqual(self.item.ratings.count(), 1)
+
+    def test_bad_reopens_with_the_comment(self):
+        self.rate("bad", comment="Қоқыс әлі жатыр")
+        self.item.refresh_from_db()
+        self.assertEqual(self.item.status, "new")
+        self.assertEqual(self.item.assignee, self.worker)
+        self.assertIn("Қоқыс әлі жатыр", self.item.events.order_by("-pk").first().note)
+
+        # Done again: the resident is asked again
+        self.finish()
+        self.assertContains(self.client.get("/otinish/", {"code": self.item.code}), "Мәселе шешілді ме?")
+
+    def test_reopening_stops_after_two_times(self):
+        for _round in range(2):
+            self.rate("bad")
+            self.finish()
+        response = self.rate("bad")
+        self.assertIn("rated=noted", response.url)
+        self.item.refresh_from_db()
+        self.assertEqual(self.item.status, "done")
+
+    def test_a_stranger_cannot_rate(self):
+        stranger = self.client_class()
+        self.assertNotContains(stranger.get("/otinish/", {"code": self.item.code}), "Мәселе шешілді ме?")
+        self.rate("bad", client=stranger)
+        self.assertFalse(self.item.ratings.exists())
+
+    def test_rating_window_closes_after_a_week(self):
+        self.item.events.filter(status="done").update(created_at=timezone.now() - timedelta(days=8))
+        self.rate("good")
+        self.assertFalse(self.item.ratings.exists())
+
+    def test_quality_on_supervision_and_detail(self):
+        self.rate("bad", comment="Контейнер бос емес")
+        self.client.force_login(create_user())
+        detail = self.client.get(f"/dashboard/requests/{self.item.pk}/")
+        self.assertContains(detail, "Контейнер бос емес")
+
+        from django.contrib.auth import get_user_model
+        from .ratings import worker_quality
+        row = worker_quality(get_user_model().objects.filter(pk=self.worker.pk))[0]
+        self.assertEqual((row["good"], row["bad"], row["share"]), (0, 1, 0))
+
+
+@override_settings(MEDIA_ROOT=tempfile.mkdtemp(), TELEGRAM_BOT_TOKEN="test-token",
+                   TELEGRAM_BOT_USERNAME="qaldyq_test_bot", TELEGRAM_SYNC=True)
+class TelegramRatingTests(TestCase):
+
+    def setUp(self):
+        from .models import TelegramChat
+        patcher = mock.patch("sensor.telegram.call", return_value={"message_id": 1})
+        self.call = patcher.start()
+        self.addCleanup(patcher.stop)
+        self.chat = TelegramChat.objects.create(chat_id=555)
+        self.item = ResidentRequest.objects.create(category="overflow", address="Абай", telegram_chat=self.chat)
+
+    def test_done_message_has_buttons_and_bad_reopens(self):
+        from . import telegram
+        from .residents import log_event
+        log_event(self.item, "new")
+        self.item.status = "done"
+        self.item.save()
+        with self.captureOnCommitCallbacks(execute=True):
+            log_event(self.item, "done")
+
+        sent = [c for c in self.call.call_args_list if c.args[0] == "sendMessage"][-1].args[1]
+        buttons = sent["reply_markup"]["inline_keyboard"][0]
+        self.assertEqual(buttons[1]["callback_data"], f"rate:{self.item.code}:0")
+
+        telegram.handle_update(tg_callback(f"rate:{self.item.code}:0"))
+        self.item.refresh_from_db()
+        self.assertEqual(self.item.status, "new")
+        self.assertIn("қайта ашылды", sent_texts(self.call)[-1])
+
+
+@override_settings(VAPID_PUBLIC_KEY="BPublicKeyForTests", VAPID_PRIVATE_KEY="private-key-for-tests",
+                   PUSH_SYNC=True, TELEGRAM_BOT_TOKEN="test-token", TELEGRAM_SYNC=True)
+class EventNewsTests(TestCase):
+    """A new cleanup day is announced to the whole city, once."""
+
+    def setUp(self):
+        from .models import EcoWallet, Osi, PushSubscription, TelegramChat
+        self.osi = Osi.objects.create(name="ОСИ Абай 150")
+        other = Osi.objects.create(name="ОСИ Сайран")
+        self.wallet = EcoWallet.objects.create(osi=self.osi)
+        PushSubscription.objects.create(
+            endpoint="https://push.example.com/a", p256dh="k", auth="a", language="ru", wallet=self.wallet
+        )
+        PushSubscription.objects.create(
+            endpoint="https://push.example.com/b", p256dh="k", auth="a",
+            wallet=EcoWallet.objects.create(osi=other),
+        )
+        TelegramChat.objects.create(chat_id=777, osi=self.osi)
+        self.client.force_login(create_admin())
+
+    def publish(self, active=True):
+        start = timezone.localtime() + timedelta(days=2)
+        data = {
+            "title": "Аула сенбілігі", "address": "Абай 150", "points": 15, "osi": self.osi.pk,
+            "starts_at": start.strftime("%Y-%m-%dT%H:%M"),
+            "ends_at": (start + timedelta(hours=3)).strftime("%Y-%m-%dT%H:%M"),
+        }
+        if active:
+            data["is_active"] = "on"
+        return self.client.post("/manage/events/new/", data)
+
+    def test_published_event_reaches_its_association_only_once(self):
+        from .models import CleanupEvent
+        with mock.patch("pywebpush.webpush") as push, mock.patch("sensor.telegram.call") as tg:
+            self.publish()
+            event = CleanupEvent.objects.get()
+            # Every phone with notifications on, whatever its association
+            self.assertEqual(push.call_count, 2)
+            payload = json.loads(push.call_args.kwargs["data"])
+            self.assertIn("+15", payload["body"])
+            self.assertEqual(tg.call_count, 1)
+            self.assertIn("Аула сенбілігі", tg.call_args.args[1]["text"])
+
+            # Saving again does not send it twice
+            self.client.post(f"/manage/events/{event.pk}/", {
+                "title": "Аула сенбілігі 2", "address": "Абай 150", "points": 15, "osi": self.osi.pk,
+                "is_active": "on",
+                "starts_at": timezone.localtime(event.starts_at).strftime("%Y-%m-%dT%H:%M"),
+                "ends_at": timezone.localtime(event.ends_at).strftime("%Y-%m-%dT%H:%M"),
+            })
+            self.assertEqual(push.call_count, 2)
+
+        event.refresh_from_db()
+        self.assertEqual(event.notified_count, 3)
+        self.assertEqual(json.loads(push.call_args.kwargs["data"])["url"], f"/events/{event.pk}/")
+
+    def test_switched_off_event_waits_until_it_is_switched_on(self):
+        from .models import CleanupEvent
+        with mock.patch("pywebpush.webpush") as push, mock.patch("sensor.telegram.call"):
+            self.publish(active=False)
+            self.assertEqual(push.call_count, 0)
+            event = CleanupEvent.objects.get()
+            self.client.post(f"/manage/events/{event.pk}/toggle/")
+            self.assertEqual(push.call_count, 2)
+
+    def test_wallet_page_subscribes_the_wallet(self):
+        from .models import PushSubscription
+        self.client.cookies["qaldyq_wallet"] = self.wallet.code
+        self.assertContains(self.client.get("/wallet/"), "data-push-card")
+        response = self.client.post("/push/subscribe/", data=json.dumps({
+            "code": "", "subscription": {"endpoint": "https://push.example.com/c", "keys": {"p256dh": "x", "auth": "y"}},
+        }), content_type="application/json")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(PushSubscription.objects.get(endpoint="https://push.example.com/c").wallet, self.wallet)
+
+
+class EventPlaceTests(TestCase):
+    """The event page shows the place on a map and opens it in 2GIS, Google or Yandex."""
+
+    def make(self, **fields):
+        from .models import CleanupEvent
+        start = timezone.now() + timedelta(days=1)
+        return CleanupEvent.objects.create(
+            title="Event", address="Abay 150", starts_at=start, ends_at=start + timedelta(hours=2), points=15, **fields
+        )
+
+    def test_info_page_with_a_point(self):
+        event = self.make(latitude=43.2567, longitude=76.9286)
+        page = self.client.get(f"/events/{event.pk}/")
+        self.assertContains(page, 'id="eventMap"')
+        self.assertContains(page, "https://2gis.kz/almaty/geo/76.928600%2C43.256700")
+        self.assertContains(page, "google.com/maps")
+        self.assertContains(page, "yandex.kz/maps")
+        # The info page never offers the check-in itself
+        self.assertNotContains(page, 'id="eventForm"')
+        self.assertContains(page, 'href="/scan/"')
+
+    def test_info_page_without_a_point_searches_the_address(self):
+        event = self.make()
+        page = self.client.get(f"/events/{event.pk}/")
+        self.assertNotContains(page, 'id="eventMap"')
+        self.assertContains(page, "2gis.kz/almaty/search/")
+
+    def test_switched_off_event_is_hidden(self):
+        event = self.make(is_active=False)
+        self.assertEqual(self.client.get(f"/events/{event.pk}/").status_code, 404)

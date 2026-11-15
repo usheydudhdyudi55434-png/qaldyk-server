@@ -1,0 +1,78 @@
+{% extends "manage/base.html" %}
+{% load i18n static %}
+
+{% block title %}Qaldyq — {{ title }}{% endblock %}
+
+{% block head %}
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+{% endblock %}
+
+{% block manage %}
+
+<section aria-labelledby="eventFormTitle" class="manage-narrow">
+
+    <a class="back-link" href="{% url 'manage_events' %}"><svg class="icon" aria-hidden="true"><use href="#i-caret"></use></svg>{% translate "Сенбіліктер" %}</a>
+
+    <div class="section-header">
+        <h1 id="eventFormTitle">{{ title }}</h1>
+    </div>
+
+    <form class="panel detail-form" method="post" novalidate>
+
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+        <div class="notice notice-error" role="alert">
+            <svg class="icon" aria-hidden="true"><use href="#i-full"></use></svg>
+            {{ form.non_field_errors.0 }}
+        </div>
+        {% endif %}
+
+        {% include "manage/field.html" with field=form.title %}
+        {% include "manage/field.html" with field=form.description %}
+
+        <div class="form-row">
+            {% include "manage/field.html" with field=form.starts_at %}
+            {% include "manage/field.html" with field=form.ends_at %}
+        </div>
+
+        {% include "manage/field.html" with field=form.address %}
+        {% include "manage/field.html" with field=form.osi %}
+
+        <div class="field">
+            <span class="field-label">{% translate "Шара өтетін жер картада" %} <span class="field-optional">{% translate "міндетті емес" %}</span></span>
+            <p class="field-hint">{% blocktranslate %}Картадан нүктені басыңыз. Көк шеңбер ішінде ({{ radius }} м) ғана QR қабылданады, сондықтан QR суретін алыстан сканерлеп ұпай алу мүмкін болмайды.{% endblocktranslate %}</p>
+            <div id="pickMap" class="pick-map" data-radius="{{ radius }}" role="region" aria-label="{% translate 'Сенбілік өтетін жерді белгілейтін карта' %}"></div>
+            <div class="pick-actions">
+                <button id="locateMe" class="button-secondary" type="button">
+                    <svg class="icon" aria-hidden="true"><use href="#i-pin"></use></svg>
+                    {% translate "Менің орным" %}
+                </button>
+                <button id="clearPoint" class="header-link" type="button" hidden>{% translate "Нүктені алып тастау" %}</button>
+                <span id="pickStatus" class="field-hint" aria-live="polite">{% translate "Нүкте белгіленбеген" %}</span>
+            </div>
+            {{ form.latitude }}
+            {{ form.longitude }}
+        </div>
+
+        {% include "manage/field.html" with field=form.points %}
+
+        <label class="check-row">
+            {{ form.is_active }}
+            <span>{{ form.is_active.label }}</span>
+        </label>
+
+        <div class="form-actions">
+            <button class="button-primary" type="submit">{% translate "Сақтау" %}</button>
+        </div>
+
+    </form>
+
+</section>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="{% static 'sensor/js/resident.js' %}?v={{ resident_js_version }}"></script>
+{% endblock %}

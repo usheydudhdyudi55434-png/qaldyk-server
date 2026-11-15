@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-14 10:13+0000\n"
+"POT-Creation-Date: 2026-11-14 17:06+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -14,6 +14,38 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: sensor/static/sensor/js/app.js:150
+msgid "Байланыс жоқ: соңғы сақталған мәлімет көрсетілген."
+msgstr "Offline: showing the last saved data."
+
+#: sensor/static/sensor/js/app.js:165
+msgid "Тізімнен алып тастау"
+msgstr "Remove from the list"
+
+#: sensor/static/sensor/js/app.js:184
+msgid "Жаңартылды: %(time)s"
+msgstr "Updated: %(time)s"
+
+#: sensor/static/sensor/js/app.js:272
+msgid "Хабарлама қосулы"
+msgstr "Notifications on"
+
+#: sensor/static/sensor/js/app.js:283
+msgid "Қосылуда…"
+msgstr "Turning on…"
+
+#: sensor/static/sensor/js/app.js:318
+msgid "Хабарламаны қосу"
+msgstr "Turn on notifications"
+
+#: sensor/static/sensor/js/app.js:320
+msgid "Хабарламаға рұқсат берілмеді. Оны браузер баптауларынан қосыңыз."
+msgstr "Notifications are blocked. Allow them in your browser settings."
+
+#: sensor/static/sensor/js/app.js:321
+msgid "Хабарламаны қосу мүмкін болмады. Кейінірек қайталаңыз."
+msgstr "Could not turn on notifications. Please try again later."
 
 #: sensor/static/sensor/js/dashboard.js:27
 msgid "Толы"
@@ -308,6 +340,45 @@ msgstr "Finding your location…"
 #: sensor/static/sensor/js/resident.js:68
 msgid "Орын анықталмады, картадан белгілеңіз"
 msgstr "Location not found, mark it on the map"
+
+#: sensor/static/sensor/js/scan.js:77
+msgid "Бұл Qaldyq-тың QR-коды емес."
+msgstr "This is not a Qaldyq QR code."
+
+#: sensor/static/sensor/js/scan.js:87
+msgid "QR табылды, ашылуда…"
+msgstr "QR found, opening…"
+
+#: sensor/static/sensor/js/scan.js:132
+msgid ""
+"Бұл браузер камераны аша алмайды. «Фотодан оқу» батырмасын пайдаланыңыз."
+msgstr "This browser cannot open the camera. Use Read from a photo."
+
+#: sensor/static/sensor/js/scan.js:136
+msgid "Камера қосылуда…"
+msgstr "Starting the camera…"
+
+#: sensor/static/sensor/js/scan.js:149
+msgid ""
+"Камераға рұқсат берілмеді. Оны браузер баптауларынан қосыңыз немесе «Фотодан "
+"оқу» батырмасын басыңыз."
+msgstr "Camera access is blocked. Allow it in your browser settings or tap Read from a photo."
+
+#: sensor/static/sensor/js/scan.js:150
+msgid "Камераны ашу мүмкін болмады. «Фотодан оқу» батырмасын пайдаланыңыз."
+msgstr "Could not open the camera. Use Read from a photo."
+
+#: sensor/static/sensor/js/scan.js:160
+msgid "QR-ды рамкаға түсіріңіз"
+msgstr "Point the frame at the QR"
+
+#: sensor/static/sensor/js/scan.js:175
+msgid "Фото оқылуда…"
+msgstr "Reading the photo…"
+
+#: sensor/static/sensor/js/scan.js:184 sensor/static/sensor/js/scan.js:189
+msgid "Фотодан QR табылмады. Кодты жақынырақ, анық түсіріңіз."
+msgstr "No QR found in the photo. Take it closer and sharper."
 
 #: sensor/static/sensor/js/worker.js:18
 msgid "Браузер орынды анықтай алмайды"

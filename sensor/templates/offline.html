@@ -1,0 +1,23 @@
+{% extends "layout.html" %}
+{% load i18n %}
+
+{% block title %}{% translate "Qaldyq — Интернет жоқ" %}{% endblock %}
+
+{% block brand_note %}{% translate "Тұрғындарға арналған" %}{% endblock %}
+
+{% block nav %}{% endblock %}
+
+{% block main_class %}resident-page{% endblock %}
+
+{% block content %}
+
+<section class="panel offline-card" aria-labelledby="offlineTitle">
+    <svg class="icon offline-icon" aria-hidden="true"><use href="#i-none"></use></svg>
+    <h1 id="offlineTitle">{% translate "Интернет байланысы жоқ" %}</h1>
+    <p>{% translate "Бұл бет әлі телефонда сақталмаған. Байланыс қалпына келгенде қайта ашыңыз. Бұрын ашқан беттеріңіз интернетсіз де көрінеді." %}</p>
+    <button class="button-primary" type="button" onclick="location.reload()">{% translate "Қайта көру" %}</button>
+</section>
+
+{% endblock %}
+
+{% block app_tabs %}{% include "app_tabs.html" %}{% endblock %}

@@ -1,0 +1,81 @@
+{% extends "manage/base.html" %}
+{% load i18n %}
+
+{% block title %}Qaldyq — {{ table }}{% endblock %}
+
+{% block manage %}
+
+<section aria-labelledby="tableTitle">
+
+    <a class="back-link" href="{% url 'manage_data' %}"><svg class="icon" aria-hidden="true"><use href="#i-caret"></use></svg>{% translate "Барлық кесте" %}</a>
+
+    <div class="section-header">
+        <div>
+            <h1 id="tableTitle">{{ title }}</h1>
+            <code class="db-table-name">{{ table }}</code>
+        </div>
+        {% if table == 'auth_user' %}
+        <a class="button-primary" href="{% url 'manage_staff_create' %}">{% translate "Қызметкер қосу" %}</a>
+        {% else %}
+        <a class="button-primary" href="{% url 'manage_data_create' table %}">{% translate "Жол қосу" %}</a>
+        {% endif %}
+    </div>
+
+    <form class="db-toolbar" method="get">
+        <label class="search db-search">
+            <svg class="icon" aria-hidden="true"><use href="#i-search"></use></svg>
+            <span class="visually-hidden">{% translate "Кестеден іздеу" %}</span>
+            <input type="search" name="q" value="{{ query }}" placeholder="{% translate 'Мәтін немесе id бойынша іздеу' %}" autocomplete="off">
+        </label>
+        <input type="hidden" name="o" value="{{ order }}">
+        <button class="button-secondary" type="submit">{% translate "Іздеу" %}</button>
+        {% if query %}<a class="header-link" href="{% url 'manage_data_table' table %}">{% translate "Тазалау" %}</a>{% endif %}
+        <span class="section-meta db-count">
+            {% blocktranslate count rows=page.paginator.count %}{{ rows }} жол{% plural %}{{ rows }} жол{% endblocktranslate %}
+        </span>
+    </form>
+
+    <div class="panel table-scroll">
+        <table class="data-table db-grid">
+            <thead>
+                <tr>
+                    {% for column in head %}
+                    <th scope="col" {% if column.sort == 'asc' %}aria-sort="ascending"{% elif column.sort == 'desc' %}aria-sort="descending"{% endif %}>
+                        <a href="{{ column.url }}" title="{{ column.label }} · {{ column.type }}">{{ column.name }}</a>
+                    </th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in rows %}
+                <tr>
+                    {% for value in row.cells %}
+                    <td class="db-cell{% if value.kind %} is-{{ value.kind }}{% endif %}"{% if value.title %} title="{{ value.title }}"{% endif %}>
+                        {% if forloop.first %}
+                        <a class="db-row-link" href="{{ row.url }}" title="{% translate 'Жолды өңдеу' %}">{{ value.text }}</a>
+                        {% elif value.link %}
+                        <a href="{{ value.link }}"{% if value.kind == 'file' %} target="_blank" rel="noopener"{% endif %}>{{ value.text }}</a>
+                        {% else %}
+                        {{ value.text }}
+                        {% endif %}
+                    </td>
+                    {% endfor %}
+                </tr>
+                {% empty %}
+                <tr><td colspan="{{ head|length }}" class="cell-secondary">{% if query %}{% translate "Іздеу бойынша жол табылмады." %}{% else %}{% translate "Кесте бос." %}{% endif %}</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% if page.paginator.num_pages > 1 %}
+    <nav class="db-pager" aria-label="{% translate 'Беттер' %}">
+        {% if prev_url %}<a class="button-secondary button-small" href="{{ prev_url }}">← {% translate "Алдыңғы" %}</a>{% else %}<span></span>{% endif %}
+        <span class="section-meta">{% blocktranslate with number=page.number total=page.paginator.num_pages %}{{ number }} / {{ total }} бет{% endblocktranslate %}</span>
+        {% if next_url %}<a class="button-secondary button-small" href="{{ next_url }}">{% translate "Келесі" %} →</a>{% else %}<span></span>{% endif %}
+    </nav>
+    {% endif %}
+
+</section>
+
+{% endblock %}

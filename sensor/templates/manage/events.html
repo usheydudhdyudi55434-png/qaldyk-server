@@ -1,0 +1,55 @@
+{% extends "manage/base.html" %}
+{% load i18n %}
+
+{% block title %}{% translate "Qaldyq — Сенбілік" %}{% endblock %}
+
+{% block manage %}
+
+<section aria-labelledby="eventsTitle">
+
+    <div class="section-header">
+        <h1 id="eventsTitle">{% translate "Сенбіліктер" %}</h1>
+        <a class="button-primary" href="{% url 'manage_event_create' %}">{% translate "Сенбілік қосу" %}</a>
+    </div>
+
+    <p class="field-hint manage-footnote">{% translate "Әр сенбіліктің өз QR-коды бар. Оны басып шығарып, шара өтетін жерге қойыңыз: тұрғындар қосымшадағы сканермен оқып, эко-ұпай алады." %}</p>
+
+    <div class="panel table-scroll">
+        <table class="data-table stack-table">
+            <thead>
+                <tr>
+                    <th scope="col">{% translate "Атауы" %}</th>
+                    <th scope="col">{% translate "Уақыты" %}</th>
+                    <th scope="col">{% translate "Өтетін жері" %}</th>
+                    <th scope="col" class="align-end">{% translate "Ұпай" %}</th>
+                    <th scope="col" class="align-end">{% translate "Қатысты" %}</th>
+                    <th scope="col">{% translate "Күйі" %}</th>
+                    <th scope="col">QR</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for event in events %}
+                <tr class="{% if not event.is_active %}is-inactive{% endif %}">
+                    <td><a class="row-name" href="{% url 'manage_event_edit' event.pk %}">{{ event.title }}</a></td>
+                    <td>{% include "event_time.html" %}</td>
+                    <td>{{ event.address }}{% if event.osi %} <span class="cell-secondary">· {{ event.osi.name }}</span>{% endif %}</td>
+                    <td class="align-end numeric">+{{ event.points }}</td>
+                    <td class="align-end numeric">{{ event.joined }}</td>
+                    <td>
+                        {% if event.state == 'open' %}<span class="verdict verdict-confirmed">{% translate "QR жұмыс істеп тұр" %}</span>
+                        {% elif event.state == 'soon' %}<span class="verdict verdict-none">{% translate "Басталмаған" %}</span>
+                        {% elif event.state == 'off' %}<span class="verdict verdict-unconfirmed">{% translate "QR өшірулі" %}</span>
+                        {% else %}<span class="verdict verdict-none">{% translate "Аяқталды" %}</span>{% endif %}
+                    </td>
+                    <td><a class="button-secondary button-small" href="{% url 'manage_event_qr' event.pk %}">{% translate "QR мен қатысушылар" %}</a></td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="7" class="cell-secondary">{% translate "Сенбілік әлі жоқ." %}</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</section>
+
+{% endblock %}
