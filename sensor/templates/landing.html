@@ -5,14 +5,7 @@
 
 {% block brand_note %}{% translate "Қалдықтарды бақылау жүйесі" %}{% endblock %}
 
-{% block nav %}
-<nav class="main-nav landing-nav" aria-label="{% translate 'Бет бөлімдері' %}">
-    <a href="#services">{% translate "Қызметтер" %}</a>
-    <a href="#how">{% translate "Қалай жұмыс істейді" %}</a>
-    <a href="#city">{% translate "Қала үшін" %}</a>
-    <a href="{% url 'eco_page' %}">{% translate "Эко-ұпай" %}</a>
-</nav>
-{% endblock %}
+{% block nav %}{% endblock %}
 
 {% block account %}
 {% if user.is_authenticated %}
@@ -70,116 +63,28 @@
     </symbol>
 </svg>
 
-<!-- HERO: what it is, the main action, and the status check -->
-<section class="landing-hero" aria-labelledby="heroTitle">
-    <div class="landing-inner landing-hero-grid">
+<!-- TITLE BAR, as on a public-service portal -->
+<div class="portal-title">{% translate "Аула тазалығы туралы өтінішті жылдам әрі тегін қалдырыңыз" %}</div>
 
-        <div class="landing-hero-text">
-            <span class="landing-eyebrow">{% translate "Алматы · IoT датчиктер мен AI" %}</span>
-            <h1 id="heroTitle">{% translate "Таза аула бір хабарламадан басталады" %}</h1>
-            <p class="landing-lead">
-                {% translate "Толып кеткен контейнерді немесе шығарылмаған қоқысты көрдіңіз бе? Өтініш қалдырыңыз: датчик пен AI оны тексереді, жұмысшы орындап, нәтиженің фотосын жібереді." %}
-            </p>
-
-            <div class="landing-actions">
-                <a class="landing-button is-primary" href="{% url 'resident_home' %}">
-                    {% translate "Өтініш қалдыру" %}
-                    <svg class="icon" aria-hidden="true"><use href="#i-arrow"></use></svg>
-                </a>
-                {% if telegram_link %}
-                <a class="landing-button is-ghost" href="{{ telegram_link }}" target="_blank" rel="noopener">
-                    <svg class="icon" aria-hidden="true"><use href="#i-send"></use></svg>
-                    {% translate "Telegram арқылы" %}
-                </a>
-                {% endif %}
-            </div>
-
-            <form class="landing-check" method="get" action="{% url 'resident_status' %}" role="search">
-                <label for="landingCode">{% translate "Өтініш мәртебесін тексеру" %}</label>
-                <div class="landing-check-row">
-                    <svg class="icon" aria-hidden="true"><use href="#i-search"></use></svg>
-                    <input id="landingCode" name="code" placeholder="Q-XXXXXX" autocomplete="off" spellcheck="false" maxlength="12" required>
-                    <button type="submit">{% translate "Тексеру" %}</button>
-                </div>
-            </form>
+<!-- BANNER: a photo of Almaty (CC0, Wikimedia Commons: "Almaty city skyline"), the headline and the status search -->
+<section class="portal-banner" aria-labelledby="heroTitle">
+    <div class="portal-banner-body">
+        <h1 id="heroTitle">{% translate "Таза аула бір хабарламадан басталады" %}</h1>
+        <form class="portal-search" method="get" action="{% url 'resident_status' %}" role="search">
+            <label class="visually-hidden" for="landingCode">{% translate "Өтініш мәртебесін тексеру" %}</label>
+            <svg class="icon" aria-hidden="true"><use href="#i-search"></use></svg>
+            <input id="landingCode" name="code" placeholder="{% translate 'Өтініш кодын енгізіңіз: Q-XXXXXX' %}" autocomplete="off" spellcheck="false" maxlength="12" required>
+            <button type="submit">{% translate "Тексеру" %}</button>
+        </form>
+        <div class="portal-banner-actions">
+            <a class="portal-banner-button is-primary" href="{% url 'resident_home' %}">{% translate "Өтініш қалдыру" %}</a>
+            {% if telegram_link %}
+            <a class="portal-banner-button" href="{{ telegram_link }}" target="_blank" rel="noopener">
+                <svg class="icon" aria-hidden="true"><use href="#i-send"></use></svg>
+                {% translate "Telegram арқылы" %}
+            </a>
+            {% endif %}
         </div>
-
-        <!-- An illustration of what the resident sees, not live data -->
-        <div class="landing-visual" aria-hidden="true">
-            <svg class="landing-map" viewBox="0 0 520 440" preserveAspectRatio="xMidYMid slice">
-                <g class="landing-map-streets">
-                    <path d="M-10 90 C 120 110, 220 60, 330 110 S 480 160, 540 130"/>
-                    <path d="M-10 250 C 110 220, 230 290, 350 250 S 470 210, 540 270"/>
-                    <path d="M-10 380 C 140 400, 260 340, 380 390 S 500 430, 540 400"/>
-                    <path d="M110 -10 C 130 120, 80 230, 140 330 S 120 420, 150 460"/>
-                    <path d="M300 -10 C 270 130, 330 240, 290 330 S 330 420, 300 460"/>
-                    <path d="M450 -10 C 470 140, 410 260, 460 350 S 430 430, 470 460"/>
-                </g>
-                <g class="landing-map-bins">
-                    <circle cx="140" cy="100" r="6"/>
-                    <circle cx="330" cy="110" r="6" class="is-half"/>
-                    <circle cx="295" cy="252" r="6" class="is-full"/>
-                    <circle cx="120" cy="330" r="6"/>
-                    <circle cx="460" cy="265" r="6"/>
-                    <circle cx="380" cy="390" r="6" class="is-half"/>
-                </g>
-            </svg>
-
-            <div class="landing-card landing-card-status">
-                <div class="landing-card-head">
-                    <span class="landing-code">Q-7K2M9A</span>
-                    <span class="landing-pill is-done">{% translate "Орындалды" %}</span>
-                </div>
-                <ol class="landing-steps">
-                    <li class="is-done">{% translate "Жіберілді" %}</li>
-                    <li class="is-done">{% translate "Қабылданды" %}</li>
-                    <li class="is-done">{% translate "Орындалуда" %}</li>
-                    <li class="is-done">{% translate "Орындалды" %}</li>
-                </ol>
-                <div class="landing-card-foot">
-                    <svg class="icon" aria-hidden="true"><use href="#i-leaf"></use></svg>
-                    {% translate "+15 эко-ұпай" %}
-                </div>
-            </div>
-
-            <div class="landing-card landing-card-sensor">
-                <svg class="icon" aria-hidden="true"><use href="#i-sensor"></use></svg>
-                <div>
-                    <strong>87%</strong>
-                    <span>{% translate "Датчик: контейнер толы" %}</span>
-                </div>
-            </div>
-
-            <div class="landing-card landing-card-ai">
-                <svg class="icon" aria-hidden="true"><use href="#i-camera"></use></svg>
-                <span>{% translate "AI: тұрмыстық қоқыс, көлемі орташа" %}</span>
-            </div>
-        </div>
-
-    </div>
-</section>
-
-<!-- LIVE NUMBERS from the database -->
-{% include "install_card.html" %}
-
-<section class="landing-inner landing-stats-wrap" aria-label="{% translate 'Жүйе сандармен' %}">
-    <div class="landing-stats">
-    <div class="landing-stat">
-        <strong>{{ stats.containers }}</strong>
-        <span>{% translate "Датчигі бар контейнер" %}</span>
-    </div>
-    <div class="landing-stat">
-        <strong>{{ stats.solved }}</strong>
-        <span>{% translate "Шешілген өтініш" %}</span>
-    </div>
-    <div class="landing-stat">
-        <strong>{{ stats.resolve_time|default:"—" }}</strong>
-        <span>{% translate "Орташа шешілу уақыты" %}</span>
-    </div>
-    <div class="landing-stat">
-        <strong>{{ stats.points }}</strong>
-        <span>{% translate "Тұрғындарға берілген эко-ұпай" %}</span>
-    </div>
     </div>
 </section>
 
@@ -239,6 +144,33 @@
 
     </div>
 
+</section>
+
+<!-- LIVE NUMBERS from the database -->
+{% include "install_card.html" %}
+
+<section class="landing-inner landing-section" aria-labelledby="statsTitle">
+    <div class="landing-heading">
+        <h2 id="statsTitle">{% translate "Жүйе сандармен" %}</h2>
+    </div>
+    <div class="landing-stats">
+    <div class="landing-stat">
+        <strong>{{ stats.containers }}</strong>
+        <span>{% translate "Датчигі бар контейнер" %}</span>
+    </div>
+    <div class="landing-stat">
+        <strong>{{ stats.solved }}</strong>
+        <span>{% translate "Шешілген өтініш" %}</span>
+    </div>
+    <div class="landing-stat">
+        <strong>{{ stats.resolve_time|default:"—" }}</strong>
+        <span>{% translate "Орташа шешілу уақыты" %}</span>
+    </div>
+    <div class="landing-stat">
+        <strong>{{ stats.points }}</strong>
+        <span>{% translate "Тұрғындарға берілген эко-ұпай" %}</span>
+    </div>
+    </div>
 </section>
 
 <!-- HOW IT WORKS -->

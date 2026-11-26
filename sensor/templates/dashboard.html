@@ -13,10 +13,10 @@
     <link rel="icon" type="image/svg+xml" href="{% static 'sensor/img/qaldyq-icon.svg' %}">
     <link rel="apple-touch-icon" href="{% static 'sensor/img/qaldyq-apple-touch-icon.png' %}">
 
-    <!-- Apply the saved theme before first paint -->
+    <!-- Light unless dark was chosen, before first paint -->
     <script>
         try {
-            if (localStorage.getItem("qaldyk-theme") === "light") {
+            if (localStorage.getItem("qaldyk-theme") !== "dark") {
                 document.documentElement.dataset.theme = "light";
             }
         } catch (error) {}
@@ -33,6 +33,11 @@
         rel="stylesheet"
         href="{% static 'sensor/css/dashboard.css' %}?v={{ css_version }}"
     >
+
+    <!-- Typeface -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Roboto+Mono:wght@400;500;600&display=swap">
 
     {% include "pwa_head.html" %}
 

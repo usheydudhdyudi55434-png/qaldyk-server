@@ -19,22 +19,17 @@
 
 {% block content %}
 
-<section class="resident-intro">
+<svg class="icon-sprite" aria-hidden="true" focusable="false">
+    <symbol id="i-camera" viewBox="0 0 24 24">
+        <path d="M4 8h3l2-3h6l2 3h3v11H4z"/>
+        <circle cx="12" cy="13" r="3.5"/>
+    </symbol>
+</svg>
+
+<header class="service-head">
     <h1>{% translate "Қоқысқа байланысты мәселе туралы хабарлаңыз" %}</h1>
-    <p>
-        {% translate "Контейнер толып кетсе, қоқыс уақытында шығарылмаса немесе аумақ ластанса, өтініш қалдырыңыз. Өтінішке код беріледі, сол арқылы оның қалай шешіліп жатқанын бақылайсыз." %}
-    </p>
-    <p class="resident-privacy">
-        <svg class="icon" aria-hidden="true"><use href="#i-normal"></use></svg>
-        {% translate "Аты-жөніңіз бен телефоныңыз сұралмайды." %}
-    </p>
-    {% if telegram_link %}
-    <p class="resident-privacy">
-        <span class="telegram-inline"><svg class="icon" aria-hidden="true"><use href="#i-send"></use></svg></span>
-        <span>{% translate "Telegram-да ыңғайлы ма?" %} {% blocktranslate trimmed %}<a href="{{ telegram_link }}" target="_blank" rel="noopener">Ботқа жазыңыз</a>, өтінішті сол жерден де қалдыруға болады.{% endblocktranslate %}</span>
-    </p>
-    {% endif %}
-</section>
+    <p>{% translate "Контейнер толып кетсе, қоқыс уақытында шығарылмаса немесе аумақ ластанса, өтініш қалдырыңыз. Өтінішке код беріледі, сол арқылы оның қалай шешіліп жатқанын бақылайсыз." %}</p>
+</header>
 
 {% if qr_container %}
 <div class="notice notice-success qr-container-notice" role="status">
@@ -46,7 +41,9 @@
 </div>
 {% endif %}
 
-<form class="panel resident-form" method="post" enctype="multipart/form-data" novalidate>
+<div class="service-layout">
+
+<form class="resident-form service-form" method="post" enctype="multipart/form-data" novalidate>
 
     {% csrf_token %}
 
@@ -57,68 +54,127 @@
     </div>
     {% endif %}
 
-    <fieldset class="field">
-        <legend>{% translate "Мәселенің түрі" %}</legend>
-        <div class="choice-grid">
-            {% for radio in form.category %}
-            <label class="choice">
-                {{ radio.tag }}
-                <span>{{ radio.choice_label }}</span>
+    <!-- Step 1: what happened -->
+    <section class="service-step">
+        <fieldset class="field">
+            <legend>{% translate "Мәселенің түрі" %}</legend>
+            <div class="choice-grid">
+                {% for radio in form.category %}
+                <label class="choice">
+                    {{ radio.tag }}
+                    <span>{{ radio.choice_label }}</span>
+                </label>
+                {% endfor %}
+            </div>
+            {% for error in form.category.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+        </fieldset>
+    </section>
+
+    <!-- Step 2: where -->
+    <section class="service-step">
+        <div class="field">
+            <label for="{{ form.address.id_for_label }}">{% translate "Мекенжай" %}</label>
+            {{ form.address }}
+            {% for error in form.address.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+        </div>
+
+        <div class="field">
+            <span class="field-label">{% translate "Картадағы орны" %} <span class="field-optional">{% translate "міндетті емес" %}</span></span>
+            <p class="field-hint">
+                {% translate "Картадан нүктені басыңыз. Сонда өтініш жақын контейнердің датчик деректерімен салыстырылады." %}
+            </p>
+            <div id="pickMap" class="pick-map" role="region" aria-label="{% translate 'Мәселенің орнын белгілейтін карта' %}"></div>
+            <div class="pick-actions">
+                <button id="locateMe" class="button-secondary" type="button">
+                    <svg class="icon" aria-hidden="true"><use href="#i-pin"></use></svg>
+                    {% translate "Менің орным" %}
+                </button>
+                <span id="pickStatus" class="field-hint" aria-live="polite">{% translate "Нүкте белгіленбеген" %}</span>
+            </div>
+            {{ form.latitude }}
+            {{ form.longitude }}
+        </div>
+    </section>
+
+    <!-- Step 3: details -->
+    <section class="service-step">
+        <div class="field">
+            <label for="{{ form.description.id_for_label }}">{% translate "Сипаттама" %} <span class="field-optional">{% translate "міндетті емес" %}</span></label>
+            {{ form.description }}
+            {% for error in form.description.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+        </div>
+
+        <div class="field field-photo">
+            <span class="field-label">{% translate "Фото" %} <span class="field-optional">{% translate "міндетті емес, 5 МБ-қа дейін" %}</span></span>
+            <label class="file-pick" for="{{ form.photo.id_for_label }}">
+                <svg class="icon" aria-hidden="true"><use href="#i-camera"></use></svg>
+                <span class="file-pick-button">{% translate "Фото қосу" %}</span>
+                <span class="file-pick-name" id="photoName">{% translate "Файл таңдалмаған" %}</span>
             </label>
-            {% endfor %}
+            {{ form.photo }}
+            {% for error in form.photo.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
         </div>
-        {% for error in form.category.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
-    </fieldset>
-
-    <div class="field">
-        <label for="{{ form.address.id_for_label }}">{% translate "Мекенжай" %}</label>
-        {{ form.address }}
-        {% for error in form.address.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
-    </div>
-
-    <div class="field">
-        <span class="field-label">{% translate "Картадағы орны" %} <span class="field-optional">{% translate "міндетті емес" %}</span></span>
-        <p class="field-hint">
-            {% translate "Картадан нүктені басыңыз. Сонда өтініш жақын контейнердің датчик деректерімен салыстырылады." %}
-        </p>
-        <div id="pickMap" class="pick-map" role="region" aria-label="{% translate 'Мәселенің орнын белгілейтін карта' %}"></div>
-        <div class="pick-actions">
-            <button id="locateMe" class="button-secondary" type="button">
-                <svg class="icon" aria-hidden="true"><use href="#i-pin"></use></svg>
-                {% translate "Менің орным" %}
-            </button>
-            <span id="pickStatus" class="field-hint" aria-live="polite">{% translate "Нүкте белгіленбеген" %}</span>
-        </div>
-        {{ form.latitude }}
-        {{ form.longitude }}
-    </div>
-
-    <div class="field">
-        <label for="{{ form.description.id_for_label }}">{% translate "Сипаттама" %} <span class="field-optional">{% translate "міндетті емес" %}</span></label>
-        {{ form.description }}
-        {% for error in form.description.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
-    </div>
-
-    <div class="field">
-        <label for="{{ form.photo.id_for_label }}">{% translate "Фото" %} <span class="field-optional">{% translate "міндетті емес, 5 МБ-қа дейін" %}</span></label>
-        {{ form.photo }}
-        {% for error in form.photo.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
-    </div>
+    </section>
 
     <div class="hp" aria-hidden="true">
         <label for="{{ form.website.id_for_label }}">{% translate "Бұл өрісті бос қалдырыңыз" %}</label>
         {{ form.website }}
     </div>
 
-    <button class="button-primary" type="submit">{% translate "Өтінішті жіберу" %}</button>
+    <div class="service-submit">
+        <button class="button-primary" type="submit">{% translate "Өтінішті жіберу" %}</button>
+    </div>
 
 </form>
+
+<!-- About the service, as a portal's service passport -->
+<aside class="service-aside" aria-labelledby="serviceAbout">
+    <h2 id="serviceAbout">{% translate "Қызмет туралы" %}</h2>
+    <ul class="service-facts">
+        <li>
+            <svg class="icon" aria-hidden="true"><use href="#i-normal"></use></svg>
+            <span>{% translate "Аты-жөніңіз бен телефоныңыз сұралмайды." %}</span>
+        </li>
+        <li>
+            <svg class="icon" aria-hidden="true"><use href="#i-list"></use></svg>
+            <span>{% translate "Өтінішке код беріледі. Сол код арқылы мәртебені тексересіз, ал Telegram-бот әр өзгерісті өзі хабарлайды." %}</span>
+        </li>
+        <li>
+            <svg class="icon" aria-hidden="true"><use href="#i-leaf"></use></svg>
+            <span>{% translate "Жұмысшы мәселені фотомен растағанда эко-ұпай аласыз." %}</span>
+        </li>
+        {% if telegram_link %}
+        <li>
+            <svg class="icon" aria-hidden="true"><use href="#i-send"></use></svg>
+            <span>{% translate "Telegram-да ыңғайлы ма?" %} {% blocktranslate trimmed %}<a href="{{ telegram_link }}" target="_blank" rel="noopener">Ботқа жазыңыз</a>, өтінішті сол жерден де қалдыруға болады.{% endblocktranslate %}</span>
+        </li>
+        {% endif %}
+    </ul>
+    <a class="button-secondary service-aside-link" href="{% url 'resident_status' %}">
+        <svg class="icon" aria-hidden="true"><use href="#i-search"></use></svg>
+        {% translate "Өтінішті тексеру" %}
+    </a>
+</aside>
+
+</div>
 
 {% endblock %}
 
 {% block scripts %}
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="{% static 'sensor/js/resident.js' %}?v={{ resident_js_version }}"></script>
+<script>
+    (function () {
+        const input = document.querySelector(".field-photo input[type=file]");
+        const name = document.getElementById("photoName");
+        if (!input || !name) return;
+        const empty = name.textContent;
+        input.addEventListener("change", () => {
+            name.textContent = input.files.length ? input.files[0].name : empty;
+            name.classList.toggle("is-set", input.files.length > 0);
+        });
+    })();
+</script>
 {% endblock %}
 
 {% block app_tabs %}{% include "app_tabs.html" with active="report" %}{% endblock %}

@@ -1,0 +1,229 @@
+<mxfile host="app.diagrams.net">
+  <diagram id="qaldyq-requests" name="Өтініштер мен адамдар">
+    <mxGraphModel dx="1807" dy="1154" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="1600" pageHeight="1000" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="request" parent="1" style="swimlane;html=1;childLayout=stackLayout;horizontal=1;startSize=44;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;rounded=1;arcSize=5;fillColor=#ffe6cc;strokeColor=#d79b00;strokeWidth=1.5;swimlaneFillColor=#ffffff;fontSize=14;" value="&lt;b&gt;sensor_residentrequest&lt;/b&gt;&lt;br&gt;&lt;font style=&amp;quot;font-size:12px&amp;quot;&gt;Өтініш&lt;/font&gt;" vertex="1">
+          <mxGeometry height="428" width="330" x="600" y="120" as="geometry" />
+        </mxCell>
+        <mxCell id="request_0" parent="request" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=12;fontStyle=1;" value="PK id" vertex="1">
+          <mxGeometry height="24" width="330" y="44" as="geometry" />
+        </mxCell>
+        <mxCell id="request_1" parent="request" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=12;fontColor=#3d6fb6;" value="UQ code — өтініш коды (Q-XXXXXX)" vertex="1">
+          <mxGeometry height="24" width="330" y="68" as="geometry" />
+        </mxCell>
+        <mxCell id="request_2" parent="request" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=12;" value="category — мәселенің түрі" vertex="1">
+          <mxGeometry height="24" width="330" y="92" as="geometry" />
+        </mxCell>
+        <mxCell id="request_3" parent="request" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=12;" value="address — мекенжай" vertex="1">
+          <mxGeometry height="24" width="330" y="116" as="geometry" />
+        </mxCell>
+        <mxCell id="request_4" parent="request" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=12;" value="description — сипаттама" vertex="1">
+          <mxGeometry height="24" width="330" y="140" as="geometry" />
+        </mxCell>
+        <mxCell id="request_5" parent="request" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=12;" value="photo — тұрғынның фотосы" vertex="1">
+          <mxGeometry height="24" width="330" y="164" as="geometry" />
+        </mxCell>
+        <mxCell id="request_6" parent="request" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=12;" value="latitude / longitude" vertex="1">
+          <mxGeometry height="24" width="330" y="188" as="geometry" />
+        </mxCell>
+        <mxCell id="request_7" parent="request" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=12;" value="status — жаңа / қабылданды / орындалуда / орындалды" vertex="1">
+          <mxGeometry height="24" width="330" y="212" as="geometry" />
+        </mxCell>
+        <mxCell id="request_8" parent="request" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=12;fontColor=#b85450;fontStyle=1;" value="FK container_id → контейнер" vertex="1">
+          <mxGeometry height="24" width="330" y="236" as="geometry" />
+        </mxCell>
+        <mxCell id="request_9" parent="request" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=12;fontColor=#b85450;fontStyle=1;" value="FK district_id → аудан" vertex="1">
+          <mxGeometry height="24" width="330" y="260" as="geometry" />
+        </mxCell>
+        <mxCell id="request_10" parent="request" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=12;fontColor=#b85450;fontStyle=1;" value="FK assignee_id → жұмысшы (auth_user)" vertex="1">
+          <mxGeometry height="24" width="330" y="284" as="geometry" />
+        </mxCell>
+        <mxCell id="request_11" parent="request" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=12;fontColor=#b85450;fontStyle=1;" value="FK telegram_chat_id → тұрғын (Telegram)" vertex="1">
+          <mxGeometry height="24" width="330" y="308" as="geometry" />
+        </mxCell>
+        <mxCell id="request_12" parent="request" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=12;fontColor=#b85450;fontStyle=1;" value="FK wallet_id → тұрғын (қосымша)" vertex="1">
+          <mxGeometry height="24" width="330" y="332" as="geometry" />
+        </mxCell>
+        <mxCell id="request_13" parent="request" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=12;fontColor=#b85450;fontStyle=1;" value="FK parent_id → негізгі өтініш (қайталанса)" vertex="1">
+          <mxGeometry height="24" width="330" y="356" as="geometry" />
+        </mxCell>
+        <mxCell id="request_14" parent="request" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=12;" value="result_photo — жұмыстан кейінгі фото" vertex="1">
+          <mxGeometry height="24" width="330" y="380" as="geometry" />
+        </mxCell>
+        <mxCell id="request_15" parent="request" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=12;" value="created_at / updated_at" vertex="1">
+          <mxGeometry height="24" width="330" y="404" as="geometry" />
+        </mxCell>
+        <mxCell id="container" parent="1" style="swimlane;html=1;childLayout=stackLayout;horizontal=1;startSize=44;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;rounded=1;arcSize=5;fillColor=#dae8fc;strokeColor=#6c8ebf;strokeWidth=1.5;swimlaneFillColor=#ffffff;fontSize=14;" value="&lt;b&gt;sensor_container&lt;/b&gt;&lt;br&gt;&lt;font style=&amp;quot;font-size:12px&amp;quot;&gt;Контейнер&lt;/font&gt;" vertex="1">
+          <mxGeometry height="164" width="330" x="80" y="120" as="geometry" />
+        </mxCell>
+        <mxCell id="container_0" parent="container" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=12;fontStyle=1;" value="PK id" vertex="1">
+          <mxGeometry height="24" width="330" y="44" as="geometry" />
+        </mxCell>
+        <mxCell id="container_1" parent="container" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=12;" value="name — атауы" vertex="1">
+          <mxGeometry height="24" width="330" y="68" as="geometry" />
+        </mxCell>
+        <mxCell id="container_2" parent="container" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=12;" value="location — орны" vertex="1">
+          <mxGeometry height="24" width="330" y="92" as="geometry" />
+        </mxCell>
+        <mxCell id="container_3" parent="container" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=12;" value="latitude / longitude" vertex="1">
+          <mxGeometry height="24" width="330" y="116" as="geometry" />
+        </mxCell>
+        <mxCell id="container_4" parent="container" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=12;fontColor=#b85450;fontStyle=1;" value="FK district_id → аудан" vertex="1">
+          <mxGeometry height="24" width="330" y="140" as="geometry" />
+        </mxCell>
+        <mxCell id="district" parent="1" style="swimlane;html=1;childLayout=stackLayout;horizontal=1;startSize=44;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;rounded=1;arcSize=5;fillColor=#dae8fc;strokeColor=#6c8ebf;strokeWidth=1.5;swimlaneFillColor=#ffffff;fontSize=14;" value="&lt;b&gt;sensor_district&lt;/b&gt;&lt;br&gt;&lt;font style=&amp;quot;font-size:12px&amp;quot;&gt;Аудан&lt;/font&gt;" vertex="1">
+          <mxGeometry height="140" width="330" x="80" y="470" as="geometry" />
+        </mxCell>
+        <mxCell id="district_0" parent="district" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=12;fontStyle=1;" value="PK id" vertex="1">
+          <mxGeometry height="24" width="330" y="44" as="geometry" />
+        </mxCell>
+        <mxCell id="district_1" parent="district" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=12;fontColor=#3d6fb6;" value="UQ slug" vertex="1">
+          <mxGeometry height="24" width="330" y="68" as="geometry" />
+        </mxCell>
+        <mxCell id="district_2" parent="district" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=12;" value="name — аудан атауы" vertex="1">
+          <mxGeometry height="24" width="330" y="92" as="geometry" />
+        </mxCell>
+        <mxCell id="district_3" parent="district" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=12;" value="boundary — шекарасы (JSON)" vertex="1">
+          <mxGeometry height="24" width="330" y="116" as="geometry" />
+        </mxCell>
+        <mxCell id="user" parent="1" style="swimlane;html=1;childLayout=stackLayout;horizontal=1;startSize=44;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;rounded=1;arcSize=5;fillColor=#e1d5e7;strokeColor=#9673a6;strokeWidth=1.5;swimlaneFillColor=#ffffff;fontSize=14;" value="&lt;b&gt;auth_user&lt;/b&gt;&lt;br&gt;&lt;font style=&amp;quot;font-size:12px&amp;quot;&gt;Қызметкер: диспетчер, жұмысшы, әкімші&lt;/font&gt;" vertex="1">
+          <mxGeometry height="140" width="330" x="1120" y="40" as="geometry" />
+        </mxCell>
+        <mxCell id="user_0" parent="user" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=12;fontStyle=1;" value="PK id" vertex="1">
+          <mxGeometry height="24" width="330" y="44" as="geometry" />
+        </mxCell>
+        <mxCell id="user_1" parent="user" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=12;" value="username — логин" vertex="1">
+          <mxGeometry height="24" width="330" y="68" as="geometry" />
+        </mxCell>
+        <mxCell id="user_2" parent="user" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=12;" value="first_name / last_name" vertex="1">
+          <mxGeometry height="24" width="330" y="92" as="geometry" />
+        </mxCell>
+        <mxCell id="user_3" parent="user" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=12;" value="рөлі — auth_user_groups арқылы" vertex="1">
+          <mxGeometry height="24" width="330" y="116" as="geometry" />
+        </mxCell>
+        <mxCell id="staff" parent="1" style="swimlane;html=1;childLayout=stackLayout;horizontal=1;startSize=44;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;rounded=1;arcSize=5;fillColor=#e1d5e7;strokeColor=#9673a6;strokeWidth=1.5;swimlaneFillColor=#ffffff;fontSize=14;" value="&lt;b&gt;sensor_staffprofile&lt;/b&gt;&lt;br&gt;&lt;font style=&amp;quot;font-size:12px&amp;quot;&gt;Қызметкер профилі&lt;/font&gt;" vertex="1">
+          <mxGeometry height="140" width="330" x="1120" y="260" as="geometry" />
+        </mxCell>
+        <mxCell id="staff_0" parent="staff" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=12;fontStyle=1;" value="PK id" vertex="1">
+          <mxGeometry height="24" width="330" y="44" as="geometry" />
+        </mxCell>
+        <mxCell id="staff_1" parent="staff" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=12;fontColor=#b85450;fontStyle=1;" value="FK user_id → auth_user (1:1)" vertex="1">
+          <mxGeometry height="24" width="330" y="68" as="geometry" />
+        </mxCell>
+        <mxCell id="staff_2" parent="staff" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=12;fontColor=#b85450;fontStyle=1;" value="FK district_id → аудан" vertex="1">
+          <mxGeometry height="24" width="330" y="92" as="geometry" />
+        </mxCell>
+        <mxCell id="staff_3" parent="staff" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=12;" value="latitude / longitude — жұмысшының орны" vertex="1">
+          <mxGeometry height="24" width="330" y="116" as="geometry" />
+        </mxCell>
+        <mxCell id="revent" parent="1" style="swimlane;html=1;childLayout=stackLayout;horizontal=1;startSize=44;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;rounded=1;arcSize=5;fillColor=#ffe6cc;strokeColor=#d79b00;strokeWidth=1.5;swimlaneFillColor=#ffffff;fontSize=14;" value="&lt;b&gt;sensor_requestevent&lt;/b&gt;&lt;br&gt;&lt;font style=&amp;quot;font-size:12px&amp;quot;&gt;Өтініш тарихы&lt;/font&gt;" vertex="1">
+          <mxGeometry height="188" width="330" x="1120" y="480" as="geometry" />
+        </mxCell>
+        <mxCell id="revent_0" parent="revent" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=12;fontStyle=1;" value="PK id" vertex="1">
+          <mxGeometry height="24" width="330" y="44" as="geometry" />
+        </mxCell>
+        <mxCell id="revent_1" parent="revent" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=12;fontColor=#b85450;fontStyle=1;" value="FK request_id → өтініш" vertex="1">
+          <mxGeometry height="24" width="330" y="68" as="geometry" />
+        </mxCell>
+        <mxCell id="revent_2" parent="revent" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=12;" value="status — қандай күйге өтті" vertex="1">
+          <mxGeometry height="24" width="330" y="92" as="geometry" />
+        </mxCell>
+        <mxCell id="revent_3" parent="revent" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=12;fontColor=#b85450;fontStyle=1;" value="FK actor_id → кім өзгертті (auth_user)" vertex="1">
+          <mxGeometry height="24" width="330" y="116" as="geometry" />
+        </mxCell>
+        <mxCell id="revent_4" parent="revent" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=12;" value="note" vertex="1">
+          <mxGeometry height="24" width="330" y="140" as="geometry" />
+        </mxCell>
+        <mxCell id="revent_5" parent="revent" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=12;" value="created_at" vertex="1">
+          <mxGeometry height="24" width="330" y="164" as="geometry" />
+        </mxCell>
+        <mxCell id="rating" parent="1" style="swimlane;html=1;childLayout=stackLayout;horizontal=1;startSize=44;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;rounded=1;arcSize=5;fillColor=#ffe6cc;strokeColor=#d79b00;strokeWidth=1.5;swimlaneFillColor=#ffffff;fontSize=14;" value="&lt;b&gt;sensor_requestrating&lt;/b&gt;&lt;br&gt;&lt;font style=&amp;quot;font-size:12px&amp;quot;&gt;Тұрғынның бағасы 👍/👎&lt;/font&gt;" vertex="1">
+          <mxGeometry height="164" width="330" x="1120" y="720" as="geometry" />
+        </mxCell>
+        <mxCell id="rating_0" parent="rating" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=12;fontStyle=1;" value="PK id" vertex="1">
+          <mxGeometry height="24" width="330" y="44" as="geometry" />
+        </mxCell>
+        <mxCell id="rating_1" parent="rating" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=12;fontColor=#b85450;fontStyle=1;" value="FK request_id → өтініш" vertex="1">
+          <mxGeometry height="24" width="330" y="68" as="geometry" />
+        </mxCell>
+        <mxCell id="rating_2" parent="rating" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=12;fontColor=#b85450;fontStyle=1;" value="FK worker_id → жұмысшы (auth_user)" vertex="1">
+          <mxGeometry height="24" width="330" y="92" as="geometry" />
+        </mxCell>
+        <mxCell id="rating_3" parent="rating" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=12;" value="is_good — жақсы ма" vertex="1">
+          <mxGeometry height="24" width="330" y="116" as="geometry" />
+        </mxCell>
+        <mxCell id="rating_4" parent="rating" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=12;" value="comment" vertex="1">
+          <mxGeometry height="24" width="330" y="140" as="geometry" />
+        </mxCell>
+        <mxCell id="chat" parent="1" style="swimlane;html=1;childLayout=stackLayout;horizontal=1;startSize=44;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;rounded=1;arcSize=5;fillColor=#d5e8d4;strokeColor=#82b366;strokeWidth=1.5;swimlaneFillColor=#ffffff;fontSize=14;" value="&lt;b&gt;sensor_telegramchat&lt;/b&gt;&lt;br&gt;&lt;font style=&amp;quot;font-size:12px&amp;quot;&gt;Тұрғын (Telegram-бот)&lt;/font&gt;" vertex="1">
+          <mxGeometry height="116" width="330" x="260" y="720" as="geometry" />
+        </mxCell>
+        <mxCell id="chat_0" parent="chat" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=12;fontStyle=1;" value="PK id" vertex="1">
+          <mxGeometry height="24" width="330" y="44" as="geometry" />
+        </mxCell>
+        <mxCell id="chat_1" parent="chat" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=12;fontColor=#3d6fb6;" value="UQ chat_id" vertex="1">
+          <mxGeometry height="24" width="330" y="68" as="geometry" />
+        </mxCell>
+        <mxCell id="chat_2" parent="chat" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=12;" value="username / first_name" vertex="1">
+          <mxGeometry height="24" width="330" y="92" as="geometry" />
+        </mxCell>
+        <mxCell id="wallet" parent="1" style="swimlane;html=1;childLayout=stackLayout;horizontal=1;startSize=44;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;rounded=1;arcSize=5;fillColor=#d5e8d4;strokeColor=#82b366;strokeWidth=1.5;swimlaneFillColor=#ffffff;fontSize=14;" value="&lt;b&gt;sensor_ecowallet&lt;/b&gt;&lt;br&gt;&lt;font style=&amp;quot;font-size:12px&amp;quot;&gt;Тұрғын (сайт пен қосымша)&lt;/font&gt;" vertex="1">
+          <mxGeometry height="116" width="330" x="620" y="720" as="geometry" />
+        </mxCell>
+        <mxCell id="wallet_0" parent="wallet" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=12;fontStyle=1;" value="PK id" vertex="1">
+          <mxGeometry height="24" width="330" y="44" as="geometry" />
+        </mxCell>
+        <mxCell id="wallet_1" parent="wallet" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=12;fontColor=#3d6fb6;" value="UQ code — әмиян коды (W-XXXX-XXXX)" vertex="1">
+          <mxGeometry height="24" width="330" y="68" as="geometry" />
+        </mxCell>
+        <mxCell id="wallet_2" parent="wallet" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=12;" value="created_at" vertex="1">
+          <mxGeometry height="24" width="330" y="92" as="geometry" />
+        </mxCell>
+        <mxCell id="e0" edge="1" parent="1" source="request" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;exitX=0;exitY=0.45;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;endArrow=ERmandOne;startArrow=ERmany;endFill=0;startFill=0;endSize=10;startSize=10;strokeColor=#555555;strokeWidth=1.5;fontSize=12;fontColor=#333333;labelBackgroundColor=#ffffff;" target="container" value="қай контейнер туралы">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e1" edge="1" parent="1" source="request" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;exitX=0;exitY=0.72;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;endArrow=ERmandOne;startArrow=ERmany;endFill=0;startFill=0;endSize=10;startSize=10;strokeColor=#555555;strokeWidth=1.5;fontSize=12;fontColor=#333333;labelBackgroundColor=#ffffff;" target="district" value="қай аудан">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e2" edge="1" parent="1" source="container" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;endArrow=ERmandOne;startArrow=ERmany;endFill=0;startFill=0;endSize=10;startSize=10;strokeColor=#555555;strokeWidth=1.5;fontSize=12;fontColor=#333333;labelBackgroundColor=#ffffff;" target="district" value="орналасқан аудан">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e3" edge="1" parent="1" source="request" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;exitX=1;exitY=0.18;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;endArrow=ERmandOne;startArrow=ERmany;endFill=0;startFill=0;endSize=10;startSize=10;strokeColor=#555555;strokeWidth=1.5;fontSize=12;fontColor=#333333;labelBackgroundColor=#ffffff;" target="user" value="тағайындалған жұмысшы">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e4" edge="1" parent="1" source="request" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;exitX=0.3;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;endArrow=ERmandOne;startArrow=ERmany;endFill=0;startFill=0;endSize=10;startSize=10;strokeColor=#555555;strokeWidth=1.5;fontSize=12;fontColor=#333333;labelBackgroundColor=#ffffff;" target="chat" value="жіберген тұрғын">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e5" edge="1" parent="1" source="request" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;exitX=0.7;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;endArrow=ERmandOne;startArrow=ERmany;endFill=0;startFill=0;endSize=10;startSize=10;strokeColor=#555555;strokeWidth=1.5;fontSize=12;fontColor=#333333;labelBackgroundColor=#ffffff;" target="wallet" value="жіберген тұрғын">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e6" edge="1" parent="1" source="staff" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;endArrow=ERmandOne;startArrow=ERmandOne;endFill=0;startFill=0;endSize=10;startSize=10;strokeColor=#555555;strokeWidth=1.5;fontSize=12;fontColor=#333333;labelBackgroundColor=#ffffff;" target="user" value="1:1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e7" edge="1" parent="1" source="revent" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;exitX=0;exitY=0.3;exitDx=0;exitDy=0;entryX=1;entryY=0.62;entryDx=0;entryDy=0;endArrow=ERmandOne;startArrow=ERmany;endFill=0;startFill=0;endSize=10;startSize=10;strokeColor=#555555;strokeWidth=1.5;fontSize=12;fontColor=#333333;labelBackgroundColor=#ffffff;" target="request" value="тарих жазбасы">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e8" edge="1" parent="1" source="revent" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;exitX=1;exitY=0.65;exitDx=0;exitDy=0;entryX=1;entryY=0.4;entryDx=0;entryDy=0;endArrow=ERmandOne;startArrow=ERmany;endFill=0;startFill=0;endSize=10;startSize=10;strokeColor=#555555;strokeWidth=1.5;fontSize=12;fontColor=#333333;labelBackgroundColor=#ffffff;" target="user" value="кім өзгертті">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e9" edge="1" parent="1" source="rating" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;exitX=0;exitY=0.3;exitDx=0;exitDy=0;entryX=1;entryY=0.88;entryDx=0;entryDy=0;endArrow=ERmandOne;startArrow=ERmany;endFill=0;startFill=0;endSize=10;startSize=10;strokeColor=#555555;strokeWidth=1.5;fontSize=12;fontColor=#333333;labelBackgroundColor=#ffffff;" target="request" value="баға">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e10" edge="1" parent="1" source="rating" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;exitX=1;exitY=0.6;exitDx=0;exitDy=0;entryX=1;entryY=0.75;entryDx=0;entryDy=0;endArrow=ERmandOne;startArrow=ERmany;endFill=0;startFill=0;endSize=10;startSize=10;strokeColor=#555555;strokeWidth=1.5;fontSize=12;fontColor=#333333;labelBackgroundColor=#ffffff;" target="user" value="бағаланған жұмысшы">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="eself" edge="1" parent="1" source="request" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;exitX=0.75;exitY=0;exitDx=0;exitDy=0;entryX=1;entryY=0.08;entryDx=0;entryDy=0;endArrow=ERmandOne;startArrow=ERmany;endFill=0;startFill=0;endSize=10;startSize=10;strokeColor=#d79b00;strokeWidth=1.5;dashed=1;fontSize=12;fontColor=#9a6b00;labelBackgroundColor=#ffffff;" target="request" value="parent: бір жердегі қайталанған өтініштер">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="847" y="80" />
+              <mxPoint x="1000" y="80" />
+              <mxPoint x="1000" y="140" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-14 23:46+0500\n"
+"POT-Creation-Date: 2026-11-16 21:58+0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -34,8 +34,8 @@ msgid "Қоқыс мәселесін хабарлаңыз, өтінішті ба
 msgstr "Сообщайте о проблемах с мусором, следите за заявками, копите эко-баллы."
 
 #: sensor/app_views.py:61 sensor/templates/eco.html:9
-#: sensor/templates/landing.html:86 sensor/templates/landing.html:198
-#: sensor/templates/landing.html:353 sensor/templates/login.html:228
+#: sensor/templates/landing.html:88 sensor/templates/landing.html:111
+#: sensor/templates/landing.html:293 sensor/templates/login.html:233
 #: sensor/templates/my_requests.html:9 sensor/templates/my_requests.html:36
 #: sensor/templates/wallet.html:9 sensor/templates/wallet.html:73
 msgid "Өтініш қалдыру"
@@ -51,9 +51,9 @@ msgid "Менің өтініштерім"
 msgstr "Мои заявки"
 
 #: sensor/app_views.py:67 sensor/templates/app_tabs.html:21
-#: sensor/templates/landing.html:13 sensor/templates/manage/base.html:13
-#: sensor/templates/manage/eco.html:11 sensor/templates/my_requests.html:10
-#: sensor/templates/resident.html:14 sensor/templates/resident_status.html:9
+#: sensor/templates/manage/base.html:13 sensor/templates/manage/eco.html:11
+#: sensor/templates/my_requests.html:10 sensor/templates/resident.html:14
+#: sensor/templates/resident_status.html:9
 msgid "Эко-ұпай"
 msgstr "Эко-баллы"
 
@@ -62,7 +62,7 @@ msgid "Датчиктер мен карта"
 msgstr "Датчики и карта"
 
 #: sensor/data_views.py:41 sensor/manage_views.py:296
-#: sensor/templates/dashboard.html:335 sensor/templates/manage/base.html:12
+#: sensor/templates/dashboard.html:340 sensor/templates/manage/base.html:12
 #: sensor/templates/manage/container_list.html:11
 #: sensor/templates/manage/stickers.html:13
 msgid "Контейнерлер"
@@ -357,7 +357,7 @@ msgstr "Активен: может входить в систему"
 msgid "Аудан диспетчері мен жұмысшыға аудан таңдаңыз."
 msgstr "Выберите район для диспетчера района и работника."
 
-#: sensor/manage_forms.py:57 sensor/templates/login.html:206
+#: sensor/manage_forms.py:57 sensor/templates/login.html:211
 msgid "Құпия сөз"
 msgstr "Пароль"
 
@@ -369,7 +369,7 @@ msgstr "Повторите пароль"
 msgid "Құпия сөздер сәйкес келмейді."
 msgstr "Пароли не совпадают."
 
-#: sensor/manage_forms.py:85 sensor/templates/login.html:201
+#: sensor/manage_forms.py:85 sensor/templates/login.html:206
 #: sensor/templates/manage/staff_list.html:26
 msgid "Логин"
 msgstr "Логин"
@@ -456,7 +456,7 @@ msgid "Мысалы: ОСИ «Самал-2, 15»"
 msgstr "Например: ОСИ «Самал-2, 15»"
 
 #: sensor/manage_forms.py:214 sensor/templates/request_detail.html:49
-#: sensor/templates/resident.html:97 sensor/templates/resident_status.html:163
+#: sensor/templates/resident.html:102 sensor/templates/resident_status.html:163
 msgid "Сипаттама"
 msgstr "Описание"
 
@@ -591,17 +591,15 @@ msgstr "Другая проблема"
 msgid "Жаңа"
 msgstr "Новая"
 
-#: sensor/models.py:119 sensor/templates/landing.html:135
+#: sensor/models.py:119
 msgid "Қабылданды"
 msgstr "Принята"
 
-#: sensor/models.py:120 sensor/templates/landing.html:136
-#: sensor/templates/supervision.html:26
+#: sensor/models.py:120 sensor/templates/supervision.html:26
 msgid "Орындалуда"
 msgstr "Выполняется"
 
-#: sensor/models.py:121 sensor/templates/landing.html:131
-#: sensor/templates/landing.html:137
+#: sensor/models.py:121
 msgid "Орындалды"
 msgstr "Выполнена"
 
@@ -681,7 +679,7 @@ msgstr "Возможна опасность"
 msgid "Қауіпті"
 msgstr "Опасно"
 
-#: sensor/resident_views.py:272 sensor/templates/dashboard.html:352
+#: sensor/resident_views.py:272 sensor/templates/dashboard.html:357
 msgid "Барлығы"
 msgstr "Все"
 
@@ -811,205 +809,205 @@ msgstr "Продолжить"
 msgid "Qaldyq — Мониторинг панелі"
 msgstr "Qaldyq — Панель мониторинга"
 
-#: sensor/templates/dashboard.html:129 sensor/templates/landing.html:6
-#: sensor/templates/layout.html:129 sensor/templates/layout.html:168
+#: sensor/templates/dashboard.html:134 sensor/templates/landing.html:6
+#: sensor/templates/layout.html:134 sensor/templates/layout.html:173
 msgid "Қалдықтарды бақылау жүйесі"
 msgstr "Система мониторинга отходов"
 
-#: sensor/templates/dashboard.html:141
+#: sensor/templates/dashboard.html:146
 msgid "Қосылуда…"
 msgstr "Подключение…"
 
-#: sensor/templates/dashboard.html:150 sensor/templates/layout.html:145
-#: sensor/templates/login.html:155
+#: sensor/templates/dashboard.html:155 sensor/templates/layout.html:150
+#: sensor/templates/login.html:160
 msgid "Тақырыпты өзгерту"
 msgstr "Сменить тему"
 
-#: sensor/templates/dashboard.html:180
+#: sensor/templates/dashboard.html:185
 msgid "Өрт қаупінің белгілері анықталды"
 msgstr "Обнаружены признаки пожарной опасности"
 
-#: sensor/templates/dashboard.html:182
+#: sensor/templates/dashboard.html:187
 msgid ""
 "Датчиктер өртті алдын ала болжамайды: олар жоғары температураны, оның жылдам "
 "көтерілуін, түтін немесе жанғыш газды байқайды. Контейнерді орнында "
 "тексеріңіз."
 msgstr "Датчики не предсказывают пожар заранее: они замечают высокую температуру, её быстрый рост, дым или горючий газ. Проверьте контейнер на месте."
 
-#: sensor/templates/dashboard.html:200
+#: sensor/templates/dashboard.html:205
 msgid "Жүйеге шолу"
 msgstr "Обзор системы"
 
-#: sensor/templates/dashboard.html:203
+#: sensor/templates/dashboard.html:208
 msgid "Әр 5 секунд сайын жаңарады · соңғы жаңарту"
 msgstr "Обновляется каждые 5 секунд · последнее обновление"
 
-#: sensor/templates/dashboard.html:213
+#: sensor/templates/dashboard.html:218
 msgid "Барлық контейнер"
 msgstr "Все контейнеры"
 
-#: sensor/templates/dashboard.html:222 sensor/templates/dashboard.html:295
-#: sensor/templates/dashboard.html:353
+#: sensor/templates/dashboard.html:227 sensor/templates/dashboard.html:300
+#: sensor/templates/dashboard.html:358
 msgid "Толы"
 msgstr "Заполнен"
 
-#: sensor/templates/dashboard.html:225
+#: sensor/templates/dashboard.html:230
 #, python-format
 msgid "80%% және жоғары, шығару қажет"
 msgstr "80%% и выше, нужен вывоз"
 
-#: sensor/templates/dashboard.html:231
+#: sensor/templates/dashboard.html:236
 msgid "Жартылай толы"
 msgstr "Наполовину заполнен"
 
-#: sensor/templates/dashboard.html:234
+#: sensor/templates/dashboard.html:239
 #, python-format
 msgid "50–79%%, бақылауда ұстау"
 msgstr "50–79%%, держать на контроле"
 
-#: sensor/templates/dashboard.html:240 sensor/templates/dashboard.html:293
-#: sensor/templates/dashboard.html:355
+#: sensor/templates/dashboard.html:245 sensor/templates/dashboard.html:298
+#: sensor/templates/dashboard.html:360
 msgid "Қалыпты"
 msgstr "Норма"
 
-#: sensor/templates/dashboard.html:243
+#: sensor/templates/dashboard.html:248
 #, python-format
 msgid "50%%-дан төмен"
 msgstr "ниже 50%%"
 
-#: sensor/templates/dashboard.html:249 sensor/templates/dashboard.html:296
-#: sensor/templates/dashboard.html:356
+#: sensor/templates/dashboard.html:254 sensor/templates/dashboard.html:301
+#: sensor/templates/dashboard.html:361
 msgid "Байланыс жоқ"
 msgstr "Нет связи"
 
-#: sensor/templates/dashboard.html:252
+#: sensor/templates/dashboard.html:257
 msgid "5 минуттан астам дерек келмеген"
 msgstr "Нет данных более 5 минут"
 
-#: sensor/templates/dashboard.html:258 sensor/templates/dashboard.html:357
+#: sensor/templates/dashboard.html:263 sensor/templates/dashboard.html:362
 msgid "Өрт қаупі"
 msgstr "Пожарная опасность"
 
-#: sensor/templates/dashboard.html:261
+#: sensor/templates/dashboard.html:266
 msgid "Температура, түтін немесе газ шектен асты"
 msgstr "Температура, дым или газ выше порога"
 
-#: sensor/templates/dashboard.html:267
+#: sensor/templates/dashboard.html:272
 msgid "Орташа толу"
 msgstr "Средняя заполненность"
 
-#: sensor/templates/dashboard.html:270
+#: sensor/templates/dashboard.html:275
 msgid "Соңғы белгілі деректер бойынша"
 msgstr "По последним известным данным"
 
-#: sensor/templates/dashboard.html:288
+#: sensor/templates/dashboard.html:293
 msgid "Контейнерлер картасы"
 msgstr "Карта контейнеров"
 
-#: sensor/templates/dashboard.html:289
+#: sensor/templates/dashboard.html:294
 msgid "Алматыдағы бақылау аймағы"
 msgstr "Зона мониторинга в Алматы"
 
-#: sensor/templates/dashboard.html:294 sensor/templates/dashboard.html:354
+#: sensor/templates/dashboard.html:299 sensor/templates/dashboard.html:359
 msgid "Жартылай"
 msgstr "Наполовину"
 
-#: sensor/templates/dashboard.html:304
+#: sensor/templates/dashboard.html:309
 msgid "Контейнерлер орналасқан карта"
 msgstr "Карта расположения контейнеров"
 
-#: sensor/templates/dashboard.html:314
+#: sensor/templates/dashboard.html:319
 msgid "Назар аударыңыз"
 msgstr "Требуют внимания"
 
-#: sensor/templates/dashboard.html:315
+#: sensor/templates/dashboard.html:320
 msgid "Өрт қаупі, толы және үнсіз контейнерлер"
 msgstr "Пожароопасные, заполненные и молчащие контейнеры"
 
-#: sensor/templates/dashboard.html:342
+#: sensor/templates/dashboard.html:347
 msgid "Контейнерді іздеу"
 msgstr "Поиск контейнера"
 
-#: sensor/templates/dashboard.html:346
+#: sensor/templates/dashboard.html:351
 msgid "Атауы немесе орны бойынша"
 msgstr "По названию или месту"
 
-#: sensor/templates/dashboard.html:351
+#: sensor/templates/dashboard.html:356
 msgid "Күйі бойынша сүзу"
 msgstr "Фильтр по состоянию"
 
-#: sensor/templates/dashboard.html:368
+#: sensor/templates/dashboard.html:373
 msgid "Контейнер"
 msgstr "Контейнер"
 
-#: sensor/templates/dashboard.html:369 sensor/templates/event.html:27
+#: sensor/templates/dashboard.html:374 sensor/templates/event.html:27
 msgid "Орны"
 msgstr "Место"
 
-#: sensor/templates/dashboard.html:370 sensor/templates/dashboard.html:399
+#: sensor/templates/dashboard.html:375 sensor/templates/dashboard.html:404
 msgid "Толу деңгейі"
 msgstr "Заполненность"
 
-#: sensor/templates/dashboard.html:371
+#: sensor/templates/dashboard.html:376
 msgid "Қашықтық"
 msgstr "Расстояние"
 
-#: sensor/templates/dashboard.html:372 sensor/templates/manage/eco.html:36
+#: sensor/templates/dashboard.html:377 sensor/templates/manage/eco.html:36
 #: sensor/templates/manage/eco.html:99 sensor/templates/manage/events.html:26
 #: sensor/templates/manage/staff_list.html:31
 msgid "Күйі"
 msgstr "Состояние"
 
-#: sensor/templates/dashboard.html:373
+#: sensor/templates/dashboard.html:378
 msgid "Қауіпсіздік"
 msgstr "Безопасность"
 
-#: sensor/templates/dashboard.html:374
+#: sensor/templates/dashboard.html:379
 #: sensor/templates/manage/container_list.html:26
 msgid "Соңғы дерек"
 msgstr "Последние данные"
 
-#: sensor/templates/dashboard.html:393
+#: sensor/templates/dashboard.html:398
 msgid "Көрсеткіштер динамикасы"
 msgstr "Динамика показателей"
 
-#: sensor/templates/dashboard.html:398
+#: sensor/templates/dashboard.html:403
 msgid "Көрсеткішті таңдау"
 msgstr "Выбор показателя"
 
-#: sensor/templates/dashboard.html:400
+#: sensor/templates/dashboard.html:405
 msgid "Температура"
 msgstr "Температура"
 
-#: sensor/templates/dashboard.html:401
+#: sensor/templates/dashboard.html:406
 msgid "Түтін/газ"
 msgstr "Дым/газ"
 
-#: sensor/templates/dashboard.html:404
+#: sensor/templates/dashboard.html:409
 msgid "Кезеңді таңдау"
 msgstr "Выбор периода"
 
-#: sensor/templates/dashboard.html:405
+#: sensor/templates/dashboard.html:410
 msgid "1 сағат"
 msgstr "1 час"
 
-#: sensor/templates/dashboard.html:406
+#: sensor/templates/dashboard.html:411
 msgid "6 сағат"
 msgstr "6 часов"
 
-#: sensor/templates/dashboard.html:407
+#: sensor/templates/dashboard.html:412
 msgid "24 сағат"
 msgstr "24 часа"
 
-#: sensor/templates/dashboard.html:408
+#: sensor/templates/dashboard.html:413
 msgid "7 күн"
 msgstr "7 дней"
 
-#: sensor/templates/dashboard.html:420
+#: sensor/templates/dashboard.html:425
 msgid "Кесте түрінде көрсету"
 msgstr "Показать таблицей"
 
-#: sensor/templates/dashboard.html:436 sensor/templates/login.html:140
+#: sensor/templates/dashboard.html:441 sensor/templates/login.html:145
 msgid "Qaldyq IoT жүйесі"
 msgstr "IoT-система Qaldyq"
 
@@ -1024,8 +1022,8 @@ msgstr "Qaldyq — Эко-баллы"
 msgid "Тұрғындарға арналған"
 msgstr "Для жителей"
 
-#: sensor/templates/eco.html:10 sensor/templates/landing.html:205
-#: sensor/templates/resident.html:15
+#: sensor/templates/eco.html:10 sensor/templates/landing.html:118
+#: sensor/templates/resident.html:15 sensor/templates/resident.html:155
 msgid "Өтінішті тексеру"
 msgstr "Проверить заявку"
 
@@ -1081,7 +1079,7 @@ msgstr "Награду можно получить в разделе «Эко-б
 msgid "Серіктестердің сыйлықтары жақында қосылады."
 msgstr "Награды партнёров скоро появятся."
 
-#: sensor/templates/eco.html:74 sensor/templates/landing.html:228
+#: sensor/templates/eco.html:74 sensor/templates/landing.html:141
 msgid "ОСИ рейтингі"
 msgstr "Рейтинг ОСИ"
 
@@ -1196,270 +1194,237 @@ msgstr "Закрыть"
 msgid "Qaldyq — Қаланың тазалығын бақылау жүйесі"
 msgstr "Qaldyq — Система контроля чистоты города"
 
-#: sensor/templates/landing.html:9
-msgid "Бет бөлімдері"
-msgstr "Разделы страницы"
-
-#: sensor/templates/landing.html:10
-msgid "Қызметтер"
-msgstr "Сервисы"
-
-#: sensor/templates/landing.html:11 sensor/templates/landing.html:248
-msgid "Қалай жұмыс істейді"
-msgstr "Как это работает"
-
-#: sensor/templates/landing.html:12
-msgid "Қала үшін"
-msgstr "Для города"
-
-#: sensor/templates/landing.html:21 sensor/templates/login.html:223
+#: sensor/templates/landing.html:14 sensor/templates/login.html:228
 msgid "Кіру"
 msgstr "Войти"
 
-#: sensor/templates/landing.html:78
-msgid "Алматы · IoT датчиктер мен AI"
-msgstr "Алматы · IoT-датчики и ИИ"
+#: sensor/templates/landing.html:67
+msgid "Аула тазалығы туралы өтінішті жылдам әрі тегін қалдырыңыз"
+msgstr "Сообщайте о проблемах с чистотой двора быстро и бесплатно"
 
-#: sensor/templates/landing.html:79
+#: sensor/templates/landing.html:80
 msgid "Таза аула бір хабарламадан басталады"
 msgstr "Чистый двор начинается с одного сообщения"
 
-#: sensor/templates/landing.html:81
-msgid ""
-"Толып кеткен контейнерді немесе шығарылмаған қоқысты көрдіңіз бе? Өтініш "
-"қалдырыңыз: датчик пен AI оны тексереді, жұмысшы орындап, нәтиженің фотосын "
-"жібереді."
-msgstr "Увидели переполненный контейнер или невывезенный мусор? Оставьте заявку: датчик и ИИ её проверят, работник выполнит и пришлёт фото результата."
+#: sensor/templates/landing.html:82
+msgid "Өтініш мәртебесін тексеру"
+msgstr "Проверить статус заявки"
+
+#: sensor/templates/landing.html:84
+msgid "Өтініш кодын енгізіңіз: Q-XXXXXX"
+msgstr "Введите код заявки: Q-XXXXXX"
+
+#: sensor/templates/landing.html:85 sensor/templates/resident_status.html:114
+msgid "Тексеру"
+msgstr "Проверить"
 
 #: sensor/templates/landing.html:92
 msgid "Telegram арқылы"
 msgstr "Через Telegram"
 
-#: sensor/templates/landing.html:98
-msgid "Өтініш мәртебесін тексеру"
-msgstr "Проверить статус заявки"
-
-#: sensor/templates/landing.html:102 sensor/templates/resident_status.html:114
-msgid "Тексеру"
-msgstr "Проверить"
-
-#: sensor/templates/landing.html:134 sensor/templates/request_detail.html:51
-#: sensor/templates/requests_list.html:55
-#: sensor/templates/resident_status.html:160
-msgid "Жіберілді"
-msgstr "Отправлена"
-
-#: sensor/templates/landing.html:141
-msgid "+15 эко-ұпай"
-msgstr "+15 эко-баллов"
-
-#: sensor/templates/landing.html:149
-msgid "Датчик: контейнер толы"
-msgstr "Датчик: контейнер заполнен"
-
-#: sensor/templates/landing.html:155
-msgid "AI: тұрмыстық қоқыс, көлемі орташа"
-msgstr "ИИ: бытовой мусор, средний объём"
-
-#: sensor/templates/landing.html:165
-msgid "Жүйе сандармен"
-msgstr "Система в цифрах"
-
-#: sensor/templates/landing.html:169
-msgid "Датчигі бар контейнер"
-msgstr "Контейнеров с датчиками"
-
-#: sensor/templates/landing.html:173
-msgid "Шешілген өтініш"
-msgstr "Решённых заявок"
-
-#: sensor/templates/landing.html:177
-msgid "Орташа шешілу уақыты"
-msgstr "Среднее время решения"
-
-#: sensor/templates/landing.html:181
-msgid "Тұрғындарға берілген эко-ұпай"
-msgstr "Эко-баллов начислено жителям"
-
-#: sensor/templates/landing.html:190
+#: sensor/templates/landing.html:103
 msgid "Тұрғындарға арналған қызметтер"
 msgstr "Сервисы для жителей"
 
-#: sensor/templates/landing.html:191
+#: sensor/templates/landing.html:104
 msgid "Тіркелусіз: аты-жөн мен телефон сұралмайды."
 msgstr "Без регистрации: имя и телефон не нужны."
 
-#: sensor/templates/landing.html:199
+#: sensor/templates/landing.html:112
 msgid "Мәселенің түрін таңдап, орнын картадан белгілеңіз. Бір минуттық іс."
 msgstr "Выберите тип проблемы и отметьте место на карте. Это займёт минуту."
 
-#: sensor/templates/landing.html:206
+#: sensor/templates/landing.html:119
 msgid "Код арқылы мәртебені және жұмыстан кейінгі фотоны көріңіз."
 msgstr "По коду смотрите статус и фото после работы."
 
-#: sensor/templates/landing.html:213 sensor/templates/manage/system.html:33
+#: sensor/templates/landing.html:126 sensor/templates/manage/system.html:33
 msgid "Telegram-бот"
 msgstr "Telegram-бот"
 
-#: sensor/templates/landing.html:214
+#: sensor/templates/landing.html:127
 msgid "Өтінішті ботқа жіберіп, әр өзгеріс туралы хабар алыңыз."
 msgstr "Отправьте заявку боту и получайте уведомления о каждом изменении."
 
-#: sensor/templates/landing.html:221
+#: sensor/templates/landing.html:134
 msgid "Эко-ұпай мен сыйлықтар"
 msgstr "Эко-баллы и награды"
 
-#: sensor/templates/landing.html:222
+#: sensor/templates/landing.html:135
 msgid ""
 "Расталған өтініш үшін ұпай жинап, серіктестердің сыйлықтарына айырбастаңыз."
 msgstr "Получайте баллы за подтверждённые заявки и обменивайте их на награды партнёров."
 
-#: sensor/templates/landing.html:229
+#: sensor/templates/landing.html:142
 msgid "Үйіңіздің ОСИ-ы қаладағы рейтингте нешінші орында тұрғанын көріңіз."
 msgstr "Узнайте, какое место ОСИ вашего дома занимает в городском рейтинге."
 
-#: sensor/templates/landing.html:235
+#: sensor/templates/landing.html:148
 msgid "Қызметкерлерге"
 msgstr "Для сотрудников"
 
-#: sensor/templates/landing.html:236
+#: sensor/templates/landing.html:149
 msgid "Диспетчер, жұмысшы және әкімші панелі."
 msgstr "Панель диспетчера, работника и администратора."
 
-#: sensor/templates/landing.html:249
+#: sensor/templates/landing.html:162
+msgid "Жүйе сандармен"
+msgstr "Система в цифрах"
+
+#: sensor/templates/landing.html:167
+msgid "Датчигі бар контейнер"
+msgstr "Контейнеров с датчиками"
+
+#: sensor/templates/landing.html:171
+msgid "Шешілген өтініш"
+msgstr "Решённых заявок"
+
+#: sensor/templates/landing.html:175
+msgid "Орташа шешілу уақыты"
+msgstr "Среднее время решения"
+
+#: sensor/templates/landing.html:179
+msgid "Тұрғындарға берілген эко-ұпай"
+msgstr "Эко-баллов начислено жителям"
+
+#: sensor/templates/landing.html:188
+msgid "Қалай жұмыс істейді"
+msgstr "Как это работает"
+
+#: sensor/templates/landing.html:189
 msgid "Хабарламадан нәтижеге дейін төрт қадам."
 msgstr "Четыре шага от сообщения до результата."
 
-#: sensor/templates/landing.html:255 sensor/templates/wallet.html:69
+#: sensor/templates/landing.html:195 sensor/templates/wallet.html:69
 msgid "Хабарлайсыз"
 msgstr "Вы сообщаете"
 
-#: sensor/templates/landing.html:256
+#: sensor/templates/landing.html:196
 msgid "Сайттан немесе Telegram-нан, қаласаңыз фотомен бірге."
 msgstr "На сайте или в Telegram, по желанию с фото."
 
-#: sensor/templates/landing.html:260
+#: sensor/templates/landing.html:200
 msgid "Жүйе тексереді"
 msgstr "Система проверяет"
 
-#: sensor/templates/landing.html:261
+#: sensor/templates/landing.html:201
 msgid ""
 "Жақын контейнердің датчигі мен AI фотоны талдайды, бір жердегі өтініштерді "
 "біріктіреді."
 msgstr "Датчик ближайшего контейнера и ИИ анализируют фото, заявки по одному месту объединяются."
 
-#: sensor/templates/landing.html:265 sensor/templates/wallet.html:70
+#: sensor/templates/landing.html:205 sensor/templates/wallet.html:70
 msgid "Жұмысшы орындайды"
 msgstr "Работник выполняет"
 
-#: sensor/templates/landing.html:266
+#: sensor/templates/landing.html:206
 msgid "Диспетчер ең жақын жұмысшыны жібереді, ол нәтижені фотомен растайды."
 msgstr "Диспетчер направляет ближайшего работника, тот подтверждает результат фото."
 
-#: sensor/templates/landing.html:270 sensor/templates/wallet.html:71
+#: sensor/templates/landing.html:210 sensor/templates/wallet.html:71
 msgid "Ұпай аласыз"
 msgstr "Вы получаете баллы"
 
-#: sensor/templates/landing.html:271
+#: sensor/templates/landing.html:211
 msgid "Мәселе шешілгенде хабарлама мен эко-ұпай келеді."
 msgstr "Когда проблема решена, приходит уведомление и эко-баллы."
 
-#: sensor/templates/landing.html:282
+#: sensor/templates/landing.html:222
 msgid "Қала мен әкімдік үшін"
 msgstr "Для города и акимата"
 
-#: sensor/templates/landing.html:283
+#: sensor/templates/landing.html:223
 msgid "Қоқыс шығаруды болжаммен емес, дерекпен басқарыңыз"
 msgstr "Управляйте вывозом мусора по данным, а не наугад"
 
-#: sensor/templates/landing.html:284
+#: sensor/templates/landing.html:224
 msgid ""
 "Контейнерлер, тұрғындардың өтініштері және жұмысшылар бір панельде. Аудан "
 "диспетчері өз ауданын, бас диспетчер бүкіл қаланы көреді."
 msgstr "Контейнеры, заявки жителей и работники — в одной панели. Диспетчер района видит свой район, главный диспетчер — весь город."
 
-#: sensor/templates/landing.html:286
+#: sensor/templates/landing.html:226
 msgid "Қызметкерлер панеліне кіру"
 msgstr "Войти в панель сотрудников"
 
-#: sensor/templates/landing.html:294
+#: sensor/templates/landing.html:234
 msgid "Толу деңгейі нақты уақытта"
 msgstr "Заполненность в реальном времени"
 
-#: sensor/templates/landing.html:295
+#: sensor/templates/landing.html:235
 msgid "Әр контейнердің датчигі толуды, температура мен түтінді жібереді."
 msgstr "Датчик каждого контейнера передаёт заполненность, температуру и дым."
 
-#: sensor/templates/landing.html:299
+#: sensor/templates/landing.html:239
 msgid "Өрт қаупінің белгілері"
 msgstr "Признаки пожарной опасности"
 
-#: sensor/templates/landing.html:300
+#: sensor/templates/landing.html:240
 msgid "Қызу немесе түтін байқалса, диспетчер бірден ескерту алады."
 msgstr "При нагреве или дыме диспетчер сразу получает предупреждение."
 
-#: sensor/templates/landing.html:304
+#: sensor/templates/landing.html:244
 msgid "Жұмысшылар картада"
 msgstr "Работники на карте"
 
-#: sensor/templates/landing.html:305
+#: sensor/templates/landing.html:245
 msgid "Диспетчер жұмысшылардың орнын және кімнің қай тапсырмада екенін көреді."
 msgstr "Диспетчер видит, где находятся работники и кто какое задание выполняет."
 
-#: sensor/templates/landing.html:309
+#: sensor/templates/landing.html:249
 msgid "Аудандар бойынша бақылау"
 msgstr "Контроль по районам"
 
-#: sensor/templates/landing.html:310
+#: sensor/templates/landing.html:250
 msgid "Қай ауданда өтініш кешігіп жатқаны бірден көрінеді."
 msgstr "Сразу видно, в каком районе заявки задерживаются."
 
-#: sensor/templates/landing.html:321
+#: sensor/templates/landing.html:261
 msgid "Жиі қойылатын сұрақтар"
 msgstr "Частые вопросы"
 
-#: sensor/templates/landing.html:326
+#: sensor/templates/landing.html:266
 msgid "Өтініш қалдыру тегін бе?"
 msgstr "Оставить заявку бесплатно?"
 
-#: sensor/templates/landing.html:327
+#: sensor/templates/landing.html:267
 msgid "Иә. Тіркелу, аты-жөн немесе телефон қажет емес."
 msgstr "Да. Регистрация, имя и телефон не нужны."
 
-#: sensor/templates/landing.html:330
+#: sensor/templates/landing.html:270
 msgid "Өтінішім орындалғанын қалай білемін?"
 msgstr "Как узнать, что заявка выполнена?"
 
-#: sensor/templates/landing.html:331
+#: sensor/templates/landing.html:271 sensor/templates/resident.html:140
 msgid ""
 "Өтінішке код беріледі. Сол код арқылы мәртебені тексересіз, ал Telegram-бот "
 "әр өзгерісті өзі хабарлайды."
 msgstr "Заявке присваивается код. По нему вы проверяете статус, а Telegram-бот сам сообщает о каждом изменении."
 
-#: sensor/templates/landing.html:334
+#: sensor/templates/landing.html:274
 msgid "Эко-ұпай қашан беріледі?"
 msgstr "Когда начисляются эко-баллы?"
 
-#: sensor/templates/landing.html:335
+#: sensor/templates/landing.html:275
 msgid ""
 "Жұмысшы мәселені фотомен растағанда ғана. Жалған өтінішке ұпай берілмейді."
 msgstr "Только когда работник подтвердит решение фото. За ложную заявку баллов нет."
 
-#: sensor/templates/landing.html:338
+#: sensor/templates/landing.html:278
 msgid "Фото не үшін керек?"
 msgstr "Зачем нужно фото?"
 
-#: sensor/templates/landing.html:339
+#: sensor/templates/landing.html:279
 msgid ""
 "AI фотодан қалдықтың түрі мен көлемін анықтайды, сонда диспетчер қажетті "
 "бригаданы жібереді. Фото міндетті емес."
 msgstr "ИИ определяет по фото вид и объём отходов, и диспетчер направляет нужную бригаду. Фото необязательно."
 
-#: sensor/templates/landing.html:349
+#: sensor/templates/landing.html:289
 msgid "Аулаңызда мәселе бар ма?"
 msgstr "Проблема у вас во дворе?"
 
-#: sensor/templates/landing.html:350
+#: sensor/templates/landing.html:290
 msgid "Хабарлаңыз, қалғанын жүйе мен қызметкерлер атқарады."
 msgstr "Сообщите — остальное сделают система и сотрудники."
 
@@ -1471,55 +1436,55 @@ msgstr "Выбор языка"
 msgid "Qaldyq — Кіру"
 msgstr "Qaldyq — Вход"
 
-#: sensor/templates/login.html:111
+#: sensor/templates/login.html:116
 msgid "Қаланың тазалығы — нақты деректе"
 msgstr "Чистота города — на реальных данных"
 
-#: sensor/templates/login.html:112
+#: sensor/templates/login.html:117
 msgid "Датчиктер, тұрғындардың өтініштері және жұмысшылар бір жүйеде."
 msgstr "Датчики, заявки жителей и работники — в одной системе."
 
-#: sensor/templates/login.html:118
+#: sensor/templates/login.html:123
 msgid "IoT датчиктер"
 msgstr "IoT-датчики"
 
-#: sensor/templates/login.html:119
+#: sensor/templates/login.html:124
 msgid "Контейнердің толуын, температура мен түтінді үздіксіз бақылайды."
 msgstr "Непрерывно следят за заполненностью, температурой и дымом в контейнере."
 
-#: sensor/templates/login.html:125
+#: sensor/templates/login.html:130
 msgid "AI фото талдау"
 msgstr "ИИ-анализ фото"
 
-#: sensor/templates/login.html:126
+#: sensor/templates/login.html:131
 msgid "Тұрғынның фотосынан қалдық түрі мен қауіпті анықтайды."
 msgstr "Определяет вид отходов и опасность по фото жителя."
 
-#: sensor/templates/login.html:132
+#: sensor/templates/login.html:137
 msgid "Тұрғындар порталы"
 msgstr "Портал для жителей"
 
-#: sensor/templates/login.html:133
+#: sensor/templates/login.html:138
 msgid "Сайт пен Telegram арқылы өтініш, ал шешілген мәселе үшін эко-ұпай."
 msgstr "Заявки через сайт и Telegram, эко-баллы за решённые проблемы."
 
-#: sensor/templates/login.html:184
+#: sensor/templates/login.html:189
 msgid "Қызметкерлер үшін кіру"
 msgstr "Вход для сотрудников"
 
-#: sensor/templates/login.html:185
+#: sensor/templates/login.html:190
 msgid "Диспетчер, жұмысшы немесе әкімші аккаунтымен кіріңіз."
 msgstr "Войдите с аккаунтом диспетчера, работника или администратора."
 
-#: sensor/templates/login.html:214 sensor/templates/login.html:215
+#: sensor/templates/login.html:219 sensor/templates/login.html:220
 msgid "Құпия сөзді көрсету"
 msgstr "Показать пароль"
 
-#: sensor/templates/login.html:216
+#: sensor/templates/login.html:221
 msgid "Құпия сөзді жасыру"
 msgstr "Скрыть пароль"
 
-#: sensor/templates/login.html:228
+#: sensor/templates/login.html:233
 msgid "Тұрғынсыз ба?"
 msgstr "Вы житель?"
 
@@ -1550,7 +1515,7 @@ msgid "Тізімге оралу"
 msgstr "Вернуться к списку"
 
 #: sensor/templates/manage/container_form.html:36
-#: sensor/templates/request_detail.html:53 sensor/templates/resident.html:80
+#: sensor/templates/request_detail.html:53 sensor/templates/resident.html:82
 msgid "Картадағы орны"
 msgstr "Место на карте"
 
@@ -1564,12 +1529,12 @@ msgid "Контейнердің орнын белгілейтін карта"
 msgstr "Карта для отметки места контейнера"
 
 #: sensor/templates/manage/container_form.html:42
-#: sensor/templates/manage/event_form.html:49 sensor/templates/resident.html:88
+#: sensor/templates/manage/event_form.html:49 sensor/templates/resident.html:90
 msgid "Менің орным"
 msgstr "Моё местоположение"
 
 #: sensor/templates/manage/container_form.html:44
-#: sensor/templates/manage/event_form.html:52 sensor/templates/resident.html:90
+#: sensor/templates/manage/event_form.html:52 sensor/templates/resident.html:92
 msgid "Нүкте белгіленбеген"
 msgstr "Точка не отмечена"
 
@@ -1749,8 +1714,8 @@ msgstr "Новая строка"
 
 #: sensor/templates/manage/data_row.html:47
 #: sensor/templates/manage/event_form.html:43
-#: sensor/templates/manage/field.html:3 sensor/templates/resident.html:80
-#: sensor/templates/resident.html:97 sensor/templates/resident_status.html:84
+#: sensor/templates/manage/field.html:3 sensor/templates/resident.html:82
+#: sensor/templates/resident.html:102 sensor/templates/resident_status.html:84
 msgid "міндетті емес"
 msgstr "необязательно"
 
@@ -2326,13 +2291,19 @@ msgid "Бөлек өтініш ету"
 msgstr "Сделать отдельной заявкой"
 
 #: sensor/templates/request_detail.html:46
-#: sensor/templates/requests_list.html:49 sensor/templates/resident.html:74
+#: sensor/templates/requests_list.html:49 sensor/templates/resident.html:76
 msgid "Мекенжай"
 msgstr "Адрес"
 
 #: sensor/templates/request_detail.html:47
 msgid "Анықталмады (картада нүкте жоқ)"
 msgstr "Не определён (нет точки на карте)"
+
+#: sensor/templates/request_detail.html:51
+#: sensor/templates/requests_list.html:55
+#: sensor/templates/resident_status.html:160
+msgid "Жіберілді"
+msgstr "Отправлена"
 
 #: sensor/templates/request_detail.html:56
 msgid "2GIS-те ашу"
@@ -2574,72 +2545,88 @@ msgstr "По этому фильтру заявок нет"
 msgid "Qaldyq — Өтініш қалдыру"
 msgstr "Qaldyq — Оставить заявку"
 
-#: sensor/templates/resident.html:23
+#: sensor/templates/resident.html:30
 msgid "Қоқысқа байланысты мәселе туралы хабарлаңыз"
 msgstr "Сообщите о проблеме с мусором"
 
-#: sensor/templates/resident.html:25
+#: sensor/templates/resident.html:31
 msgid ""
 "Контейнер толып кетсе, қоқыс уақытында шығарылмаса немесе аумақ ластанса, "
 "өтініш қалдырыңыз. Өтінішке код беріледі, сол арқылы оның қалай шешіліп "
 "жатқанын бақылайсыз."
 msgstr "Если контейнер переполнен, мусор не вывезли вовремя или территория загрязнена, оставьте заявку. Ей присвоят код, по которому вы будете следить за её решением."
 
-#: sensor/templates/resident.html:29
-msgid "Аты-жөніңіз бен телефоныңыз сұралмайды."
-msgstr "Имя и телефон не требуются."
-
-#: sensor/templates/resident.html:34
-msgid "Telegram-да ыңғайлы ма?"
-msgstr "Удобнее в Telegram?"
-
-#: sensor/templates/resident.html:34
-#, python-format
-msgid ""
-"<a href=\"%(telegram_link)s\" target=\"_blank\" rel=\"noopener\">Ботқа "
-"жазыңыз</a>, өтінішті сол жерден де қалдыруға болады."
-msgstr "<a href=\"%(telegram_link)s\" target=\"_blank\" rel=\"noopener\">Напишите боту</a> — заявку можно оставить и там."
-
-#: sensor/templates/resident.html:43
+#: sensor/templates/resident.html:38
 #, python-format
 msgid "%(name)s контейнерінің QR-коды"
 msgstr "QR-код контейнера %(name)s"
 
-#: sensor/templates/resident.html:44
+#: sensor/templates/resident.html:39
 msgid ""
 "Мекенжай мен орны толтырылды. Мәселенің түрін тексеріп, «Өтінішті жіберу» "
 "батырмасын басыңыз."
 msgstr "Адрес и место заполнены. Проверьте тип проблемы и нажмите «Отправить заявку»."
 
-#: sensor/templates/resident.html:61
+#: sensor/templates/resident.html:60
 msgid "Мәселенің түрі"
 msgstr "Тип проблемы"
 
-#: sensor/templates/resident.html:82
+#: sensor/templates/resident.html:84
 msgid ""
 "Картадан нүктені басыңыз. Сонда өтініш жақын контейнердің датчик "
 "деректерімен салыстырылады."
 msgstr "Нажмите точку на карте — тогда заявку сверят с данными датчика ближайшего контейнера."
 
-#: sensor/templates/resident.html:84
+#: sensor/templates/resident.html:86
 msgid "Мәселенің орнын белгілейтін карта"
 msgstr "Карта для отметки места проблемы"
 
-#: sensor/templates/resident.html:103
+#: sensor/templates/resident.html:108
 msgid "Фото"
 msgstr "Фото"
 
-#: sensor/templates/resident.html:103
+#: sensor/templates/resident.html:108
 msgid "міндетті емес, 5 МБ-қа дейін"
 msgstr "необязательно, до 5 МБ"
 
-#: sensor/templates/resident.html:109
+#: sensor/templates/resident.html:111
+msgid "Фото қосу"
+msgstr "Добавить фото"
+
+#: sensor/templates/resident.html:112
+msgid "Файл таңдалмаған"
+msgstr "Файл не выбран"
+
+#: sensor/templates/resident.html:120
 msgid "Бұл өрісті бос қалдырыңыз"
 msgstr "Оставьте это поле пустым"
 
-#: sensor/templates/resident.html:113
+#: sensor/templates/resident.html:125
 msgid "Өтінішті жіберу"
 msgstr "Отправить заявку"
+
+#: sensor/templates/resident.html:132
+msgid "Қызмет туралы"
+msgstr "О услуге"
+
+#: sensor/templates/resident.html:136
+msgid "Аты-жөніңіз бен телефоныңыз сұралмайды."
+msgstr "Имя и телефон не требуются."
+
+#: sensor/templates/resident.html:144
+msgid "Жұмысшы мәселені фотомен растағанда эко-ұпай аласыз."
+msgstr "Когда работник подтвердит решение фотографией, вы получите эко-баллы."
+
+#: sensor/templates/resident.html:149
+msgid "Telegram-да ыңғайлы ма?"
+msgstr "Удобнее в Telegram?"
+
+#: sensor/templates/resident.html:149
+#, python-format
+msgid ""
+"<a href=\"%(telegram_link)s\" target=\"_blank\" rel=\"noopener\">Ботқа "
+"жазыңыз</a>, өтінішті сол жерден де қалдыруға болады."
+msgstr "<a href=\"%(telegram_link)s\" target=\"_blank\" rel=\"noopener\">Напишите боту</a> — заявку можно оставить и там."
 
 #: sensor/templates/resident_status.html:4
 msgid "Qaldyq — Өтініш мәртебесі"
